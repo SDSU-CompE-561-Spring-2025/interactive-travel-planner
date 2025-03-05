@@ -1,0 +1,81 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "interactive-travel-planner"
+dynamic = ["version"]
+description = ''
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "kohkikita", email = "130106015+kohkikita@users.noreply.github.com" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+  "fastapi[all]",
+  "pre-commit>=3.5.0",
+]
+
+[project.urls]
+Documentation = "https://github.com/kohkikita/interactive-travel-planner#readme"
+Issues = "https://github.com/kohkikita/interactive-travel-planner/issues"
+Source = "https://github.com/kohkikita/interactive-travel-planner"
+
+[tool.hatch.version]
+path = "src/app/__about__.py"
+
+# 🛠️ Ensure Hatch knows which files to include
+[tool.hatch.build.targets.wheel]
+packages = ["src/app"]
+
+# 🔧 Virtual environment settings
+[tool.hatch.envs.default]
+python = "3.12"
+installer = "uv"
+path = ".venv"
+
+# 🚀 Default scripts
+[tool.hatch.envs.default.scripts]
+dev = "fastapi dev src/app/main.py"
+
+[tool.hatch.envs.types]
+installer = "uv"
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
+
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive src/app tests"
+
+# 📊 Test coverage settings
+[tool.coverage.run]
+source_pkgs = ["app", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/app/__about__.py",
+]
+
+[tool.coverage.paths]
+app = ["src/app", "*/interactive-travel-planner/src/app"]
+tests = ["tests", "*/interactive-travel-planner/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
