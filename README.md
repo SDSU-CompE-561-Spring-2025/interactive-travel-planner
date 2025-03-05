@@ -1,9 +1,13 @@
 # interactive-travel-planner
 
+
 INSTRUCTIONS TO RUN ON PERSONAL MACHINE
 1. clone file
 2. cd into the folder
 3. hatch new --init
+
+
+
 
 [![PyPI - Version](https://img.shields.io/pypi/v/interactive-travel-planner.svg)](https://pypi.org/project/interactive-travel-planner)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/interactive-travel-planner.svg)](https://pypi.org/project/interactive-travel-planner)
