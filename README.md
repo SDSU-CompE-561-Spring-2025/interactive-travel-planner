@@ -6,7 +6,9 @@ INSTRUCTIONS TO RUN ON PERSONAL MACHINE
 2. cd into the folder
 3. hatch new --init
 
-
+<div style="background-color: #fff8f0; padding: 10px;">
+This is a section with a custom background color.
+</div>
 
 
 [![PyPI - Version](https://img.shields.io/pypi/v/interactive-travel-planner.svg)](https://pypi.org/project/interactive-travel-planner)
