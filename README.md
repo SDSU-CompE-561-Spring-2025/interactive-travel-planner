@@ -1,4 +1,8 @@
-# interactive-travel-planner
+![image](https://github.com/user-attachments/assets/bb7e17a2-2879-45be-b20c-bf4648c69dd5)
+
+# WAYMARK
+## Interactive Travel Planner
+
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-0-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
@@ -9,9 +13,6 @@ INSTRUCTIONS TO RUN ON PERSONAL MACHINE
 2. cd into the folder
 3. hatch new --init
 
-<div style="background-color: #fff8f0; padding: 10px;">
-This is a section with a custom background color.
-</div>
 
 
 [![PyPI - Version](https://img.shields.io/pypi/v/interactive-travel-planner.svg)](https://pypi.org/project/interactive-travel-planner)
