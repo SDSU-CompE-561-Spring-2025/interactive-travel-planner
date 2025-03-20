@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "interactive-travel-planner"
 dynamic = ["version"]
-description = ''
+description = "interactive-travel-planner"
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
@@ -35,9 +35,9 @@ Issues = "https://github.com/kohkikita/interactive-travel-planner/issues"
 Source = "https://github.com/kohkikita/interactive-travel-planner"
 
 [tool.hatch.version]
-path = "src/app/__about__.py"
 
 # 🛠️ Ensure Hatch knows which files to include
+path = "interactive_travel_planner/__init__.py"
 [tool.hatch.build.targets.wheel]
 packages = ["src/app"]
 
