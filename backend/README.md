@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/bb7e17a2-2879-45be-b20c-bf4648c69dd5)
+![image](https://github.com/user-attachments/assets/fb82d0e8-0caf-42b8-b9aa-4ab818e4b006)
 
 # WAYMARK
 ## Interactive Travel Planner
