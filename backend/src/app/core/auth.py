@@ -1,12 +1,14 @@
-from app.core.config import settings
-from fastapi.security import OAuth2PasswordBearer
-from passlib.context import CryptContext
-from datetime import datetime, timedelta, UTC
-from app.schemas.token import TokenData
+from datetime import UTC, datetime, timedelta
+
 import jwt
 from fastapi import HTTPException
-from starlette.status import HTTP_401_UNAUTHORIZED
+from fastapi.security import OAuth2PasswordBearer
 from jwt import InvalidTokenError
+from passlib.context import CryptContext
+from starlette.status import HTTP_401_UNAUTHORIZED
+
+from app.core.config import settings
+from app.schemas.token import TokenData
 
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
