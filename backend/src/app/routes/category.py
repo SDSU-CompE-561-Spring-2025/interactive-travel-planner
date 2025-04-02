@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+
 from sqlalchemy.orm import Session
 
 import app.services.category as category_service
@@ -7,8 +8,8 @@ from app.core.auth import decode_access_token, oauth2_scheme
 from app.dependencies import get_db
 from app.schemas.category import CategoryCreate, CategoryResponse
 
-router = APIRouter()
 
+router = APIRouter()
 
 @router.post("/", response_model=CategoryResponse)
 def create_category(
@@ -21,4 +22,4 @@ def create_category(
 
     user_id = user.id
 
-    return category_service.create_category(db, category, user_id)
+    return category_service.create_category(db, category, user_id)'''
