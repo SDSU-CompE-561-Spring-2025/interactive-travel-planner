@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timedelta
+'''from datetime import UTC, datetime, timedelta
 
 import jwt
 from fastapi import HTTPException
@@ -46,4 +46,4 @@ def decode_access_token(token: str) -> TokenData:
             )
         return TokenData(username=username)
     except InvalidTokenError:
-        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")'''

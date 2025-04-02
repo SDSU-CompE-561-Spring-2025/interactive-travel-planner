@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends
 
+router = APIRouter()
+'''
 from sqlalchemy.orm import Session
 
 import app.services.category as category_service
