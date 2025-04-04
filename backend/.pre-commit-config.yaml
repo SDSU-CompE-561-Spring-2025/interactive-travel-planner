@@ -32,7 +32,7 @@ repos:
           - id: bandit
             name: Bandit
             entry: bandit
-            args: ["-c", "pyproject.toml", "-r", "src"]
+            args: ["-r", "src", "--exclude", ".venv"]
             types: [python]
             language: system
             pass_filenames: false

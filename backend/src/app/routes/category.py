@@ -22,3 +22,7 @@ def create_category(
     user_id = user.id
 
     return category_service.create_category(db, category, user_id)
+
+@router.post("/category/test")
+def testing():
+    return {"message": "Testing category route"}
