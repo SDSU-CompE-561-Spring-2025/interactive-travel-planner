@@ -13,7 +13,7 @@ def get_user_trips(id: int, db: Session = Depends(get_db)):
 def create_trip(id: int, db: Session = Depends(get_db)):
     return {"message": f"Trip created for user {id}"}
 
-@router.get("/trios/{trip_id}")
+@router.get("/trips/{trip_id}")
 def get_trip(trip_id: int, db: Session = Depends(get_db)):
     return {"message": f"Trip {trip_id} returned successfully"}
 
