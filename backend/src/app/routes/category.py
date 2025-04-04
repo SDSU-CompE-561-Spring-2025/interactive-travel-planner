@@ -1,17 +1,14 @@
-from fastapi import APIRouter, Depends
-
-router = APIRouter()
-'''
+from fastapi import APIRouter
+from app.schemas.category import CategoryCreate, CategoryResponse
+from app.dependencies import get_db
+from fastapi import Depends
 from sqlalchemy.orm import Session
-
+from app.core.auth import oauth2_scheme, decode_access_token
 import app.services.category as category_service
 import app.services.user as user_service
-from app.core.auth import decode_access_token, oauth2_scheme
-from app.dependencies import get_db
-from app.schemas.category import CategoryCreate, CategoryResponse
-
 
 router = APIRouter()
+
 
 @router.post("/", response_model=CategoryResponse)
 def create_category(
@@ -24,4 +21,8 @@ def create_category(
 
     user_id = user.id
 
-    return category_service.create_category(db, category, user_id)'''
+    return category_service.create_category(db, category, user_id)
+
+@router.post("/category/test")
+def testing():
+    return {"message": "Testing category route"}

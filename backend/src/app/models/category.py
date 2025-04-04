@@ -1,5 +1,5 @@
-import enum
 from datetime import UTC, datetime
+import enum
 
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
@@ -22,4 +22,4 @@ class Category(Base):
     created_at = Column(DateTime, default=datetime.now(UTC))
 
     user = relationship("User", back_populates="categories")
-    transactions = relationship("Transaction", back_populates="category")
+    #transactions = relationship("Transaction", back_populates="category")

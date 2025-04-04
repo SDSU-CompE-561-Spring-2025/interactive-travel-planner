@@ -1,14 +1,12 @@
-'''from datetime import UTC, datetime, timedelta
-
+from app.core.config import settings
+from fastapi.security import OAuth2PasswordBearer
+from passlib.context import CryptContext
+from datetime import datetime, timedelta, UTC
+from app.schemas.token import TokenData
 import jwt
 from fastapi import HTTPException
-from fastapi.security import OAuth2PasswordBearer
-from jwt import InvalidTokenError
-from passlib.context import CryptContext
 from starlette.status import HTTP_401_UNAUTHORIZED
-
-from app.core.config import settings
-from app.schemas.token import TokenData
+from jwt import InvalidTokenError
 
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
@@ -46,4 +44,4 @@ def decode_access_token(token: str) -> TokenData:
             )
         return TokenData(username=username)
     except InvalidTokenError:
-        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")'''
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")

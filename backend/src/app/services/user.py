@@ -1,4 +1,4 @@
-'''from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session
 
 from app.core.auth import get_password_hash
 from app.core.config import get_settings
@@ -37,4 +37,4 @@ def authenticate_user(db: Session, username: str, password: str):
 
 def get_user_by_username(db: Session, username: str):
     user = db.query(User).filter(User.username == username).first()
-    return user'''
+    return user
