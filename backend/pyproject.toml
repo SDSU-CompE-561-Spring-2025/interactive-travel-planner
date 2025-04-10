@@ -14,7 +14,8 @@ authors = [
   { name = "kohkikita", email = "130106015+kohkikita@users.noreply.github.com" },
   { name = "Rojin Osman", email = "rdawood7013@sdsu.edu"},
   { name = "Ethan Quach", email = "equach7914@sdsu,edu"},
-  { name = "Micah Davis", email = "mdavis7635@sdsu.edu}
+  { name = "Micah Davis", email = "mdavis7635@sdsu.edu"},
+  { name = "Riley McGregor", email = "rmcgregor2091@sdsu.edu"}
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
