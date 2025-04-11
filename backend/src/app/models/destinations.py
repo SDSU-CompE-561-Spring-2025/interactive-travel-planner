@@ -8,7 +8,7 @@ from app.core.database import Base
 
 
 
-class Destinations(Base)
+class Destinations(Base):
     __tablename__ = "destinations"
 
     id = Column(Integer, primary_key=True, index=True)
