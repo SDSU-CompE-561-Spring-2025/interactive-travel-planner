@@ -15,9 +15,12 @@ def create_trip(id: int, trip: TripCreate, db: Session = Depends(get_db)):
     return trip.create_user_trip(db, trip=trip, user_id=id)
 
 
-@router.get("/trips/{trip_id}")
+@router.get("/trips/{trip_id}", response_model=Trip)
 def get_trip(trip_id: int, db: Session = Depends(get_db)):
-    return {"message": f"Trip {trip_id} returned successfully"}
+    db_trip = trip.get_trip_by_id(db, trip_id)
+    if not db_trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    return db_trip
 
 @router.put("/trips/{trip_id}")
 def update_trip(trip_id: int, db: Session = Depends(get_db)):
