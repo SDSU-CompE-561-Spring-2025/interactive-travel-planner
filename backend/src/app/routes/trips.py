@@ -22,9 +22,12 @@ def get_trip(trip_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Trip not found")
     return db_trip
 
-@router.put("/trips/{trip_id}")
-def update_trip(trip_id: int, db: Session = Depends(get_db)):
-    return {"message": f"Trip {trip_id} updated successfully"}
+@router.put("/trips/{trip_id}", response_model=Trip)
+def update_trip(trip_id: int, trip: TripCreate, db: Session = Depends(get_db)):
+    db_trip = trip.update_trip(db, trip_id, trip)
+    if not db_trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    return db_trip
 
 @router.delete("/trips/{trip_id}")
 def delete_trip(trip_id: int, db: Session = Depends(get_db)):
