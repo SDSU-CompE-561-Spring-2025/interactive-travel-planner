@@ -2,13 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.dependencies import get_db
 from app.schemas.trips import Trip, TripCreate
-from app.crud import trips as trip_crud
+import app.services.trips as trip
 
 router = APIRouter()
 
 @router.get("/users/{id}/trips", response_model=list[Trip])
 def get_user_trips(id: int, db: Session = Depends(get_db)):
-    return trip_crud.get_user_trips(db, user_id=id)
+    return trip.get_user_trips(db, user_id=id)
 
 @router.post("/users/{id}/trips")
 def create_trip(id: int, db: Session = Depends(get_db)):

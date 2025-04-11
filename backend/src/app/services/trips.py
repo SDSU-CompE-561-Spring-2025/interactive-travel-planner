@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.trip import Trip
+from app.models.trips import Trips
 from app.schemas.trips import TripCreate
 
 def create_user_trip(db: Session, trip: TripCreate, user_id: int):
