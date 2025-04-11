@@ -31,4 +31,7 @@ def update_trip(trip_id: int, trip: TripCreate, db: Session = Depends(get_db)):
 
 @router.delete("/trips/{trip_id}")
 def delete_trip(trip_id: int, db: Session = Depends(get_db)):
+    db_trip = trip.delete_trip(db, trip_id)
+    if not db_trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
     return {"message": f"Trip {trip_id} deleted successfully"}
