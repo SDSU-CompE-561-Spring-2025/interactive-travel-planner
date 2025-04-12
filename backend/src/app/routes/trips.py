@@ -10,9 +10,11 @@ router = APIRouter()
 def get_user_trips(id: int, db: Session = Depends(get_db)):
     return trip.get_user_trips(db, user_id=id)
 
+
 @router.post("/users/{id}/trips", response_model=Trip)
-def create_trip(id: int, trip: TripCreate, db: Session = Depends(get_db)):
-    return trip.create_user_trip(db, trip=trip, user_id=id)
+def create_trip(id: int, trip_data: TripCreate, db: Session = Depends(get_db)):
+    return trip.create_user_trip(db, trip=trip_data, user_id=id)
+
 
 
 @router.get("/trips/{trip_id}", response_model=Trip)

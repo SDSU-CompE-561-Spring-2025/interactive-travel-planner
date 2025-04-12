@@ -5,15 +5,12 @@ from datetime import datetime
 from typing import Optional
 
 
+
 class TripBase(BaseModel):
-    id: int
-    user_id: int
     title: str
     description: str
     start_date: datetime
     end_date: datetime
-    created_at: datetime
-    updated_at: datetime
 
     class Config:
         orm_mode = True
@@ -25,6 +22,8 @@ class TripCreate(TripBase):
 class Trip(TripBase):
     id: int
     user_id: int
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         orm_mode = True
