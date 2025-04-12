@@ -1,62 +1,45 @@
-from flask import Blueprint, request, jsonify
-from models import db
-from models.itinerary import Itinerary
-from datetime import datetime
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.models.itinerary import Itinerary
+from app.schemas.itinerary import ItineraryCreate, ItineraryRead
+from app.dependencies import get_db
 
-itinerary_bp = Blueprint('itinerary', __name__, url_prefix='/itineraries')
+router = APIRouter(
+    prefix="",
+    tags=["Itinerary"]
+)
 
-@itinerary_bp.route('/', methods=['GET'])
-def get_all_itineraries():
-    trip_id = request.args.get('trip_id')
-    if trip_id:
-        itineraries = Itinerary.query.filter_by(trip_id=trip_id).all()
-    else:
-        itineraries = Itinerary.query.all()
-    return jsonify([i.to_dict() for i in itineraries]), 200
+@router.get("/trips/{trip_id}/itinerary", response_model=list[ItineraryRead])
+def get_trip_itinerary(trip_id: int, db: Session = Depends(get_db)):
+    return db.query(Itinerary).filter(Itinerary.trip_id == trip_id).all()
 
-@itinerary_bp.route('/<int:id>', methods=['GET'])
-def get_itinerary(id):
-    itinerary = Itinerary.query.get_or_404(id)
-    return jsonify(itinerary.to_dict()), 200
 
-@itinerary_bp.route('/', methods=['POST'])
-def create_itinerary():
-    data = request.get_json()
-    try:
-        itinerary = Itinerary(
-            trip_id=data['trip_id'],
-            name=data['name'],
-            time=datetime.fromisoformat(data['time']),
-            description=data.get('description'),
-            location=data.get('location')
-        )
-        db.session.add(itinerary)
-        db.session.commit()
-        return jsonify(itinerary.to_dict()), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+@router.post("/trips/{trip_id}/itinerary", response_model=ItineraryRead)
+def create_itinerary_event(trip_id: int, itinerary: ItineraryCreate, db: Session = Depends(get_db)):
+    event = Itinerary(**itinerary.dict(), trip_id=trip_id)
+    db.add(event)
+    db.commit()
+    db.refresh(event)
+    return event
 
-@itinerary_bp.route('/<int:id>', methods=['PUT'])
-def update_itinerary(id):
-    itinerary = Itinerary.query.get_or_404(id)
-    data = request.get_json()
 
-    if 'name' in data:
-        itinerary.name = data['name']
-    if 'time' in data:
-        itinerary.time = datetime.fromisoformat(data['time'])
-    if 'description' in data:
-        itinerary.description = data['description']
-    if 'location' in data:
-        itinerary.location = data['location']
+@router.put("/itinerary/{event_id}", response_model=ItineraryRead)
+def update_itinerary_event(event_id: int, update: ItineraryCreate, db: Session = Depends(get_db)):
+    event = db.query(Itinerary).filter(Itinerary.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    for key, value in update.dict().items():
+        setattr(event, key, value)
+    db.commit()
+    db.refresh(event)
+    return event
 
-    db.session.commit()
-    return jsonify(itinerary.to_dict()), 200
 
-@itinerary_bp.route('/<int:id>', methods=['DELETE'])
-def delete_itinerary(id):
-    itinerary = Itinerary.query.get_or_404(id)
-    db.session.delete(itinerary)
-    db.session.commit()
-    return jsonify({'message': 'Itinerary item deleted'}), 200
+@router.delete("/itinerary/{event_id}")
+def delete_itinerary_event(event_id: int, db: Session = Depends(get_db)):
+    event = db.query(Itinerary).filter(Itinerary.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    db.delete(event)
+    db.commit()
+    return {"message": f"Event {event_id} deleted"}
