@@ -1,16 +1,18 @@
-from . import db
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
+from app.core.database import Base
 
-class Itinerary(db.Model):
+class Itinerary(Base):
     __tablename__ = 'itineraries'
 
-    id = db.Column(db.Integer, primary_key=True)
-    trip_id = db.Column(db.Integer, db.ForeignKey('destinations.id'), nullable=False)
-    name = db.Column(db.String(100), nullable=False)
-    time = db.Column(db.DateTime, nullable=False)
-    description = db.Column(db.String(255))
-    location = db.Column(db.String(100))
+    id = Column(Integer, primary_key=True)
+    trip_id = Column(Integer, ForeignKey('destinations.id'), nullable=False)
+    name = Column(String(100), nullable=False)
+    time = Column(DateTime, nullable=False)
+    description = Column(String(255))
+    location = Column(String(100))
 
-    destination = db.relationship('Destination', back_populates='itineraries')
+    destination = relationship('Destination', back_populates='itineraries')
 
     def to_dict(self):
         return {

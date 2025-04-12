@@ -1,16 +1,16 @@
-# backend/models/dates.py
+from sqlalchemy import Column, Integer, Date, ForeignKey
+from sqlalchemy.orm import relationship
+from app.core.database import Base
 
-from . import db
-
-class Dates(db.Model):
+class Dates(Base):
     __tablename__ = 'dates'
 
-    id = db.Column(db.Integer, primary_key=True)
-    trip_id = db.Column(db.Integer, db.ForeignKey('destinations.id'), nullable=False, unique=True)
-    start_date = db.Column(db.Date, nullable=False)
-    end_date = db.Column(db.Date, nullable=False)
+    id = Column(Integer, primary_key=True)
+    trip_id = Column(Integer, ForeignKey('destinations.id'), nullable=False, unique=True)
+    start_date = Column(Date, nullable=False)
+    end_date = Column(Date, nullable=False)
 
-    destination = db.relationship('Destination', back_populates='dates', uselist=False)
+    destination = relationship('Destination', back_populates='dates', uselist=False)
 
     def to_dict(self):
         return {
