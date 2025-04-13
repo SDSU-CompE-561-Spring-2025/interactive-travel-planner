@@ -6,17 +6,17 @@ from app.models.destinations import Destinations
 
 router = APIRouter()
 
-@router.get("/trips/{trip_id}/destinations", response_model = DestinationResponse)
+@router.get("/trips/{trip_id}/destinations", response_model=list[DestinationResponse])
 def get_trip_destinations(trip_id: int, db: Session = Depends(get_db)):
     destinations = db.query(Destinations).filter(Destinations.trip_id == trip_id).all()
 
     if not destinations:
         raise HTTPException(
-            status_code = status.HTTP_404_NOT_FOUND,
-            detail = f"Destination for {trip_id} not found")
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No destinations found for trip {trip_id}"
+        )
 
     return destinations
-    return {"message": f"Destination {destination_id} returned successfully"}
 
 @router.post("/trips/{trip_id}/destinations", response_model=DestinationResponse)
 def create_trip_destination(
