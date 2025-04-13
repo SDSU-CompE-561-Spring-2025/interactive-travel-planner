@@ -103,3 +103,14 @@ exclude_lines = [
 # 🛠️ Ensure Hatch knows which files to include
 [tool.hatch.build.targets.wheel]
 packages = ["src/app"]
+
+[tool.hatch.envs.dev]
+dependencies = [
+  "fastapi",
+  "uvicorn",
+  "sqlalchemy",
+  "pydantic"
+]
+
+[tool.hatch.envs.dev.scripts]
+start = "uvicorn app.main:app --reload"
