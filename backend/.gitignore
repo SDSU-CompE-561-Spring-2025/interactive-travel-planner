@@ -6,7 +6,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-backend/sql_app.db
 
 # C extensions
 *.so

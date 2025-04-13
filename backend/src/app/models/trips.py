@@ -22,4 +22,4 @@ class Trips(Base):
     updated_at = Column(DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
 
     user = relationship("User", back_populates="trips")
-    destinations = relationship("Destination", back_populates="trip", cascade="all, delete")
+    destinations = relationship("Destinations", back_populates="trip", cascade="all, delete")

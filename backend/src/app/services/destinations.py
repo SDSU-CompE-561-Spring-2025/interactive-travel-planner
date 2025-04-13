@@ -5,13 +5,18 @@ from app.schemas.destinations import DestinationCreate
 def get_destinations_by_trip(trip_id: int, db: Session):
     return db.query(Destination).filter(Destination.trip_id == trip_id).all()
 
-
-def create_destination(trip_id: int, destination: DestinationCreate, db: Session):
-    db_destination = Destination(**destination.dict(), trip_id=trip_id)
-    db.add(db_destination)
+def create_trip_destination(
+    trip_id: int,
+    destination_data: DestinationCreate,
+    db: Session
+):
+    destinations = Destinations(**destination_data.dict(), trip_id=trip_id)
+    db.add(destination)
     db.commit()
-    db.refresh(db_destination)
-    return db_destination
+    db.refresh(destination)
+    return destination
+
+
 
 
 def get_destination(destination_id: int, db: Session):
