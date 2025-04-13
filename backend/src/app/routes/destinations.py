@@ -50,22 +50,28 @@ def get_destination(destination_id: int, db: Session = Depends(get_db)):
     return destinations
 
 
-@router.put("/destinations/{destination_id}")
-def update_destination(destination_id: int, db: Session = Depends(get_db)):
+@router.put("/destinations/{destination_id}", response_model=DestinationResponse)
+def update_destination(
+    destination_id: int,
+    destination_data: DestinationCreate,
+    db: Session = Depends(get_db)
+):
     destinations = db.query(Destinations).get(destination_id)
 
     if not destinations:
         raise HTTPException(
-            status_code = status.HTTP_404_NOT_FOUND,
-            detail = f"Destination for {trip_id} not found")
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Destination with ID {destination_id} not found"
+        )
 
-    for key, value in update_destination.dict().items():
+    for key, value in destination_data.dict().items():
         setattr(destinations, key, value)
 
     db.commit()
     db.refresh(destinations)
 
     return destinations
+
 
 
 @router.delete("/destinations/{destination_id}")
