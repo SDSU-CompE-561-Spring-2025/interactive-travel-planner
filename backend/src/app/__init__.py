@@ -1,3 +1,5 @@
-# SPDX-FileCopyrightText: 2025-present Ugur Emre Dogan <ue.dogan@gmail.com>
-#
-# SPDX-License-Identifier: MIT
+fromt fastapi import APIRouter
+from app.routers import calendar
+
+api_router = APIRouter()
+api_router.include_router(calendar.router, prefix="/api", tags=["calendar"])
