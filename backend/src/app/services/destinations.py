@@ -16,3 +16,13 @@ def create_destination(trip_id: int, destination: DestinationCreate, db: Session
 
 def get_destination(destination_id: int, db: Session):
     return db.query(Destination).filter(Destination.id == destination_id).first()
+
+
+def update_destination(destination_id: int, destination: DestinationCreate, db: Session):
+    db_dest = db.query(Destination).filter(Destination.id == destination_id).first()
+    if db_dest:
+        for key, value in destination.dict().items():
+            setattr(db_dest, key, value)
+        db.commit()
+        db.refresh(db_dest)
+    return db_dest
