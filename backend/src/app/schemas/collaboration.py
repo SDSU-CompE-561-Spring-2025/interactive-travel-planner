@@ -9,3 +9,10 @@ class CollaborationBase(BaseModel):
 class CollaborationCreate(CollaborationBase):
     pass
 
+class Collaboration(CollaborationBase):
+    id: int
+    invited_at: datetime
+
+    class Config:
+        orm_mode = True
+
