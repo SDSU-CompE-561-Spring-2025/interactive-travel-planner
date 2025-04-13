@@ -4,3 +4,6 @@ from datetime import date
 class CalendarBase(BaseModel):
     start_date: date
     end_date: date
+
+class CalendarCreate(CalendarBase):
+    trip_id: init
