@@ -1,7 +1,13 @@
+<<<<<<< HEAD
+from datetime import UTC, datetime
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
+=======
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from datetime import datetime, UTC
 
+>>>>>>> bc85766232baa31c65e2e29401b3951e42ec4d52
 from app.core.database import Base
 
 class Destinations(Base):
@@ -19,4 +25,6 @@ class Destinations(Base):
     created_at = Column(DateTime, default=datetime.now(UTC))
     updated_at = Column(DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
 
-    trip = relationship("Trips", back_populates="destinations")
+    trip = relationship("Trips")
+    itineraries = relationship("Itinerary", back_populates="destination")
+    dates = relationship("Dates", back_populates="destination", uselist=False)  # ✅ Added for Dates sync
