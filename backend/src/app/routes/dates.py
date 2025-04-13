@@ -1,4 +1,12 @@
+<<<<<<< HEAD
 from fastapi import APIRouter, Depends, HTTPException
+=======
+<<<<<<< HEAD
+#do this later
+=======
+#pls help this is so annoying
+from fastapi import APIRouter, Depends
+>>>>>>> bc85766232baa31c65e2e29401b3951e42ec4d52
 from sqlalchemy.orm import Session
 from app.models.dates import Dates
 from app.schemas.dates import DatesCreate, DatesRead
@@ -38,6 +46,7 @@ def update_dates(date_id: int, update: DatesCreate, db: Session = Depends(get_db
     return dates
 
 
+<<<<<<< HEAD
 @router.delete("/dates/{date_id}")
 def delete_dates(date_id: int, db: Session = Depends(get_db)):
     dates = db.query(Dates).filter(Dates.id == date_id).first()
@@ -46,3 +55,9 @@ def delete_dates(date_id: int, db: Session = Depends(get_db)):
     db.delete(dates)
     db.commit()
     return {"message": f"Date entry {date_id} deleted"}
+=======
+@router.delete("/destinations/{destination_id}")
+def delete_destination(destination_id: int, db: Session = Depends(get_db)):
+    return {"message": f"Destination {destination_id} deleted successfully"}
+>>>>>>> 50de508377007370654d82ccafc8167c543d550c
+>>>>>>> bc85766232baa31c65e2e29401b3951e42ec4d52

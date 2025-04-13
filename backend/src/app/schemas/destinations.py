@@ -1,14 +1,20 @@
 from pydantic import BaseModel
 from enum import Enum
 from datetime import datetime
+from typing import Optional
 
-class Destinations(BaseModel):
+class DestinationBase(BaseModel):
+    name: str
+    location: str
+    description: Optional[str] = None
+    order: Optional[str] = None
+
+class DestinationCreate(DestinationBase):
+    pass
+
+class DestinationResponse(DestinationBase):
     id: int
     trip_id: int
-    name: str
-    description: str
-    location: str
-    order: int
     created_at: datetime
     updated_at: datetime
 
