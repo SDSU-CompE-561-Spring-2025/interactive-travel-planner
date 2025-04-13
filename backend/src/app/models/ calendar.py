@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer Date
-from app.database import Base
+from app.dependencies import Base
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationshp
 
