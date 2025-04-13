@@ -1,57 +1,48 @@
-# app/routes/destinations.py
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from app.models.dates import Dates
+from app.schemas.dates import DatesCreate, DatesRead
 from app.dependencies import get_db
-from app.models.destinations import Destinations
-from app.schemas.destinations import DestinationCreate, DestinationRead
 
-router = APIRouter()
+router = APIRouter(
+    prefix="",
+    tags=["Dates"]
+)
+
+@router.get("/destinations/{destination_id}/dates", response_model=DatesRead)
+def get_dates(destination_id: int, db: Session = Depends(get_db)):
+    dates = db.query(Dates).filter(Dates.trip_id == destination_id).first()
+    if not dates:
+        raise HTTPException(status_code=404, detail="No dates found")
+    return dates
 
 
-@router.get("/trips/{trip_id}/destinations", response_model=list[DestinationRead])
-def get_trip_destinations(trip_id: int, db: Session = Depends(get_db)):
-    destinations = db.query(Destinations).filter(Destinations.trip_id == trip_id).all()
-    return destinations
-
-
-@router.post("/trips/{trip_id}/destinations", response_model=DestinationRead)
-def create_trip_destination(trip_id: int, destination: DestinationCreate, db: Session = Depends(get_db)):
-    new_dest = Destinations(**destination.dict(), trip_id=trip_id)
-    db.add(new_dest)
+@router.post("/destinations/{destination_id}/dates", response_model=DatesRead)
+def create_dates(destination_id: int, payload: DatesCreate, db: Session = Depends(get_db)):
+    dates = Dates(**payload.dict(), trip_id=destination_id)
+    db.add(dates)
     db.commit()
-    db.refresh(new_dest)
-    return new_dest
+    db.refresh(dates)
+    return dates
 
 
-@router.get("/destinations/{destination_id}", response_model=DestinationRead)
-def get_destination(destination_id: int, db: Session = Depends(get_db)):
-    dest = db.query(Destinations).filter(Destinations.id == destination_id).first()
-    if not dest:
-        raise HTTPException(status_code=404, detail="Destination not found")
-    return dest
-
-
-@router.put("/destinations/{destination_id}", response_model=DestinationRead)
-def update_destination(destination_id: int, update_data: DestinationCreate, db: Session = Depends(get_db)):
-    dest = db.query(Destinations).filter(Destinations.id == destination_id).first()
-    if not dest:
-        raise HTTPException(status_code=404, detail="Destination not found")
-
-    for key, value in update_data.dict().items():
-        setattr(dest, key, value)
-
+@router.put("/dates/{date_id}", response_model=DatesRead)
+def update_dates(date_id: int, update: DatesCreate, db: Session = Depends(get_db)):
+    dates = db.query(Dates).filter(Dates.id == date_id).first()
+    if not dates:
+        raise HTTPException(status_code=404, detail="Not found")
+    for key, value in update.dict().items():
+        setattr(dates, key, value)
     db.commit()
-    db.refresh(dest)
-    return dest
+    db.refresh(dates)
+    return dates
 
 
-@router.delete("/destinations/{destination_id}")
-def delete_destination(destination_id: int, db: Session = Depends(get_db)):
-    dest = db.query(Destinations).filter(Destinations.id == destination_id).first()
-    if not dest:
-        raise HTTPException(status_code=404, detail="Destination not found")
-
-    db.delete(dest)
+@router.delete("/dates/{date_id}")
+def delete_dates(date_id: int, db: Session = Depends(get_db)):
+    dates = db.query(Dates).filter(Dates.id == date_id).first()
+    if not dates:
+        raise HTTPException(status_code=404, detail="Not found")
+    db.delete(dates)
     db.commit()
-    return {"message": f"Destination {destination_id} deleted successfully"}
+    return {"message": f"Date entry {date_id} deleted"}

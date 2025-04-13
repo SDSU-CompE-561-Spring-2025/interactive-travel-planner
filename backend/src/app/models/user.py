@@ -1,10 +1,7 @@
 from datetime import UTC, datetime
-
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.orm import relationship
-
 from app.core.database import Base
-
 
 class User(Base):
     __tablename__ = "users"
@@ -19,4 +16,5 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.now(UTC))
 
     categories = relationship("Category", back_populates="user")
-    #transactions = relationship("Transaction", back_populates="user")
+    trips = relationship("Trips", back_populates="user")
+    transactions = relationship("Transaction", back_populates="user")
