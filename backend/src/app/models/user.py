@@ -17,7 +17,4 @@ class User(Base):
 
     categories = relationship("Category", back_populates="user")
     trips = relationship("Trips", back_populates="user")
-<<<<<<< HEAD
     transactions = relationship("Transaction", back_populates="user")
-=======
->>>>>>> bc85766232baa31c65e2e29401b3951e42ec4d52

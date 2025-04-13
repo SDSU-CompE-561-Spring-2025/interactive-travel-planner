@@ -1,13 +1,8 @@
-<<<<<<< HEAD
-from datetime import UTC, datetime
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
-=======
+
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from datetime import datetime, UTC
 
->>>>>>> bc85766232baa31c65e2e29401b3951e42ec4d52
 from app.core.database import Base
 
 class Destinations(Base):
