@@ -9,3 +9,5 @@ def create_collaboration(db: Session, collab: CollaborationCreate):
     db.refresh(db_collab)
     return db_collab
 
+def get_collaborations_by_trip(db: Session, trip_id: init):
+    return db.query(Collaboration).filter(Collaboration.trip_id == trip_id).all()
