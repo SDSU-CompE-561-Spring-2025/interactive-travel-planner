@@ -105,9 +105,6 @@ exclude_lines = [
 packages = ["src/app"]
 
 [tool.hatch.envs.dev]
-python = "3.12.5"
-
-[tool.hatch.envs.dev]
 dependencies = [
   "fastapi",
   "uvicorn",
