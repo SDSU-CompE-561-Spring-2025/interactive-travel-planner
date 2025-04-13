@@ -7,3 +7,9 @@ class CalendarBase(BaseModel):
 
 class CalendarCreate(CalendarBase):
     trip_id: init
+
+class CalendarResponse(CalendarBase):
+    id: init 
+
+    class Config:
+        orm_mode = True
