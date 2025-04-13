@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+#do this later
+=======
 #pls help this is so annoying
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -28,3 +31,4 @@ def update_destination(destination_id: int, db: Session = Depends(get_db)):
 @router.delete("/destinations/{destination_id}")
 def delete_destination(destination_id: int, db: Session = Depends(get_db)):
     return {"message": f"Destination {destination_id} deleted successfully"}
+>>>>>>> 50de508377007370654d82ccafc8167c543d550c

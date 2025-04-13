@@ -2,19 +2,28 @@
 from pydantic import BaseModel
 from enum import Enum
 from datetime import datetime
+from typing import Optional
 
-class Trips(BaseModel):
-    id: int
-    user_id: int
+
+
+class TripBase(BaseModel):
     title: str
     description: str
     start_date: datetime
     end_date: datetime
-    created_at: datetime
-    updated_at: datetime
 
     class Config:
         orm_mode = True
 
 
-# add tripcreate and tripupdate schemas here
+class TripCreate(TripBase):
+    pass
+
+class Trip(TripBase):
+    id: int
+    user_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
