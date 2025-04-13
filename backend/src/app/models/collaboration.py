@@ -11,3 +11,6 @@ class Collaboration(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     role = Column(String, nullable=False, default='viewer')
     invited_at = Column(DateTime, default=datetime.utcnow)
+
+    trip = relationship("Trip", back_populates="collaborations")
+    user = relationship("User", back_populates="collaborations")
