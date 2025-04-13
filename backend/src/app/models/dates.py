@@ -10,7 +10,8 @@ class Dates(Base):
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
 
-    destination = relationship('Destination', back_populates='dates', uselist=False)
+    # 🔁 FIXED name: 'Destination' → 'Destinations'
+    destination = relationship('Destinations', back_populates='dates', uselist=False)
 
     def to_dict(self):
         return {

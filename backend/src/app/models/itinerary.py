@@ -12,7 +12,7 @@ class Itinerary(Base):
     description = Column(String(255))
     location = Column(String(100))
 
-    destination = relationship('Destination', back_populates='itineraries')
+    destination = relationship('Destinations', back_populates='itineraries')
 
     def to_dict(self):
         return {
