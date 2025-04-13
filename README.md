@@ -1,4 +1,4 @@
-![ANCSLogo](https://github.com/user-attachments/assets/a46f1d64-cab3-44a2-ad25-c1dc63b10bc1)
+![image](https://github.com/user-attachments/assets/bb7e17a2-2879-45be-b20c-bf4648c69dd5)
 
 # WAYMARK
 ## Interactive Travel Planner
