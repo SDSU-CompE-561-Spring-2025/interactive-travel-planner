@@ -12,3 +12,7 @@ def create_destination(trip_id: int, destination: DestinationCreate, db: Session
     db.commit()
     db.refresh(db_destination)
     return db_destination
+
+
+def get_destination(destination_id: int, db: Session):
+    return db.query(Destination).filter(Destination.id == destination_id).first()
