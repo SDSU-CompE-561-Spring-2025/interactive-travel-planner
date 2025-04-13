@@ -1,4 +1,4 @@
-fromt fastapi import APIRouter
+from fastapi import APIRouter
 from app.routers import calendar
 
 api_router = APIRouter()
