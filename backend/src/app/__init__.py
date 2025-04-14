@@ -1,7 +1,4 @@
-from fastapi import APIRouter
-from app.routes.calendar import calendar
+from fastapi import FastAPI
+from routes import calendar
 
-api_router = APIRouter()
-api_router.include_router(calendar.router, prefix="/api", tags=["calendar"])
-
-# test
+app.include_router(calendar.router, prefix="/calendar", tags=["Calendar"])
