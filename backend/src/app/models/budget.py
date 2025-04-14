@@ -16,3 +16,7 @@ class Budget(Base):
     category = Column(String, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    trip = relationship("Trip", back_populates="budgets")  
+
+# ADD UUID FOR ID AND TRIP_ID
