@@ -7,6 +7,11 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-0-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
+## ⚙️ Requirements
+
+- Python 3.12+
+- [Hatch](https://hatch.pypa.io/latest/) (recommended for env management)
+
 
 ## 🚀 Features
 
@@ -26,25 +31,25 @@
 
 
 ### 1. Clone the repository
+
+### 1. Navigate into /backend
 ```bash
-git clone [https://github.com/yourusername/your_project_name.git](https://github.com/SDSU-CompE-561-Spring-2025/interactive-travel-planner/)
-cd interactive-travel-planner
+cd interactive-travel-planner/backend
 ```
 
-### 2. Set up the Virtual Envoronment
+### 3. Install Hatch
 ```bash
-python -m venv env
-source env/bin/activate  # On Windows: env\Scripts\activate
+pip3 install hatch
 ```
 
-### 3. install dependencies
+### 4. Install dependencies and create .venv
 ```bash
-pip install -r requirements.txt
+hatch env create
 ```
 
-### 4. Installing the app
+### 5. Run application 
 ```bash
-uvicorn app.main:app --reload
+hatch run dev
 ```
 
 
