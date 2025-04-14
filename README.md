@@ -12,6 +12,7 @@ INSTRUCTIONS TO RUN ON PERSONAL MACHINE
 1. clone file
 2. cd into the folder
 3. hatch new --init
+4. hatch run dev
 
 
 
