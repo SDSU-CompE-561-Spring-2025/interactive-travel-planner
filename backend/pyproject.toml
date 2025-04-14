@@ -60,6 +60,7 @@ installer = "uv"
 path = ".venv"
 
 
+
 # 🚀 Default scripts for development and database operations
 [tool.hatch.envs.default.scripts]
 dev = "fastapi dev {args:src/app/main.py}"
