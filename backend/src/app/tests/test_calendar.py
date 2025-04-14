@@ -1,4 +1,4 @@
-import pytest
+'''import pytest
 from fastapi.testclient import TestClient
 from app.main import app # adjust path to FastAPI
 
@@ -10,4 +10,4 @@ def get_auth_token():
     response = client.post(
         "/auth/login",
          data={"username": "testuser", "password": "testpassword"},
-    )
+    )'''
