@@ -13,7 +13,7 @@ class CalendarEventCreate(CalendarEventBase):
 
 class CalendarEvent(CalendarEventBase):
     id: int
-    user_id:int 
+    user_id: int 
 
     class Config:
         orm_mode = True
