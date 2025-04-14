@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from schemas.calendar import CalendarEvent, CalendarEventCreate
 from services.calendar import create_event, get_events, get_event, delete_event
-from dependencies import get_db, get_current_user
+from src.dependencies import get_db, get_current_user
 
 router = APIRouter()
 
