@@ -3,12 +3,14 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core.auth import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token
 from app.schemas.token import Token
+from app.schemas.user import UserOut
 from app.schemas.user import UserResponse, UserCreate
 import app.services.user as user_service
-from app.dependencies import get_db
+from app.dependencies import get_db, get_current_user
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from datetime import timedelta
+from app.models.user import User
 
 
 router = APIRouter()
@@ -43,8 +45,8 @@ async def login_for_access_token(
 
 
 @router.get("/users/me")
-def read_users_me():
-    return {"message": "User details returned successfully"}
+def read_current_user(current_user: User = Depends(get_current_user)):
+    return current_user
 
 
 @router.post("/users/verify-email/{verification_code}")
