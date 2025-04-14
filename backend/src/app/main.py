@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.core.database import Base, engine
-from app.routes import api_router
+from app import api_router
 
 # 👇 Import all models to register them before table creation
 from app.models import destinations, trips, itinerary, dates
