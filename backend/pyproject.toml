@@ -104,3 +104,6 @@ exclude_lines = [
 # 🛠️ Ensure Hatch knows which files to include
 [tool.hatch.build.targets.wheel]
 packages = ["src/app"]
+
+[tool.pytest.ini_options]
+pythonpath = "backend/src"
