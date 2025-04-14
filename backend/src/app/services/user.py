@@ -9,6 +9,7 @@ from app.schemas.user import UserCreate
 settings = get_settings()
 
 
+
 # User CRUD operations
 def create_user(db: Session, user: UserCreate):
     hashed_password = get_password_hash(user.password)
