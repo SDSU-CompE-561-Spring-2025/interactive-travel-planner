@@ -1,15 +1,16 @@
-from sqlalchemy import Column, Integer Date
-from app.dependencies import Base
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationshp
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
+from database import Base
 
-class Trip(Baes):
-    __tablename__ = "trips"
+class CalendarEvent(Base):
+    __tablename__ = "calendar_events"
 
     id = Column(Integer, primary_key=True, index=True)
-    start_date = Column(Date, nullable=True)
-    end_date = Column(Date, nullable=True)
+    title = Column(String, nullable=False)
+    description = Column(String)
+    start_date = Column(DateTime, nullable=True)
+    end_date = Column(DateTime, nullable=True)
 
     user_id = Column(Integer, ForeignKey("users.id"))
-    user = relationship("User", back_populates="trips")
+    user = relationship("User", back_populates="events")
 
