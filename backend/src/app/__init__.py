@@ -1,4 +1,10 @@
 from fastapi import FastAPI
-from routes import calendar
+from routes.calendar import router as calendar_router
 
-app.include_router(calendar.router, prefix="/calendar", tags=["Calendar"])
+app = FastAPI(
+    title="Interactive Travel Planner",
+    description="Calendar backend",
+    version="1.0.0"
+)
+
+app.include_router(calendar_router, prefix="/calendar", tags=["Calendar"])
