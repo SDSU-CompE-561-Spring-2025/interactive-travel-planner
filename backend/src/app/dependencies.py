@@ -1,16 +1,26 @@
-from fastapi import FastAPI
-from app.core.database import Base, engine
-from app.routes import api_router
+from app.core.database import SessionLocal
+from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
 
-# 👇 Import all models to register them before table creation
-from app.models import destinations, trips, itinerary, dates
+from app.core.security import decode_token
+from app.services.user import get_user_by_username  # import your function
 
-# 👇 Register metadata after model imports
-Base.metadata.create_all(bind=engine)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
-app = FastAPI()
-app.include_router(api_router, prefix="")
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
+    username = decode_token(token)
+    user = get_user_by_username(db, username=username)
+    if not user:
+        raise credentials_exception()
+    return user
