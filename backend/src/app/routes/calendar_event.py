@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from schemas.calendar import CalendarEvent, CalendarEventCreate
-from services.calendar import create_event, get_events, get_event, delete_event
-from app.dependencies import get_db, get_current_user  
+from app.schemas.calendar_event import CalendarEvent, CalendarEventCreate
+from app.services.calendar_event import create_event, get_events, get_event, delete_event
+from app.dependencies import get_db, get_current_user
 
 router = APIRouter()
 
@@ -14,6 +14,7 @@ def create_calendar_event(
     user_id: int = Depends(get_current_user)
 ):
     return create_event(db, event, user_id)
+
 
 @router.get("/events/", response_model=List[CalendarEvent])
 def read_calendar_events(
