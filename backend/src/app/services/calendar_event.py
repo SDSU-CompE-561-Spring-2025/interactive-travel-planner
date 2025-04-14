@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models.calendar import CalendarEvent
-from schemas.calendar import CalendarEventCreate
+from app.models.calendar_event import CalendarEvent
+from app.schemas.calendar_event import CalendarEventCreate
 
 def create_event(db: Session, event: CalendarEventCreate, user_id: int):
     db_event = CalendarEvent(**event.dict(), user_id=user_id)
