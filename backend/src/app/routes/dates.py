@@ -4,11 +4,13 @@ from app.models.dates import Dates
 from app.schemas.dates import DatesCreate, DatesRead
 from app.dependencies import get_db
 
+# Router for date-related endpoints
 router = APIRouter(
     prefix="",
     tags=["Dates"]
 )
 
+# Get date range for a specific destination
 @router.get("/destinations/{destination_id}/dates", response_model=DatesRead)
 def get_dates(destination_id: int, db: Session = Depends(get_db)):
     dates = db.query(Dates).filter(Dates.trip_id == destination_id).first()
@@ -16,7 +18,7 @@ def get_dates(destination_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No dates found")
     return dates
 
-
+# Create date range for a destination
 @router.post("/destinations/{destination_id}/dates", response_model=DatesRead)
 def create_dates(destination_id: int, payload: DatesCreate, db: Session = Depends(get_db)):
     dates = Dates(**payload.dict(), trip_id=destination_id)
@@ -25,7 +27,7 @@ def create_dates(destination_id: int, payload: DatesCreate, db: Session = Depend
     db.refresh(dates)
     return dates
 
-
+# Update an existing date entry
 @router.put("/dates/{date_id}", response_model=DatesRead)
 def update_dates(date_id: int, update: DatesCreate, db: Session = Depends(get_db)):
     dates = db.query(Dates).filter(Dates.id == date_id).first()
@@ -37,7 +39,7 @@ def update_dates(date_id: int, update: DatesCreate, db: Session = Depends(get_db
     db.refresh(dates)
     return dates
 
-
+# Delete a date entry
 @router.delete("/dates/{date_id}")
 def delete_dates(date_id: int, db: Session = Depends(get_db)):
     dates = db.query(Dates).filter(Dates.id == date_id).first()
