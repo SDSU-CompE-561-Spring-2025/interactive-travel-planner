@@ -1,15 +1,19 @@
 from pydantic import BaseModel
-from datetime import date
+from datetime import datetime
+from typing import Optional
 
-class CalendarBase(BaseModel):
-    start_date: date
-    end_date: date
+class CalendarEventBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    start_date: datetime
+    end_date: datetime
 
-class CalendarCreate(CalendarBase):
-    trip_id: init
+class CalendarEventCreate(CalendarEventBase):
+    pass
 
-class CalendarResponse(CalendarBase):
-    id: init 
+class CalendarEvent(CalendarEventBase):
+    id: int
+    user_id:int 
 
     class Config:
         orm_mode = True
