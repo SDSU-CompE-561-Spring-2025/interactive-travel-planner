@@ -1,3 +1,4 @@
+from fastapi import APIRouter
 from app.routes import category, user, trips, destinations, itinerary, dates, calendar
 
 api_router = APIRouter()
@@ -9,6 +10,4 @@ api_router.include_router(destinations.router, tags=["Destinations"])
 api_router.include_router(calendar.router, prefix="/calendar", tags=["Calendar"])
 api_router.include_router(itinerary.router, tags=["Itinerary"])
 api_router.include_router(dates.router, tags=["Dates"])
-
-app.include_router(api_router)
 
