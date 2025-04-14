@@ -7,11 +7,15 @@ name = "interactive-travel-planner"
 dynamic = ["version"]
 description = "interactive-travel-planner"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.12"
 license = "MIT"
 keywords = []
 authors = [
   { name = "kohkikita", email = "130106015+kohkikita@users.noreply.github.com" },
+  { name = "Rojin Osman", email = "rdawood7013@sdsu.edu"},
+  { name = "Ethan Quach", email = "equach7914@sdsu,edu"},
+  { name = "Micah Davis", email = "mdavis7635@sdsu.edu"},
+  { name = "Riley McGregor", email = "rmcgregor2091@sdsu.edu"}
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -24,32 +28,43 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
+
 dependencies = [
+  "bandit>=1.8.3",
   "fastapi[all]",
-  "pre-commit>=3.5.0",
+  "passlib[bcrypt]>=1.7.4",
+  "pre-commit>=4.1.0",
+  "pyjwt>=2.10.1",
+  "python-dotenv>=1.0.1",
+  "ruff>=0.9.7",
+  "sqlalchemy>=2.0.38",
 ]
+
 
 [project.urls]
 Documentation = "https://github.com/kohkikita/interactive-travel-planner#readme"
 Issues = "https://github.com/kohkikita/interactive-travel-planner/issues"
 Source = "https://github.com/kohkikita/interactive-travel-planner"
 
+
 [tool.hatch.version]
+path = "src/app/__about__.py"
 
-# 🛠️ Ensure Hatch knows which files to include
-path = "interactive_travel_planner/__init__.py"
-[tool.hatch.build.targets.wheel]
-packages = ["src/app"]
+#path = "backend/src/app/__init__.py"
 
-# 🔧 Virtual environment settings
+
+# 🔧 Virtual environment default settings
 [tool.hatch.envs.default]
 python = "3.12"
 installer = "uv"
 path = ".venv"
 
-# 🚀 Default scripts
+
+
+# 🚀 Default scripts for development and database operations
 [tool.hatch.envs.default.scripts]
-dev = "fastapi dev src/app/main.py"
+dev = "fastapi dev {args:src/app/main.py}"
+
 
 [tool.hatch.envs.types]
 installer = "uv"
@@ -57,8 +72,11 @@ extra-dependencies = [
   "mypy>=1.0.0",
 ]
 
+
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive src/app tests"
+
+
 
 # 📊 Test coverage settings
 [tool.coverage.run]
@@ -69,9 +87,11 @@ omit = [
   "src/app/__about__.py",
 ]
 
+
 [tool.coverage.paths]
-app = ["src/app", "*/interactive-travel-planner/src/app"]
-tests = ["tests", "*/interactive-travel-planner/tests"]
+app = ["src/app", "*/interactive-travel-planner/backend/src/app"]
+tests = ["tests", "*/interactive-travel-planner/backend/tests"]
+
 
 [tool.coverage.report]
 exclude_lines = [
@@ -79,3 +99,8 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
+
+
+# 🛠️ Ensure Hatch knows which files to include
+[tool.hatch.build.targets.wheel]
+packages = ["src/app"]

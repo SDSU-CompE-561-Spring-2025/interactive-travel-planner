@@ -25,4 +25,4 @@ class Transaction(Base):
     category_id = Column(Integer, ForeignKey("categories.id"))
 
     user = relationship("User", back_populates="transactions")
-    category = relationship("Category", back_populates="transactions")
+    #category = relationship("Category", back_populates="transactions")
