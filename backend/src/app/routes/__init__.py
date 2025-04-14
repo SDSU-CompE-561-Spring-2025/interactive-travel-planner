@@ -1,5 +1,4 @@
 from app.routes import category, user, trips, destinations, itinerary, dates, calendar
-from src.routes import category, user, trips, destinations, itinerary, dates, calendar
 
 api_router = APIRouter()
 
