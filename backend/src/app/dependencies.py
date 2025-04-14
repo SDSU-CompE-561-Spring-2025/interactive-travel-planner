@@ -1,15 +1,16 @@
-from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException, status
-from core.database import SessionLocal
+from fastapi import FastAPI
+from app.core.database import Base, engine
+from app.routes import api_router
 
-# Replace with auth logic
-def get_current_user() -> int:
-    # Simulate logged-in user ID
-    return 1
+# 👇 Import all models to register them before table creation
+from app.models import destinations, trips, itinerary, dates
 
-def get_db() -> Session:
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# 👇 Register metadata after model imports
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI()
+app.include_router(api_router, prefix="")
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
