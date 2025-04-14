@@ -38,6 +38,7 @@ dependencies = [
   "python-dotenv>=1.0.1",
   "ruff>=0.9.7",
   "sqlalchemy>=2.0.38",
+  "python-jose[cryptography]"
 ]
 
 
@@ -105,5 +106,13 @@ exclude_lines = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/app"]
 
-[tool.pytest.ini_options]
-pythonpath = "backend/src"
+[tool.hatch.envs.dev]
+dependencies = [
+  "fastapi",
+  "uvicorn",
+  "sqlalchemy",
+  "pydantic"
+]
+
+[tool.hatch.envs.dev.scripts]
+start = "uvicorn app.main:app --reload"

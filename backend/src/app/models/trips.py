@@ -23,3 +23,5 @@ class Trips(Base):
 
     user = relationship("User", back_populates="trips")
     destinations = relationship("Destinations", back_populates="trip", cascade="all, delete")
+    budgets = relationship("Budget", back_populates="trip", cascade="all, delete-orphan")
+
