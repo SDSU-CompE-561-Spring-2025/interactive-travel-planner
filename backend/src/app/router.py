@@ -1,4 +1,5 @@
 #from app.models.itinerary import Itinerary
+
 from app.models.destinations import Destinations
 from app.models.trips import Trips
 from app.models.user import User

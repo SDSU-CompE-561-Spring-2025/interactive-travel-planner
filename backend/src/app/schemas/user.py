@@ -11,7 +11,6 @@ class UserCreate(UserBase):
     password: constr(min_length=8, max_length=64)
 
 
-
 class User(UserBase):
     id: int = Field(..., gt=0)
     username: constr(min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_]+$")
