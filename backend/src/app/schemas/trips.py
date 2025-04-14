@@ -7,8 +7,8 @@ from typing import Optional
 
 
 class TripBase(BaseModel):
-    title: str
-    description: str
+    title: Optional[str] = None
+    description: Optional[str] = None
     start_date: datetime
     end_date: datetime
 
