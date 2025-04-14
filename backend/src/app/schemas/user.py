@@ -11,9 +11,6 @@ class UserCreate(UserBase):
     password: constr(min_length=8, max_length=64)
 
 
-# TODO: Add custom validator
-
-
 class User(UserBase):
     id: int = Field(..., gt=0)
     username: constr(min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_]+$")
@@ -32,3 +29,12 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class UserOut(BaseModel):
+    id: int
+    username: str
+    email: EmailStr
+
+    class Config:
+        orm_mode = True
