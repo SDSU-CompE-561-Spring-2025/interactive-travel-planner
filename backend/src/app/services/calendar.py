@@ -1,13 +1,24 @@
 from sqlalchemy.orm import Session
-from app.models.trip import Trip
-from app.schemas.calendar import CalendarCreate
+from models.calendar import CalendarEvent
+from schemas.calendar import CalendarEventCreate
 
-def set_trip_dates(db: Session, data: CalendarCreate):
-    trip = db.query(Trip).get(data.trip_id)
-    if not trip:
-        return None
-
-    trip.start_date = data.start_date
-    trip.end_date = data.end_date
+def create_event(db: Session, event: CalendarEventCreate, user_id: int):
+    db_event = CalendarEvent(**event.dict(), user_id=user_id)
+    db.add(db_event)
     db.commit()
-    db.refresh(trip)
+    db.refresh(db_event)
+    return db_event
+
+def get_events(db: Session, user_id: int):
+    return db.query(CalendarEvent).filter(CalendarEvent.user_id == user_id).all()
+
+def get_event(db: Session, event_id: int, user_id:int):
+    return db.query(CalendarEvent).filter(CalendarEvent.user_id == event_id, CalendarEvent.user_id == user_id).first()
+
+def delete_event(db: Session, event_id: int, user_id: int):
+    event = get_event(db, event_id, user_id)
+    if event:
+        db.delete(event)
+        db.commit()
+        return True
+    return False
