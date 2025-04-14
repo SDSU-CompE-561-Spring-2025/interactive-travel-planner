@@ -53,4 +53,3 @@ def delete_dates(date_id: int, db: Session = Depends(get_db)):
 @router.delete("/destinations/{destination_id}")
 def delete_destination(destination_id: int, db: Session = Depends(get_db)):
     return {"message": f"Destination {destination_id} deleted successfully"}
-
