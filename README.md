@@ -8,12 +8,46 @@
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 
-INSTRUCTIONS TO RUN ON PERSONAL MACHINE
-1. clone file
-2. cd into the folder
-3. hatch new --init
-4. hatch run dev
+## 🚀 Features
 
+- FastAPI backend with modular project structure  
+- SQLAlchemy ORM for database interaction  
+- Pydantic for data validation and serialization  
+- JWT-based user authentication  
+- Organized routing and dependency injection  
+- Middleware for CORS and logging  
+- Unit testing with `pytest`
+
+
+
+---
+
+## 🛠️ Setup Instructions
+
+
+### 1. Clone the repository
+```bash
+git clone [https://github.com/yourusername/your_project_name.git](https://github.com/SDSU-CompE-561-Spring-2025/interactive-travel-planner/)
+cd interactive-travel-planner
+```
+
+### 2. Set up the Virtual Envoronment
+```bash
+python -m venv env
+source env/bin/activate  # On Windows: env\Scripts\activate
+```
+
+### 3. install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Installing the app
+```bash
+uvicorn app.main:app --reload
+or
+hatch run dev
+```
 
 
 [![PyPI - Version](https://img.shields.io/pypi/v/interactive-travel-planner.svg)](https://pypi.org/project/interactive-travel-planner)
