@@ -1,12 +1,20 @@
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
+
 @pytest.fixture
 def get_auth_token():
     client = TestClient(app)
 
-    data={"username": "testuser", "password": "testpassword"},
-        headers={"Content-Type": "application/x-www-form-urlencoded"}
+    response = client.post(
+        "/auth/token",  # or your actual login endpoint
+        data={
+            "username": "testuser",
+            "password": "testpassword"
+        },
+        headers={
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
     )
 
     assert response.status_code == 200
@@ -15,7 +23,6 @@ def get_auth_token():
 
 # Main calendar test
 def test_create_calendar_event(get_auth_token):
-    from app.main import app  # Lazy import again
     client = TestClient(app)
 
     headers = {
