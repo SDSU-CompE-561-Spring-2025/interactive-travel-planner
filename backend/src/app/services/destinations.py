@@ -10,7 +10,7 @@ def create_trip_destination(
     destination_data: DestinationCreate,
     db: Session
 ):
-    destinations = Destinations(**destination_data.dict(), trip_id=trip_id)
+    destination = Destination(**destination_data.dict(), trip_id=trip_id)
     db.add(destination)
     db.commit()
     db.refresh(destination)

@@ -10,8 +10,6 @@ SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.JWT_ALGORITHM
 
 
-
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 

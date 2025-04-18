@@ -9,7 +9,7 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 from jwt import InvalidTokenError
 
 SECRET_KEY = settings.SECRET_KEY
-ALGORITHM = "HS256"
+ALGORITHM = "RS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
