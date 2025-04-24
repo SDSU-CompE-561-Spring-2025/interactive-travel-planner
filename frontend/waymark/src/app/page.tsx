@@ -1,9 +1,18 @@
-import Image from "next/image";
+import Title from "@/components/Title";
+import { Plane, ClipboardList } from "lucide-react";
 
 export default function Home() {
   return (
     <main>
-      <h1> Home Page </h1>
+      <Title
+        title="Welcome to Waymark"
+        subtitle="Your Interactive Travel Planner"
+      />
+      <div className ="flex justify-center">
+        <Plane/>
+        <ClipboardList/>
+      </div>
     </main>
+
   );
 }
