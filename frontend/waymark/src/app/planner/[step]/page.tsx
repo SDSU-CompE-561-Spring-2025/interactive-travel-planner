@@ -1,4 +1,3 @@
-// /app/planner/[step]/page.tsx
 'use client'; 
 
 import { useRouter, useParams } from 'next/navigation';
@@ -9,6 +8,7 @@ import BudgetStep from '@/components/planner/BudgetStep';
 import LocationStep from '@/components/planner/LocationStep';
 import DatesStep from '@/components/planner/DatesStep';
 import ReviewStep from '@/components/planner/ReviewStep'; 
+import CollaboratorsStep from '@/components/planner/CollaboratorsStep';
 
 export default function PlannerStepPage() {
   const params = useParams();
@@ -17,10 +17,11 @@ export default function PlannerStepPage() {
   const steps: Record<string, React.ReactNode> = {
     start: <StartStep />,
     name: <NameStep />,
+    dates: <DatesStep />,
+    location: <LocationStep />,
     activities: <ActivitiesStep />,
     budget: <BudgetStep />,
-    location: <LocationStep />,
-    dates: <DatesStep />,
+    collab: <CollaboratorsStep />,
     review: <ReviewStep />,
   };
 
