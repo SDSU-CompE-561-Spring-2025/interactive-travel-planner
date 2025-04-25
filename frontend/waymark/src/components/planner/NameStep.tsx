@@ -20,7 +20,7 @@ export default function NameStep() {
         />
 
         <button
-            onClick={() => router.push('/planner/activities')}
+            onClick={() => router.push('/planner/dates')}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg"
         >
             Next Step
