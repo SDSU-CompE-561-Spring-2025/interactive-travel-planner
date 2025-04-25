@@ -1,7 +1,12 @@
+import Title from "@/components/Title";
+
 export default function BudgetPage() {
     return (
         <div>
-            <label>Enter the budget for this trip:</label>
+            <Title 
+                title="Step 4:"
+                subtitle="What is your budget?"
+            />
             <input className="input_number"type="number" />
             
         </div>

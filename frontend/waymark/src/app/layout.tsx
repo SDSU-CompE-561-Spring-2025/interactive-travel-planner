@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Waymark",
-  description: "A travel itinerary planner to help plan your next trip",
+  description: "Travel itinerary planner to help plan your next trip",
 };
 
 export default function RootLayout({
