@@ -1,7 +1,12 @@
+import Title from "@/components/Title";
+
 export default function ActivitiesPage() {
     return (
         <div>
-            <h1>List out the activites!</h1>
+            <Title 
+                title="Step 4:"
+                subtitle="What kind of activities do you want to do?"
+            />
         </div>
     );
 }

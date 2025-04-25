@@ -1,3 +1,4 @@
+import Slider from "@/components/Slider";
 import Title from "@/components/Title";
 
 export default function BudgetPage() {
@@ -7,7 +8,7 @@ export default function BudgetPage() {
                 title="Step 4:"
                 subtitle="What is your budget?"
             />
-            <input className="input_number"type="number" />
+            <Slider />
             
         </div>
     );

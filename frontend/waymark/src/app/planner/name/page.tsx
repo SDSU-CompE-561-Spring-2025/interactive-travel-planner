@@ -4,7 +4,7 @@ export default function NamePage() {
     return (
         <div>
             <Title 
-                title="Step 1:"
+                title="Step 2:"
                 subtitle="Name your trip!"
             />
         </div>
