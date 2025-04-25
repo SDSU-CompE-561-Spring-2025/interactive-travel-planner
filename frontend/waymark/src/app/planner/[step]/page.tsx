@@ -1,20 +1,32 @@
-import { useRouter } from 'next/router';
+// /app/planner/[step]/page.tsx
+'use client'; 
 
+import { useRouter, useParams } from 'next/navigation';
+import StartStep from '@/components/planner/StartStep';
+import NameStep from '@/components/planner/NameStep';
+import ActivitiesStep from '@/components/planner/ActivitiesStep';
+import BudgetStep from '@/components/planner/BudgetStep';
+import LocationStep from '@/components/planner/LocationStep';
+import DatesStep from '@/components/planner/DatesStep';
+import ReviewStep from '@/components/planner/ReviewStep'; 
 
+export default function PlannerStepPage() {
+  const params = useParams();
+  const step = params.step as string;
 
-export default function PlannerStep() {
-  const router = useRouter();
-  const { step } = router.query;
+  const steps: Record<string, React.ReactNode> = {
+    start: <StartStep />,
+    name: <NameStep />,
+    activities: <ActivitiesStep />,
+    budget: <BudgetStep />,
+    location: <LocationStep />,
+    dates: <DatesStep />,
+    review: <ReviewStep />,
+  };
 
   return (
-    <div className="p-8">
-      {step === 'start' && <StartStep />}
-      {step === 'name' && <NameStep />}
-      {step === 'activities' && <ActivitiesStep />}
-      {step === 'budget' && <BudgetStep />}
-      {step === 'locations' && <LocationStep />}
-      {step === 'dates' && <DatesStep />}
-      {step === 'review' && <ReviewStep />}
+    <div>
+      {steps[step] || <div>Step not found</div>}
     </div>
   );
 }
