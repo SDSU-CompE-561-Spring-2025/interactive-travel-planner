@@ -1,12 +1,10 @@
-export default function PlannerLayout({
-    children,
-    }: Readonly<{
-    children: React.ReactNode;
-    }>) {
+// src/app/planner/layout.tsx
+
+export default function PlannerLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-            <h1 className="text-3xl font-bold">Planner</h1>
-            {children}
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <main className="w-full max-w-2xl p-6">{children}</main>
+      </div>
     );
-    }
+  }
+  
