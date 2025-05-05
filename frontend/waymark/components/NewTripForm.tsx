@@ -31,7 +31,7 @@ export default function NewTripForm({ onTripCreated }: { onTripCreated: () => vo
     
     return (
         <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded mb-6 shadow">
-            <h2 className="text-xl font-bold">Create New Trip</h2
+            <h2 className="text-xl font-bold">Create New Trip</h2>
             
             <input
                 type="text"
