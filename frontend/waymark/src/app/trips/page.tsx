@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import NewTripForm from '@/components/NewTripForm';
-import TripsList from '@/components/TripsList';
+import NewTripForm from '../../../components/NewTripForm';
+import TripsList from '../../../components/TripsList';
 
 export default function TripsPage() {
     const [refreshKey, setRefreshKey] = useState(0); // used to re-render TripsList on new trip
