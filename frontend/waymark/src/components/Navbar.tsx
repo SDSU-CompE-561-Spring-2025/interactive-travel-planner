@@ -16,7 +16,7 @@ const navList = [
 	},
 	{
 		label: 'Summary',
-		link: '/summary',
+		link: '/logo-click',
 	},
 	{
 		label: 'About',
