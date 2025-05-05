@@ -12,5 +12,5 @@
     "endOfLine": "lf",
     "htmlWhitespaceSensitivity": "css",
     "proseWrap": "preserve",
-    "quoteProps": "as-needed",
+    "quoteProps": "as-needed"
 }
