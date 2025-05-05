@@ -11,12 +11,12 @@ import UserButton from '@/components/UserButton';
 
 const navList = [
 	{
-		label: 'Dashboard',
-		link: '/landing-page',
+		label: 'New Trip',
+		link: '/new-trip',
 	},
 	{
-		label: 'Summary',
-		link: '/logo-click',
+		label: 'My Itinerary',
+		link: '/planner',
 	},
 	{
 		label: 'About',
