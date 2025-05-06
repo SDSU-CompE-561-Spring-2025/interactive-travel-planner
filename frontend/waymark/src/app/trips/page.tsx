@@ -9,7 +9,7 @@ type Trip = {
   destination: string;
   start_date: string;
   end_date: string;
-  image?: string; // optional, in case backend doesn't provide
+  image?: string;
 };
 
 export default function TripsPage() {
@@ -18,32 +18,33 @@ export default function TripsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('http://localhost:8000/trips', {
-      method: 'GET',
-      credentials: 'include',
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch trips');
-        return res.json();
-      })
-      .then((data) => {
+    const fetchTrips = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/trips', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            throw new Error('Unauthorized. Please log in.');
+          } else {
+            throw new Error('Failed to fetch trips');
+          }
+        }
+
+        const data = await res.json();
         setTrips(data);
+      } catch (err: any) {
+        console.error('Fetch error:', err);
+        setError(err.message || 'An error occurred while loading your trips.');
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError('Unable to load your trips.');
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchTrips();
   }, []);
-
-  if (loading) {
-    return <p className="p-6 text-gray-500">Loading your trips...</p>;
-  }
-
-  if (error) {
-    return <p className="p-6 text-red-500">{error}</p>;
-  }
 
   return (
     <main className="bg-gray-50 min-h-screen p-6">
@@ -52,7 +53,11 @@ export default function TripsPage() {
         <p className="text-gray-600 mt-4">Discover and manage your adventures.</p>
       </section>
 
-      {trips.length === 0 ? (
+      {loading ? (
+        <p className="text-center text-gray-500 text-lg">Loading your trips...</p>
+      ) : error ? (
+        <p className="text-center text-red-500 text-lg">{error}</p>
+      ) : trips.length === 0 ? (
         <p className="text-center text-gray-500 text-lg">You don't have any trips yet.</p>
       ) : (
         <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -60,7 +65,7 @@ export default function TripsPage() {
             <Link key={trip.id} href={`/trips/${trip.id}`}>
               <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden cursor-pointer">
                 <img
-                  src={trip.image || 'https://via.placeholder.com/400x250'}
+                  src={trip.image || 'https://via.placeholder.com/400x250?text=Trip'}
                   alt={trip.name}
                   className="w-full h-48 object-cover"
                 />
