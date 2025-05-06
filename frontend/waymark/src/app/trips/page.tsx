@@ -1,55 +1,78 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-const trips = [
-  {
-    id: 1,
-    name: 'Paris Getaway',
-    destination: 'Paris, France',
-    start_date: '2025-06-01',
-    end_date: '2025-06-07',
-    image: '/images/paris.jpg',
-  },
-  {
-    id: 2,
-    name: 'Tokyo Adventure',
-    destination: 'Tokyo, Japan',
-    start_date: '2025-07-10',
-    end_date: '2025-07-20',
-    image: '/images/tokyo.jpg',
-  },
-  // Add more trips as needed
-];
+type Trip = {
+  id: number;
+  name: string;
+  destination: string;
+  start_date: string;
+  end_date: string;
+};
 
 export default function TripsPage() {
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('http://localhost:8000/trips', {
+      method: 'GET',
+      credentials: 'include', // important if auth uses cookies
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch trips');
+        return res.json();
+      })
+      .then((data) => {
+        setTrips(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError('Unable to load your trips.');
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <p className="p-6 text-gray-500">Loading your trips...</p>;
+  }
+
+  if (error) {
+    return <p className="p-6 text-red-500">{error}</p>;
+  }
+
   return (
     <main className="bg-gray-50 min-h-screen p-6">
-      {/* Hero Section */}
       <section className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-800">Explore Your Trips</h1>
-        <p className="text-gray-600 mt-4">Discover and manage your upcoming adventures.</p>
+        <h1 className="text-4xl font-bold text-gray-800">Your Trips</h1>
+        <p className="text-gray-600 mt-2">All of your upcoming adventures in one place.</p>
       </section>
 
-      {/* Trips Grid */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {trips.map((trip) => (
-          <Link key={trip.id} href={`/trips/${trip.id}`}>
-            <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
-              <img
-                src={trip.image}
-                alt={trip.name}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <h2 className="text-xl font-semibold text-gray-800">{trip.name}</h2>
-                <p className="text-gray-600">{trip.destination}</p>
-                <p className="text-sm text-gray-500">
-                  {trip.start_date} - {trip.end_date}
-                </p>
+      {trips.length === 0 ? (
+        <p className="text-center text-gray-500 text-lg">You don't have any trips yet.</p>
+      ) : (
+        <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {trips.map((trip) => (
+            <Link key={trip.id} href={`/trips/${trip.id}`}>
+              <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden cursor-pointer">
+                <div className="h-48 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-lg font-semibold">
+                  {trip.destination}
+                </div>
+                <div className="p-4">
+                  <h2 className="text-xl font-semibold text-gray-800">{trip.name}</h2>
+                  <p className="text-gray-600">{trip.destination}</p>
+                  <p className="text-sm text-gray-500">
+                    {trip.start_date} → {trip.end_date}
+                  </p>
+                </div>
               </div>
-            </div>
-          </Link>
-        ))}
-      </section>
+            </Link>
+          ))}
+        </section>
+      )}
     </main>
   );
 }
