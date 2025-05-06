@@ -39,6 +39,7 @@ export function HeroSection() {
                 <br />
 
                 {/* Input row */}
+
                 <div className="rounded-lg border bg-background p-4 shadow-sm">
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="relative flex-1">
