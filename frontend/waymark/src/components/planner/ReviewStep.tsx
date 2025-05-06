@@ -37,7 +37,15 @@ export default function ReviewStep() {
     }
   };
 
-  const Item = ({ label, value, editRoute }: { label: string; value: React.ReactNode; editRoute: string }) => (
+  const Item = ({
+    label,
+    value,
+    editRoute,
+  }: {
+    label: string;
+    value: React.ReactNode;
+    editRoute: string;
+  }) => (
     <div className="flex items-start justify-between border-b pb-2 mb-3">
       <div>
         <p className="font-semibold">{label}</p>
@@ -45,7 +53,7 @@ export default function ReviewStep() {
       </div>
       <button
         className="text-sm text-blue-600 underline ml-4"
-        onClick={() => router.push(`/planner/${editRoute}`)}
+        onClick={() => router.push(`/planner/${editRoute}?return=true`)}
       >
         Edit
       </button>
@@ -64,10 +72,18 @@ export default function ReviewStep() {
           value={activities.length > 0 ? activities.join(', ') : 'None selected'}
           editRoute="activities"
         />
-        <Item label="📍 Destination" value={destination || 'Not chosen'} editRoute="destination" />
+        <Item
+          label="📍 Destination"
+          value={destination || 'Not chosen'}
+          editRoute="destination"
+        />
         <Item
           label="📅 Dates"
-          value={dates.start && dates.end ? `${dates.start} → ${dates.end}` : 'Not selected'}
+          value={
+            dates.start && dates.end
+              ? `${dates.start} → ${dates.end}`
+              : 'Not selected'
+          }
           editRoute="dates"
         />
         <Item
