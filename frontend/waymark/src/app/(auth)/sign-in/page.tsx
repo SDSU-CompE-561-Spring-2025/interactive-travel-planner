@@ -1,10 +1,11 @@
 import Title from "@/components/Title"
+import SignInForm from "@/components/SignInForm";
+
 
 export default function SignInPage () {
     return (
-        <Title
-            title="Sign In Page"
-            subtitle="Please Sign In"
-        />
+        <>
+            <SignInForm />
+        </>
     );
 }

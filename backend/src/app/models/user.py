@@ -15,6 +15,10 @@ class User(Base):
     verification_code = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.now(UTC))
 
-    categories = relationship("Category", back_populates="user")
+
     trips = relationship("Trips", back_populates="user")
-    transactions = relationship("Transaction", back_populates="user")
+    events = relationship(
+        "CalendarEvent",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
