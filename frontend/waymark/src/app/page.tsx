@@ -6,6 +6,7 @@ import { HeroSection } from "@/components/hero-section"
 import { FeaturedItineraries } from "@/components/featured-itineraries"
 import { HowItWorks } from "@/components/how-it-works"
 import { Testimonials } from "@/components/testimonials"
+import { Separator } from "@/components/ui/separator"
 
 export default function HomePage() {
   return (
@@ -60,6 +61,7 @@ export default function HomePage() {
             </Button>
           </div>
         </section>
+
       </main>
       <footer className="border-t py-6 md:py-10">
         <div className="container flex flex-col items-center justify-between gap-4 md:flex-row">

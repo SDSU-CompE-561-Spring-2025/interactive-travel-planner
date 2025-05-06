@@ -11,32 +11,39 @@ import UserButton from '@/components/UserButton';
 
 const navList = [
 	{
-		label: 'New Trip',
-		link: '/new-trip',
+		label: 'Create account',
+		link: '/sign-up',
 	},
 	{
-		label: 'My Itinerary',
-		link: '/planner',
+		label: 'About us',
+		link: '/about-us',
 	},
 	{
-		label: 'About',
-		link: '/about',
+		label: 'Jobs',
+		link: '/jobs',
 	},
 	{
-		label: 'Support',
-		link: '/support',
+		label: 'privacy policy',
+		link: '/privacy-policy',
+	},
+    {
+		label: 'Contact us',
+		link: '/contact-us',
+	},
+    {
+		label: 'How the site works',
+		link: '/logistics',
 	},
 ];
 
-function Navbar() {
+function Footer() {
 	return (
-		<div className={'hidden border-separate border-b bg-background md:block'}>
+		<div className={'hidden border-separate border-b bg-background md:block h-64 justify-center'}>
 			<nav className={'container flex items-center justify-between px-8'}>
 				<div className={'flex h-[80px] min-h-[60px] items-center gap-x-4'}>
-					<Logo />
-					<div className="flex h-full gap-5">
+					<div className="flex h-full gap-12 text-sm font-medium text-muted-foreground">
 					{navList.map((item) => (
-							<NavbarItem
+							<FooterItem
 								key={item.label}
 								link={item.link}
 								label={item.label}
@@ -44,38 +51,18 @@ function Navbar() {
 						))}
 					</div>
 				</div>
-				<div className={'flex items-center gap-3'}>
-					<Link href={'/sign-in'}>
-						<Button
-							variant={'ghost'}
-							size={'icon'}
-						>
-							<LogIn />
-						</Button>
-					</Link>
-					<Link href={'/sign-up'}>
-						<Button
-							variant={'ghost'}
-							size={'icon'}
-						>
-							<UserRoundPlus />
-						</Button>
-					</Link>
-					<ThemeSwitcherButton />
-					<UserButton />
-				</div>
 			</nav>
 		</div>
 	);
 }
 
-interface NavbarItemProps {
+interface FooterItemProps {
 	link: string;
 	label: string;
 	clickCallBack?: () => void;
 }
 
-function NavbarItem({ link, label, clickCallBack }: NavbarItemProps) {
+function FooterItem({ link, label, clickCallBack }: FooterItemProps) {
 	const pathname = usePathname();
 	const isActive = pathname === link;
 	return (
@@ -102,4 +89,4 @@ function NavbarItem({ link, label, clickCallBack }: NavbarItemProps) {
 	);
 }
 
-export default Navbar;
+export default Footer;
