@@ -9,6 +9,7 @@ type Trip = {
   destination: string;
   start_date: string;
   end_date: string;
+  image?: string; // optional, in case backend doesn't provide
 };
 
 export default function TripsPage() {
@@ -19,7 +20,7 @@ export default function TripsPage() {
   useEffect(() => {
     fetch('http://localhost:8000/trips', {
       method: 'GET',
-      credentials: 'include', // important if auth uses cookies
+      credentials: 'include',
     })
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch trips');
@@ -48,7 +49,7 @@ export default function TripsPage() {
     <main className="bg-gray-50 min-h-screen p-6">
       <section className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-800">Your Trips</h1>
-        <p className="text-gray-600 mt-2">All of your upcoming adventures in one place.</p>
+        <p className="text-gray-600 mt-4">Discover and manage your adventures.</p>
       </section>
 
       {trips.length === 0 ? (
@@ -58,9 +59,11 @@ export default function TripsPage() {
           {trips.map((trip) => (
             <Link key={trip.id} href={`/trips/${trip.id}`}>
               <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden cursor-pointer">
-                <div className="h-48 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-lg font-semibold">
-                  {trip.destination}
-                </div>
+                <img
+                  src={trip.image || 'https://via.placeholder.com/400x250'}
+                  alt={trip.name}
+                  className="w-full h-48 object-cover"
+                />
                 <div className="p-4">
                   <h2 className="text-xl font-semibold text-gray-800">{trip.name}</h2>
                   <p className="text-gray-600">{trip.destination}</p>
