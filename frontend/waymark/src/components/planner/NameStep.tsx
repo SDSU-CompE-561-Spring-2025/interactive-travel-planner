@@ -1,30 +1,60 @@
 'use client';
 
-import { useId } from 'react';
-import { useRouter } from 'next/navigation';  
+import { useRouter, useSearchParams } from 'next/navigation';
+import { usePlannerStore } from '@/store/plannerStore';
+import { useState } from 'react';
 
 export default function NameStep() {
-    const router = useRouter();
-    const tripId = useId();
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-        <h1 className="text-3xl font-bold mb-4">Let's name your trip!</h1>
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnToReview = searchParams.get('return') === 'true';
 
-        <label htmlFor={tripId}>Trip Name</label>
-        <input 
-            id={tripId} 
-            type="text" 
-            required 
-            placeholder="Enter creative name here" 
-            className="border p-2 rounded mb-4"
-        />
+  const { tripName, setField } = usePlannerStore();
+  const [name, setName] = useState(tripName);
+
+  const handleNext = () => {
+    setField('tripName', name);
+    if (returnToReview) {
+      router.push('/planner/review');
+    } else {
+      router.push('/planner/dates');
+    }
+  };
+
+  const handleBack = () => {
+    router.back();
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen px-4">
+      <h1 className="text-3xl font-bold mb-4">Let's name your trip!</h1>
+
+      <label htmlFor="tripNameInput" className="mb-1 font-medium">Trip Name</label>
+      <input
+        id="tripNameInput"
+        type="text"
+        required
+        placeholder={tripName || 'Enter creative name here'} // ✅ Zustand value as placeholder
+        className="border p-2 rounded mb-6 w-full max-w-md"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+
+      <div className="flex gap-4">
+        <button
+          onClick={handleBack}
+          className="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg"
+        >
+          Back
+        </button>
 
         <button
-            onClick={() => router.push('/planner/dates')}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg"
+          onClick={handleNext}
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg"
         >
-            Next Step
-        </button> 
+          {returnToReview ? 'Return to Review' : 'Next Step'}
+        </button>
+      </div>
     </div>
   );
 }

@@ -5,7 +5,7 @@ import StartStep from '@/components/planner/StartStep';
 import NameStep from '@/components/planner/NameStep';
 import ActivitiesStep from '@/components/planner/ActivitiesStep';
 import BudgetStep from '@/components/planner/BudgetStep';
-import LocationStep from '@/components/planner/LocationStep';
+import DestinationStep from '@/components/planner/DestinationStep';
 import DatesStep from '@/components/planner/DatesStep';
 import ReviewStep from '@/components/planner/ReviewStep'; 
 import CollaboratorsStep from '@/components/planner/CollaboratorsStep';
@@ -18,7 +18,7 @@ export default function PlannerStepPage() {
     start: <StartStep />,
     name: <NameStep />,
     dates: <DatesStep />,
-    location: <LocationStep />,
+    destination: <DestinationStep />,
     activities: <ActivitiesStep />,
     budget: <BudgetStep />,
     collab: <CollaboratorsStep />,

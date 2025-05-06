@@ -26,13 +26,15 @@ export default function CollaboratorsStep() {
     }
   };
 
-  const addCollaborator = (userId: string) => {
-    if (!collaborators.includes(userId)) {
-      setField('collaborators', [...collaborators, userId]);
+  const addCollaborator = (user: { id: string; name: string }) => {
+    const alreadyAdded = collaborators.some((c) => c.id === user.id);
+    if (!alreadyAdded) {
+      setField('collaborators', [...collaborators, user]);
     }
     setSearch('');
     setResults([]);
   };
+  
 
   return (
     <div>
@@ -56,33 +58,34 @@ export default function CollaboratorsStep() {
           {results.map((user) => (
             <li key={user.id} className="flex justify-between items-center py-1">
               <span>{user.name}</span>
-              <button
-                onClick={() => addCollaborator(user.id)}
-                className="text-sm bg-green-600 text-white px-2 py-1 rounded"
-              >
-                Add
-              </button>
+                <button
+                    onClick={() => addCollaborator(user)}
+                    className="text-sm bg-green-600 text-white px-2 py-1 rounded"
+                    >
+                    Add
+                </button>
             </li>
           ))}
         </ul>
       )}
 
-      <h2 className="text-lg font-semibold mb-2">Selected Collaborators (IDs):</h2>
-      <ul className="list-disc pl-5 mb-6">
-        {collaborators.map((id) => (
-            <li key={id} className="flex items-center justify-between text-sm text-gray-700 mb-1">
-            {id}
-            <button
-                onClick={() =>
-                setField('collaborators', collaborators.filter((c) => c !== id))
-                }
-                className="text-red-500 text-xs ml-4"
-            >
-                Remove
-            </button>
-            </li>
-        ))}
-        </ul>
+    <h2 className="text-lg font-semibold mb-2">Selected Collaborators:</h2>
+    <ul className="list-disc pl-5 mb-6">
+    {collaborators.map((c) => (
+        <li key={c.id} className="flex items-center justify-between text-sm text-gray-700 mb-1">
+        {c.name}
+        <button
+            onClick={() =>
+            setField('collaborators', collaborators.filter((x) => x.id !== c.id))
+            }
+            className="text-red-500 text-xs ml-4"
+        >
+            Remove
+        </button>
+        </li>
+    ))}
+    </ul>
+
 
 
       <button
