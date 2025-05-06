@@ -29,16 +29,15 @@ export default function TripsList() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       {trips.map((trip) => (
-        <div
-          key={trip.id}
-          className="border p-4 rounded shadow hover:shadow-lg transition"
-        >
-          <h2 className="text-xl font-semibold">{trip.name}</h2>
-          <p className="text-gray-600">{trip.destination}</p>
-          <p className="text-sm text-gray-500">
-            {trip.start_date} → {trip.end_date}
-          </p>
-        </div>
+        <Link key={trip.id} href={`/trips/${trip.id}`}>
+          <div className="border p-4 rounded shadow hover:shadow-lg transition cursor-pointer">
+            <h2 className="text-xl font-semibold">{trip.name}</h2>
+            <p className="text-gray-600">{trip.destination}</p>
+            <p className="text-sm text-gray-500">
+              {trip.start_date} → {trip.end_date}
+            </p>
+          </div>
+        </Link>
       ))}
     </div>
   );
