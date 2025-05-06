@@ -11,7 +11,7 @@ function Logo() {
 				height={36}
 				className="object-contain"
 			/>
-			<p className="bg-gradient-to-r from-amber-200 to-green-500 bg-clip-text text-3xl leading-tight text-transparent">
+			<p className="bg-gradient-to-r from-amber-200 to-green-500 bg-clip-text text-3xl leading-tight text-transparent font-bold">
 				WayMark
 			</p>
 		</Link>
