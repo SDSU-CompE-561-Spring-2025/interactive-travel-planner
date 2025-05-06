@@ -27,12 +27,17 @@ export default async function TripDetailPage({ params }: { params: { tripId: str
   if (!trip) return notFound();
 
   return (
-    <main className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">{trip.name}</h1>
-      <p className="text-lg text-gray-700">📍 Destination: {trip.destination}</p>
-      <p className="text-sm text-gray-500 mb-6">
-        📅 {trip.start_date} → {trip.end_date}
-      </p>
+    <main className="p-6 max-w-2xl mx-auto space-y-6">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold">{trip.name}</h1>
+        <p className="text-gray-700 text-lg">📍 {trip.destination}</p>
+        <p className="text-sm text-gray-500">📅 {trip.start_date} → {trip.end_date}</p>
+      </div>
+  
+      {/* Placeholder for future sections */}
+      <div className="border rounded-lg p-4 shadow-sm">
+        <p className="text-sm text-gray-400 italic">More trip features coming soon...</p>
+      </div>
     </main>
-  );
+  );  
 }
