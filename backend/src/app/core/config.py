@@ -6,7 +6,15 @@ from pydantic import Field
 load_dotenv()
 
 class Settings(BaseSettings):
-    DATABASE_URL: str
+    # your DB and Postgres fields
+    SQLALCHEMY_DATABASE_URL: str = "postgresql://postgres:password@localhost:5432/waymark_db"
+    POSTGRES_USER:          str = "postgres"
+    POSTGRES_PASSWORD:      str = "password"
+    POSTGRES_DB:            str = "waymark_db"
+    SECRET_KEY:             str = "your_secret_here"
+    JWT_ALGORITHM:          str = "RS256"
+
+    # keep these two for JWT
     SECRET_KEY: str
     JWT_ALGORITHM: str = Field(default="HS256", alias="JWT_ALGORITHM")
 
@@ -15,7 +23,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=False,
-        populate_by_name=True
+        populate_by_name=True,
     )
 
 @lru_cache

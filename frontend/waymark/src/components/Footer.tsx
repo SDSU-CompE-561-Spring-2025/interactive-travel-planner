@@ -23,7 +23,7 @@ const navList = [
 		link: '/jobs',
 	},
 	{
-		label: 'privacy policy',
+		label: 'Privacy Policy',
 		link: '/privacy-policy',
 	},
     {

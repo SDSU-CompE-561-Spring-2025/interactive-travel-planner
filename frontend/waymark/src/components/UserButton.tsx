@@ -5,12 +5,14 @@ import { User } from 'lucide-react';
 function UserButton() {
 	return (
 		<div>
-			<Button
-				variant={'ghost'}
-				size={'icon'}
-			>
-				<User />
-			</Button>
+			<a href="/profile/[userId]">
+				<Button
+					variant={'ghost'}
+					size={'icon'}
+				>
+					<User />
+				</Button>
+			</a>
 		</div>
 	);
 }

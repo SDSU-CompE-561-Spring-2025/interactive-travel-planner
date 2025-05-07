@@ -11,60 +11,67 @@ import UserButton from '@/components/UserButton';
 
 const navList = [
 	{
-		label: 'New Trip',
-		link: '/new-trip',
+		label: 'My Trip',
+		link: '/trips',
 	},
 	{
-		label: 'My Itinerary',
+		label: 'Planner',
 		link: '/planner',
 	},
-	{
-		label: 'About',
-		link: '/about',
-	},
-	{
-		label: 'Support',
-		link: '/support',
-	},
+
 ];
 
 function Navbar() {
 	return (
-		<div className={'hidden border-separate border-b bg-background md:block'}>
-			<nav className={'container flex items-center justify-between px-8'}>
-				<div className={'flex h-[80px] min-h-[60px] items-center gap-x-4'}>
-					<Logo />
-					<div className="flex h-full gap-5">
-					{navList.map((item) => (
-							<NavbarItem
-								key={item.label}
-								link={item.link}
-								label={item.label}
-							/>
-						))}
+		<div className="w-full border-separate border-b bg-background">
+			<div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
+				<nav className="flex h-16 items-center justify-between">
+					<div className="flex items-center">
+						<div className="flex-shrink-0">
+							<Logo />
+						</div>
+						<div className="ml-6 hidden md:flex md:space-x-8">
+							{navList.map((item) => (
+								<NavbarItem
+									key={item.label}
+									link={item.link}
+									label={item.label}
+								/>
+							))}
+						</div>
 					</div>
-				</div>
-				<div className={'flex items-center gap-3'}>
-					<Link href={'/sign-in'}>
-						<Button
-							variant={'ghost'}
-							size={'icon'}
-						>
-							<LogIn />
-						</Button>
-					</Link>
-					<Link href={'/sign-up'}>
-						<Button
-							variant={'ghost'}
-							size={'icon'}
-						>
-							<UserRoundPlus />
-						</Button>
-					</Link>
-					<ThemeSwitcherButton />
-					<UserButton />
-				</div>
-			</nav>
+					<div className="flex items-center space-x-4">
+						<Link href={'/sign-in'}>
+							<Button
+								variant={'ghost'}
+								size={'icon'}
+								className="flex items-center justify-center"
+							>
+								<LogIn className="h-5 w-5" />
+							</Button>
+						</Link>
+						<Link href={'/sign-up'}>
+							<Button
+								variant={'ghost'}
+								size={'icon'}
+								className="flex items-center justify-center"
+							>
+								<UserRoundPlus className="h-5 w-5" />
+							</Button>
+						</Link>
+						<ThemeSwitcherButton />
+						<Link href={'/profile/userID'}>
+							<Button
+								variant={'ghost'}
+								size={'icon'}
+								className="flex items-center justify-center"
+							>
+								<UserButton />
+							</Button>
+						</Link>
+					</div>
+				</nav>
+			</div>
 		</div>
 	);
 }
@@ -79,26 +86,24 @@ function NavbarItem({ link, label, clickCallBack }: NavbarItemProps) {
 	const pathname = usePathname();
 	const isActive = pathname === link;
 	return (
-		<>
-			<div className="relative flex items-center">
-				<Link
-					href={link}
-					className={cn(
-						buttonVariants({ variant: 'ghost' }),
-						'w-full justify-start text-lg text-muted-foreground hover:text-foreground',
-						isActive && 'text-amber-300'
-					)}
-					onClick={() => {
-						if (clickCallBack) clickCallBack();
-					}}
-				>
-					{label}
-				</Link>
-				{isActive && (
-					<div className="absolute -bottom-[2px] left-1/2 hidden h-[5px] w-[80%] -translate-x-1/2 rounded-xl bg-amber-500 md:block" />
+		<div className="relative flex items-center">
+			<Link
+				href={link}
+				className={cn(
+					buttonVariants({ variant: 'ghost' }),
+					'py-2 text-base font-medium text-muted-foreground hover:text-foreground',
+					isActive && 'text-amber-300'
 				)}
-			</div>
-		</>
+				onClick={() => {
+					if (clickCallBack) clickCallBack();
+				}}
+			>
+				{label}
+			</Link>
+			{isActive && (
+				<div className="absolute -bottom-[2px] left-1/2 h-[3px] w-full -translate-x-1/2 rounded-xl bg-amber-500" />
+			)}
+		</div>
 	);
 }
 

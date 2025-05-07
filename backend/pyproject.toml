@@ -13,7 +13,7 @@ keywords = []
 authors = [
   { name = "kohkikita", email = "130106015+kohkikita@users.noreply.github.com" },
   { name = "Rojin Osman", email = "rdawood7013@sdsu.edu"},
-  { name = "Ethan Quach", email = "equach7914@sdsu,edu"},
+  { name = "Ethan Quach", email = "equach7914@sdsu.edu"},
   { name = "Micah Davis", email = "mdavis7635@sdsu.edu"},
   { name = "Riley McGregor", email = "rmcgregor2091@sdsu.edu"}
 ]
@@ -38,7 +38,8 @@ dependencies = [
   "python-dotenv>=1.0.1",
   "ruff>=0.9.7",
   "sqlalchemy>=2.0.38",
-  "python-jose>=3.3.0"
+  "python-jose>=3.3.0",
+  "psycopg2-binary"
 ]
 
 

@@ -8,7 +8,7 @@ class BudgetBase(BaseModel):
     currency: str
     description: Optional[str] = None
     category: str
-    
+
 # For creating a new budget
 class BudgetCreate(BudgetBase):
     pass
@@ -25,4 +25,4 @@ class BudgetOut(BudgetBase):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True

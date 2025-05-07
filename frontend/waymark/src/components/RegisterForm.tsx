@@ -6,7 +6,7 @@ import React, { useState, FormEvent } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
-export default function RegistorForm() {
+export default function RegisterForm() {
     const [username, setUsername] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
