@@ -4,6 +4,8 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';  
 import { useState } from 'react';
+import { motion } from 'framer-motion';
+import PlannerLayout from './PlannerLayout';
 import { usePlannerStore } from '@/store/plannerStore';
 
 const CITY_SUGGESTIONS = [
