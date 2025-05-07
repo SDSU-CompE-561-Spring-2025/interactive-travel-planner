@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, MapPin } from 'lucide-react'
+import { Plus, Edit, Trash2, MapPin, Search, Calendar } from 'lucide-react'
 import DestinationsMap from '../../itinerary/DestinationsMap'
 import { Itinerary, updateItinerarySection } from '../../../lib/api'
 
@@ -25,16 +25,18 @@ interface DestinationsSectionProps {
   handleRemoveDestination: (index: number) => void
 }
 
-// The provided 11-color pastel palette
 const pastelColors = [
   '#66C5CC', '#F6C571', '#F89C74', '#DCB0F2',
   '#87C55F', '#9EB9F3', '#FEBB81', '#C9D874',
   '#8DE0A4', '#B497E7', '#B3B3B3',
 ]
 
-// Action button colors
-const actionBlue = '#66C5CC'
-const actionRed  = '#F89C74'
+// Centralised brand colours → tweak once, everywhere updates
+const BRAND = {
+  primary: 'bg-blue-500',
+  primaryHover: 'hover:bg-blue-600',
+  danger: 'text-red-500',
+}
 
 const DestinationsSection: React.FC<DestinationsSectionProps> = ({
   itinerary,
@@ -45,7 +47,7 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
   setLoading,
   handleRemoveDestination,
 }) => {
-  // Form state
+  /* ------------------------ Local state ------------------------ */
   const [formOpen, setFormOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<{ name: string; lat: number; lng: number }[]>([])
@@ -55,20 +57,17 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
   const [editIndex, setEditIndex] = useState<number | null>(null)
   const [selectedColor, setSelectedColor] = useState<string>(pastelColors[0])
 
-  // Reset color when opening blank
+  // Reset colour on new entry
   useEffect(() => {
-    if (formOpen && editIndex === null) {
-      setSelectedColor(pastelColors[0])
-    }
+    if (formOpen && editIndex === null) setSelectedColor(pastelColors[0])
   }, [formOpen, editIndex])
 
-  // Parse "YYYY-MM-DD" as local midnight
+  /* ------------------------ Helpers ------------------------ */
   const parseLocalDate = (d: string) => {
     const [y, m, day] = d.split('-').map(Number)
     return new Date(y, m - 1, day)
   }
 
-  // Format "June 25, 2023 → July 6, 2023"
   const formatDateRange = (dates: string) => {
     const [sStr, eStr] = dates.split(',').map(s => s.trim())
     const s = parseLocalDate(sStr), e = parseLocalDate(eStr)
@@ -76,7 +75,6 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
     return `${s.toLocaleDateString('en-US', opts)} → ${e.toLocaleDateString('en-US', opts)}`
   }
 
-  // Search Nominatim
   const handleSearch = async () => {
     if (!searchQuery) return
     setLoading(true)
@@ -92,13 +90,16 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
           lng: parseFloat(i.lon),
         }))
       )
-    } catch {
-      // ignore
-    }
+    } catch {}
     setLoading(false)
   }
 
-  // Add / update destination
+  // Stable sorted list for map & cards
+  const dests = React.useMemo(() => {
+    return [...(itinerary.destinations || []) as Destination[]]
+      .sort((a, b) => parseLocalDate(a.dates.split(',')[0]).getTime() - parseLocalDate(b.dates.split(',')[0]).getTime())
+  }, [itinerary.destinations])
+
   const handleSave = () => {
     if (!selected || !startDate || !endDate) return
     const newDest: Destination = {
@@ -108,23 +109,17 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
       lng: selected.lng,
       color: selectedColor,
     }
-    const existing = (itinerary.destinations || []) as Destination[]
-    const updated = editIndex != null
-      ? [
-          ...existing.slice(0, editIndex),
-          newDest,
-          ...existing.slice(editIndex + 1),
-        ]
-      : [...existing, newDest]
 
-    // Update local state & days
+    const updated: Destination[] = editIndex != null
+      ? dests.map((d, i) => i === editIndex ? newDest : d)
+      : [...dests, newDest]
+
     setItinerary(prev => ({
       ...prev,
       destinations: updated,
       days: syncDaysWithDestinations(updated, prev.days),
     }))
 
-    // Persist to server (strip out color)
     if (itinerary.id && itinerary.id !== 'new-trip') {
       setLoading(true)
       const serverList = updated.map(({ name, dates, lat, lng }) => ({ name, dates, lat, lng }))
@@ -146,7 +141,7 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
     setEditIndex(null)
   }
 
-  // Open blank form
+  /* ------------------------ Handlers to open form ------------------------ */
   const openAdd = () => {
     setEditIndex(null)
     setSelected(null)
@@ -156,146 +151,158 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
     setFormOpen(true)
   }
 
-  // Open for editing
   const openEdit = (i: number) => {
-    const d = (itinerary.destinations || []) as Destination[]
-    const dest = d[i]
+    const dest = dests[i]
     setEditIndex(i)
     setSelected({ name: dest.name, lat: dest.lat!, lng: dest.lng! })
     const [s, e] = dest.dates.split(',').map(x => x.trim())
     setStartDate(s)
     setEndDate(e)
     setSearchQuery(dest.name)
-    setSelectedColor(dest.color ?? pastelColors[i % pastelColors.length])
+    setSelectedColor(dest.color || pastelColors[i % pastelColors.length])
     setFormOpen(true)
   }
 
-  const dests = (itinerary.destinations || []) as Destination[]
-
+  /* ======================================================= */
   return (
     <div>
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-semibold text-gray-800">Destinations</h2>
         <button
           onClick={openAdd}
-          className="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200"
-          aria-label="Add Destination"
+          className="p-2 rounded-full shadow-sm bg-blue-50 text-blue-500 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
         >
-          <Plus className="w-8 h-8" />
+          <Plus className="w-6 h-6" />
         </button>
       </div>
 
       {/* Map */}
-      <div className="h-[40rem] border rounded-lg overflow-hidden mb-6">
-        <DestinationsMap
-          destinations={dests}
-          editable={false}
-          onSave={() => Promise.resolve()}
-        />
+      <div className="h-[40rem] border rounded-2xl overflow-hidden mb-8 shadow-sm">
+        <DestinationsMap destinations={dests} editable={false} onSave={() => Promise.resolve()} />
       </div>
 
-      {/* Slide-down Form */}
-      <div className={`transition-all duration-300 ease-out overflow-hidden ${
-        formOpen ? 'max-h-[700px] opacity-100 mb-6' : 'max-h-0 opacity-0'
-      }`}>
+      {/* Slide-down Add/Edit Form */}
+      <div
+        className={`transition-all duration-300 ease-out overflow-hidden ${
+          formOpen ? 'max-h-[750px] opacity-100 mb-8' : 'max-h-0 opacity-0'
+        }`}
+      >
         <div
-          className="border border-gray-200 rounded-lg overflow-hidden shadow-lg"
-          style={{ borderLeft: `4px solid ${selectedColor}` }}
+          className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 relative"
+          style={{ borderLeft: `6px solid ${selectedColor}` }}
         >
-          <div className="bg-white p-6">
-            <h3 className="text-lg font-normal mb-4 text-gray-800">
-              {editIndex != null ? 'Edit Destination' : 'Add Destination'}
-            </h3>
+          {/* Close × */}
+          <button
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+            onClick={() => setFormOpen(false)}
+          >
+            ×
+          </button>
 
-            {/* Search */}
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search location…"
-                className="w-full border p-2 rounded font-normal"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                onKeyPress={e => e.key === 'Enter' && handleSearch()}
-              />
-              {searchResults.length > 0 && (
-                <ul className="border rounded max-h-40 overflow-y-auto mt-2">
-                  {searchResults.map((r, i) => (
-                    <li
-                      key={i}
-                      className="p-2 hover:bg-gray-100 cursor-pointer font-normal"
-                      onClick={() => {
-                        setSelected(r)
-                        setSearchQuery(r.name)
-                        setSearchResults([])
-                      }}
-                    >
-                      {r.name}
-                    </li>
-                  ))}
-                </ul>
-              )}
+          {/* Title */}
+          <h3 className="text-lg font-semibold text-gray-800 mb-6">
+            {editIndex != null ? 'Edit Destination' : 'Add Destination'}
+          </h3>
+
+          {/* Search Bar */}
+          <div className="mb-6 relative max-w-sm">
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-gray-400" />
             </div>
-
-            {/* Color Picker */}
-            <div className="mb-4">
-              <label className="block text-sm font-normal mb-1 text-gray-700">
-                Card Color
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {pastelColors.map(c => (
-                  <button
-                    key={c}
-                    onClick={() => setSelectedColor(c)}
-                    className={`w-8 h-8 rounded-full ${
-                      selectedColor === c ? 'ring-2 ring-offset-1 ring-gray-800' : ''
-                    }`}
-                    style={{ backgroundColor: c }}
-                  />
+            <input
+              type="text"
+              placeholder="Where to?"
+              className="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+            />
+            {searchResults.length > 0 && (
+              <ul className="mt-1 w-full absolute bg-white border border-gray-200 rounded-md max-h-48 overflow-y-auto shadow-lg z-10">
+                {searchResults.map((r, i) => (
+                  <li
+                    key={i}
+                    className="px-4 py-2 text-sm cursor-pointer hover:bg-gray-50 border-b last:border-b-0"
+                    onClick={() => {
+                      setSelected(r)
+                      setSearchQuery(r.name.split(',')[0])
+                      setSearchResults([])
+                    }}
+                  >
+                    {r.name}
+                  </li>
                 ))}
-              </div>
-            </div>
+              </ul>
+            )}
+          </div>
 
-            {/* Dates */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-normal mb-1 text-gray-700">Start</label>
+          {/* Color Picker */}
+          <div className="mb-6 max-w-md">
+            <span className="block text-sm font-medium text-gray-700 mb-3">Card Color</span>
+            <div className="flex flex-wrap gap-3">
+              {pastelColors.map(c => (
+                <button
+                  key={c}
+                  onClick={() => setSelectedColor(c)}
+                  style={{ backgroundColor: c }}
+                  className={`w-8 h-8 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                    selectedColor === c
+                      ? 'ring-2 ring-gray-400 scale-110'
+                      : 'opacity-80 hover:opacity-100'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Date range */}
+          <div className="grid gap-6 sm:grid-cols-2 mb-8 max-w-md">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Start</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                </div>
                 <input
                   type="date"
-                  className="w-full border p-2 rounded font-normal"
                   value={startDate}
                   onChange={e => setStartDate(e.target.value)}
+                  className="w-full pl-10 pr-3 py-3 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-normal mb-1 text-gray-700">End</label>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">End</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                </div>
                 <input
                   type="date"
-                  className="w-full border p-2 rounded font-normal"
                   value={endDate}
                   onChange={e => setEndDate(e.target.value)}
+                  className="w-full pl-10 pr-3 py-3 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
                 />
               </div>
             </div>
+          </div>
 
-            {/* Actions */}
-            <div className="flex justify-end space-x-2">
-              <button
-                onClick={() => setFormOpen(false)}
-                className="px-3 py-1 text-sm font-normal border rounded-md hover:bg-red-50"
-                style={{ color: actionRed, borderColor: actionRed }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={!selected || !startDate || !endDate}
-                className="px-3 py-1 text-sm font-normal border rounded-md hover:bg-blue-50"
-                style={{ color: actionBlue, borderColor: actionBlue }}
-              >
-                {editIndex != null ? 'Save' : 'Add'}
-              </button>
-            </div>
+          {/* Actions */}
+          <div className="flex justify-end space-x-4">
+            <button
+              onClick={() => setFormOpen(false)}
+              className="px-6 py-2.5 text-sm font-medium text-gray-600 transition hover:text-gray-800 hover:bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!selected || !startDate || !endDate}
+              className={`px-6 py-2.5 text-sm font-semibold text-white rounded-md shadow ${BRAND.primary} ${BRAND.primaryHover} transition disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {editIndex != null ? 'Save' : 'Add'}
+            </button>
           </div>
         </div>
       </div>
@@ -305,37 +312,34 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
         {dests.map((dest, i) => (
           <div
             key={i}
-            className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+            className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-md transition"
           >
-            {/* Pastel banner */}
             <div
-              className="h-10 rounded-t-lg"
-              style={{
-                backgroundColor: dest.color || pastelColors[i % pastelColors.length],
-              }}
+              className="h-10 rounded-t-2xl"
+              style={{ backgroundColor: dest.color || pastelColors[i % pastelColors.length] }}
             />
-            <div className="bg-white p-5 flex justify-between items-start">
+            <div className="p-5 flex justify-between items-start">
               <div>
                 <div className="flex items-center mb-2">
-                  <MapPin className="w-6 h-6 text-teal-600 mr-2" />
-                  <h4 className="text-xl font-semibold text-gray-800">{dest.name}</h4>
+                  <MapPin className="w-5 h-5 text-gray-500 mr-2" />
+                  <h4 className="text-base font-medium text-gray-800 truncate max-w-[10rem]" title={dest.name}>
+                    {dest.name}
+                  </h4>
                 </div>
-                <p className="text-sm font-bold text-gray-600">{formatDateRange(dest.dates)}</p>
+                <p className="text-sm text-gray-600">{formatDateRange(dest.dates)}</p>
               </div>
-              <div className="flex flex-col space-y-2">
+              <div className="flex space-x-2">
                 <button
                   onClick={() => openEdit(i)}
-                  className="p-1 border border-gray-300 rounded-full hover:bg-gray-100"
-                  aria-label="Edit"
+                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
                 >
-                  <Edit className="w-5 h-5" />
+                  <Edit className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleRemoveDestination(i)}
-                  className="p-1 border border-gray-300 rounded-full hover:bg-gray-100"
-                  aria-label="Delete"
+                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-gray-100 rounded-full transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
                 >
-                  <Trash2 className="w-5 h-5" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -347,3 +351,5 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
 }
 
 export default DestinationsSection
+
+
