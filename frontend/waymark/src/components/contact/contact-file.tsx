@@ -10,11 +10,7 @@ import emailjs from "@emailjs/browser"
 
 export default function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [statusMessage, setStatusMessage] = useState<{
-    type: "success" | "error"
-    text: string
-  } | null>(null)
-
+  const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -23,9 +19,7 @@ export default function ContactForm() {
     message: "",
   })
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
@@ -36,7 +30,7 @@ export default function ContactForm() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    setStatusMessage(null)
+    setStatusMessage(null) // Clear previous messages
 
     try {
       await emailjs.send(
@@ -48,7 +42,7 @@ export default function ContactForm() {
           phone: formData.phone,
           message: formData.message,
         },
-        "t7IrVcDAy0yW_PFpt"
+        "t7IrVcDAy0yW_PFpt",
       )
 
       setStatusMessage({
@@ -75,17 +69,14 @@ export default function ContactForm() {
   }
 
   return (
-    <div className="rounded-lg border p-6 shadow-sm bg-white space-y-6">
-      <h2 className="text-xl font-semibold text-center text-gray-900">
-        Contact Us
-      </h2>
-
+    <div className="w-full bg-white p-6 rounded-md border border-gray-200 shadow-sm">
+      <h2 className="text-xl font-medium text-center mb-6">Contact Us</h2>
       {statusMessage && (
         <div
-          className={`rounded-md p-3 text-center text-sm font-medium ${
+          className={`rounded p-2 text-center font-medium mb-4 transition-all duration-300 ${
             statusMessage.type === "success"
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
+              ? "bg-green-50 text-green-800 border border-green-200"
+              : "bg-red-50 text-red-800 border border-red-200"
           }`}
         >
           {statusMessage.text}
@@ -93,9 +84,9 @@ export default function ContactForm() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="firstName" className="block text-sm font-medium">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-2">
+            <label htmlFor="firstName" className="block font-medium text-center">
               First Name
             </label>
             <Input
@@ -105,10 +96,12 @@ export default function ContactForm() {
               value={formData.firstName}
               onChange={handleChange}
               required
+              className="border-gray-300 h-10"
             />
           </div>
-          <div>
-            <label htmlFor="lastName" className="block text-sm font-medium">
+
+          <div className="space-y-2">
+            <label htmlFor="lastName" className="block font-medium text-center">
               Last Name
             </label>
             <Input
@@ -118,12 +111,13 @@ export default function ContactForm() {
               value={formData.lastName}
               onChange={handleChange}
               required
+              className="border-gray-300 h-10"
             />
           </div>
         </div>
 
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium">
+        <div className="space-y-2">
+          <label htmlFor="email" className="block font-medium text-center">
             Email Address
           </label>
           <Input
@@ -134,11 +128,12 @@ export default function ContactForm() {
             value={formData.email}
             onChange={handleChange}
             required
+            className="border-gray-300 h-10"
           />
         </div>
 
-        <div>
-          <label htmlFor="phone" className="block text-sm font-medium">
+        <div className="space-y-2">
+          <label htmlFor="phone" className="block font-medium text-center">
             Phone Number
           </label>
           <Input
@@ -148,11 +143,12 @@ export default function ContactForm() {
             placeholder="Phone"
             value={formData.phone}
             onChange={handleChange}
+            className="border-gray-300 h-10"
           />
         </div>
 
-        <div>
-          <label htmlFor="message" className="block text-sm font-medium">
+        <div className="space-y-2">
+          <label htmlFor="message" className="block font-medium text-center">
             Message
           </label>
           <Textarea
@@ -162,24 +158,29 @@ export default function ContactForm() {
             value={formData.message}
             onChange={handleChange}
             required
-            className="min-h-[120px]"
+            className="min-h-[150px] border-gray-300 resize-none"
           />
         </div>
 
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full text-base font-medium flex items-center justify-center gap-2 py-2 px-4 rounded-md"
-        >
-          {isSubmitting ? (
-            <span className="text-sm">Sending...</span>
-          ) : (
-            <>
-              <span className="text-base">Send</span>
-              <Send className="h-4 w-4" />
-            </>
-          )}
-        </Button>
+        <div className="flex justify-center">
+          <Button
+            type="submit"
+            className="px-10 bg-white hover:bg-gray-100 text-black border border-gray-300 py-2 text-base font-normal"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <span className="flex items-center justify-center gap-2">
+                <div className="h-4 w-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                Sending...
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                Send
+                <Send className="h-4 w-4" />
+              </span>
+            )}
+          </Button>
+        </div>
       </form>
     </div>
   )
