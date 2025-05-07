@@ -6,12 +6,20 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import {
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+    } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-const profileFormSchema = z.object({
+    const profileFormSchema = z.object({
     name: z.string().min(2, {
         message: "Name must be at least 2 characters.",
     }),
@@ -29,16 +37,30 @@ const profileFormSchema = z.object({
     facebook: z.string().optional(),
     })
 
-    type ProfileFormValues = z.infer<typeof profileFormSchema>
+    export type ProfileFormValues = z.infer<typeof profileFormSchema>
 
-    interface ProfileFormProps {
-    user: any
+    export interface ProfileFormProps {
+    user: {
+        name: string
+        email: string
+        bio: string
+        location: string
+        avatar?: string
+        socialLinks: { instagram?: string; twitter?: string; facebook?: string }
+    }
     onSubmit: (values: ProfileFormValues) => void
     onCancel: () => void
+    onAvatarChange: (file: File | null) => void
     }
 
-    export function ProfileForm({ user, onSubmit, onCancel }: ProfileFormProps) {
-    const [avatar, setAvatar] = useState(user.avatar)
+    export function ProfileForm({
+    user,
+    onSubmit,
+    onCancel,
+    onAvatarChange,
+    }: ProfileFormProps) {
+    const [avatar, setAvatar] = useState<string | undefined>(user.avatar)
+    const [avatarFile, setAvatarFile] = useState<File | null>(null)
 
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
@@ -54,14 +76,13 @@ const profileFormSchema = z.object({
         mode: "onChange",
     })
 
-    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
+    function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0] ?? null
         if (file) {
-        // In a real app, this would upload the file to a server
-        // For now, we'll just create a local URL
-        const url = URL.createObjectURL(file)
-        setAvatar(url)
+        setAvatar(URL.createObjectURL(file))
         }
+        setAvatarFile(file)
+        onAvatarChange(file)
     }
 
     return (
@@ -73,7 +94,13 @@ const profileFormSchema = z.object({
                 <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="mt-4">
-                <Input id="avatar" type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                <Input
+                id="avatar"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+                />
                 <Button
                 type="button"
                 variant="outline"
@@ -120,7 +147,11 @@ const profileFormSchema = z.object({
                 <FormItem>
                 <FormLabel>Bio</FormLabel>
                 <FormControl>
-                    <Textarea placeholder="Tell us about yourself" className="resize-none" {...field} />
+                    <Textarea
+                    placeholder="Tell us about yourself"
+                    className="resize-none"
+                    {...field}
+                    />
                 </FormControl>
                 <FormDescription>
                     Share a bit about yourself and your travel interests.
@@ -146,6 +177,7 @@ const profileFormSchema = z.object({
 
             <div className="space-y-4">
             <h3 className="text-lg font-medium">Social Links</h3>
+
             <FormField
                 control={form.control}
                 name="instagram"

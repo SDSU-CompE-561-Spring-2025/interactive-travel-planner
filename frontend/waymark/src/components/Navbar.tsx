@@ -18,6 +18,14 @@ const navList = [
 		label: 'Planner',
 		link: '/planner',
 	},
+	{
+		label: 'sign in',
+		link: '/sign-in',
+	},
+	{
+		label: 'profile',
+		link: '/profile/userID',
+	},
 
 ];
 
