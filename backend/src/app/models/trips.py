@@ -5,13 +5,14 @@ from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
-
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 
 
 class Trips(Base):
     __tablename__ = "trips"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(Integer, ForeignKey("users.id"))
     title = Column(String)
     description = Column(String)
