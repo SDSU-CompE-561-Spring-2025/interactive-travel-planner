@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { usePlannerStore } from '@/store/plannerStore';
+import { motion } from 'framer-motion';
+import PlannerLayout from './PlannerLayout';
 
 export default function ReviewStep() {
   const router = useRouter();
@@ -61,54 +63,65 @@ export default function ReviewStep() {
   );
 
   return (
-    <div className="max-w-xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-6">Review Your Trip</h1>
-
-      <div className="space-y-3">
-        <Item label="🏷️ Trip Name" value={tripName || 'Not set'} editRoute="name" />
-        <Item
-          label="📅 Dates"
-          value={
-            dates.start && dates.end
-              ? `${dates.start} → ${dates.end}`
-              : 'Not selected'
-          }
-          editRoute="dates"
-        />
-        <Item
-          label="📍 Destination"
-          value={destination || 'Not chosen'}
-          editRoute="destination"
-        />
-        {/* <Item
-          label="🎯 Activities"
-          value={activities.length > 0 ? activities.join(', ') : 'None selected'}
-          editRoute="activities"
-        /> */}
-        <Item
-          label="🧑‍🤝‍🧑 Collaborators"
-          value={
-            collaborators.length > 0 ? (
-              <ul className="list-disc ml-5">
-                {collaborators.map((c) => (
-                  <li key={c.id}>{c.name}</li>
-                ))}
-              </ul>
-            ) : (
-              'None'
-            )
-          }
-          editRoute="collab"
-        />
-        <Item label="💸 Budget" value={budget ? `$${budget}` : 'Not set'} editRoute="budget" /> 
-      </div>
-
-      <button
-        onClick={handleSubmit}
-        className="mt-8 bg-blue-600 text-white px-6 py-3 rounded-lg"
+    <PlannerLayout currentStep={8}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.4 }}
+        className="text-center"
       >
-        Confirm and Create Trip
-      </button>
-    </div>
+         <div className="max-w-xl mx-auto py-10 px-4">
+          <h1 className="text-3xl font-bold mb-6">Review Your Trip</h1>
+
+          <div className="space-y-3">
+            <Item label="🏷️ Trip Name" value={tripName || 'Not set'} editRoute="name" />
+            <Item
+              label="📅 Dates"
+              value={
+                dates.start && dates.end
+                  ? `${dates.start} → ${dates.end}`
+                  : 'Not selected'
+              }
+              editRoute="dates"
+            />
+            <Item
+              label="📍 Destination"
+              value={destination || 'Not chosen'}
+              editRoute="destination"
+            />
+            <Item
+              label="🎯 Activities"
+              value={activities.length > 0 ? activities.join(', ') : 'None selected'}
+              editRoute="activities"
+            />
+            <Item
+              label="🧑‍🤝‍🧑 Collaborators"
+              value={
+                collaborators.length > 0 ? (
+                  <ul className="list-disc ml-5">
+                    {collaborators.map((c) => (
+                      <li key={c.id}>{c.name}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  'None'
+                )
+              }
+              editRoute="collab"
+            />
+            <Item label="💸 Budget" value={budget ? `$${budget}` : 'Not set'} editRoute="budget" /> 
+          </div>
+
+          <button
+            onClick={handleSubmit}
+            className="mt-8 bg-blue-600 text-white px-6 py-3 rounded-lg"
+          >
+            Confirm and Create Trip
+          </button>
+        </div>
+      </motion.div>
+    </PlannerLayout>
+   
   );
 }

@@ -10,7 +10,7 @@ const steps = [
   'Start',
   'Name',
   'Dates',
-  'Location',
+  'Destination',
   'Activities',
   'Budget',
   'Collaborators',

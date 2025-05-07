@@ -51,56 +51,67 @@ export default function DestinationStep() {
     if (returnToReview) {
       router.push('/planner/review');
     } else {
-      router.push('/planner/budget');  //chnage to activities
+      router.push('/planner/budget');  //chnage to 
     }
   };
 
   const handleBack = () => router.back();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-4">
-      <h1 className="text-3xl font-bold mb-4">Where do you wanna go?</h1>
+    <PlannerLayout currentStep={3}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.4 }}
+        className="text-center"
+      >
+        <div className="flex flex-col items-center justify-center min-h-screen px-4">
+          <h1 className="text-3xl font-bold mb-4">Where do you wanna go?</h1>
 
-      <div className="w-full max-w-md relative">
-        <input
-          type="text"
-          className='border p-2 rounded w-full mb-2'
-          value={name}
-          onChange={(e) => handleInputChange(e.target.value)}
-          placeholder={destination || 'Enter a destination'}
-        />
-        {suggestions.length > 0 && (
-          <ul className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded shadow z-10">
-            {suggestions.map((city) => (
-              <li
-                key={city}
-                onClick={() => handleSelectSuggestion(city)}
-                className="p-2 cursor-pointer hover:bg-gray-100"
-              >
-                {city}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+          <div className="w-full max-w-md relative">
+            <input
+              type="text"
+              className='border p-2 rounded w-full mb-2'
+              value={name}
+              onChange={(e) => handleInputChange(e.target.value)}
+              placeholder={destination || 'Enter a destination'}
+            />
+            {suggestions.length > 0 && (
+              <ul className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded shadow z-10">
+                {suggestions.map((city) => (
+                  <li
+                    key={city}
+                    onClick={() => handleSelectSuggestion(city)}
+                    className="p-2 cursor-pointer hover:bg-gray-100"
+                  >
+                    {city}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+          {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 
-      <div className="flex gap-4 justify-center mt-2">
-        <button
-          onClick={handleBack}
-          className="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg"
-        >
-          Back
-        </button>
+          <div className="flex gap-4 justify-center mt-2">
+            <button
+              onClick={handleBack}
+              className="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg"
+            >
+              Back
+            </button>
 
-        <button
-          onClick={handleNext}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg"
-        >
-          {returnToReview ? 'Return to Review' : 'Next Step'}
-        </button>
-      </div>
-    </div>
+            <button
+              onClick={handleNext}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg"
+            >
+              {returnToReview ? 'Return to Review' : 'Next Step'}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </PlannerLayout>
+        
   );
 }
