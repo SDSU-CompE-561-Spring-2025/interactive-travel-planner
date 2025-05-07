@@ -1,29 +1,29 @@
-
 from pydantic import BaseModel
-from enum import Enum
 from datetime import datetime
-from typing import Optional
-
-
+from typing import List
+from .destinations import DestinationResponse
+from .budget import BudgetResponse
+from .calendar_event import CalendarEventResponse
+from .dates import DateResponse
 
 class TripBase(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
+    title: str
+    description: str
+
+class TripCreate(TripBase):
     start_date: datetime
     end_date: datetime
 
-    class Config:
-        orm_mode = True
-
-
-class TripCreate(TripBase):
-    pass
-
-class Trip(TripBase):
+class TripResponse(TripBase):
     id: int
-    user_id: int
+    start_date: datetime
+    end_date: datetime
     created_at: datetime
     updated_at: datetime
+    destinations: List[DestinationResponse] = []
+    budgets: List[BudgetResponse] = []
+    calendar_events: List[CalendarEventResponse] = []
+    dates: List[DateResponse] = []
 
     class Config:
         orm_mode = True

@@ -1,46 +1,21 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from typing import List
-from app.schemas.calendar_event import CalendarEvent, CalendarEventCreate
-from app.services.calendar_event import create_event, get_events, get_event, delete_event
-from app.dependencies import get_db, get_current_user
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.database import get_async_session
+from app.models.calendar_event import CalendarEvent
+from app.schemas.calendar_event import CalendarEventCreate, CalendarEventResponse
+from sqlalchemy.future import select
 
-router = APIRouter()
+router = APIRouter(prefix="/trips/{trip_id}/events", tags=["Calendar Events"])
 
-@router.post("/events/", response_model=CalendarEvent)
-def create_calendar_event(
-    event: CalendarEventCreate,
-    db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user)
-):
-    return create_event(db, event, user_id)
-
-
-@router.get("/events/", response_model=List[CalendarEvent])
-def read_calendar_events(
-    db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user)
-):
-    return get_events(db, user_id)
-
-@router.get("/events/{event_id}", response_model=CalendarEvent)
-def read_calendar_event(
-    event_id: int,
-    db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user)
-):
-    db_event = get_event(db, event_id, user_id)
-    if db_event is None:
-        raise HTTPException(status_code=404, detail="Event not found")
+@router.post("/", response_model=CalendarEventResponse)
+async def add_event(trip_id: int, event: CalendarEventCreate, db: AsyncSession = Depends(get_async_session)):
+    db_event = CalendarEvent(**event.dict(), trip_id=trip_id)
+    db.add(db_event)
+    await db.commit()
+    await db.refresh(db_event)
     return db_event
 
-@router.delete("/events/{event_id}")
-def delete_calendar_event(
-    event_id: int,
-    db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user)
-):
-    success = delete_event(db, event_id, user_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Event not found")
-    return {"detail": "Event deleted"}
+@router.get("/", response_model=list[CalendarEventResponse])
+async def get_events(trip_id: int, db: AsyncSession = Depends(get_async_session)):
+    result = await db.execute(select(CalendarEvent).where(CalendarEvent.trip_id == trip_id))
+    return result.scalars().all()
