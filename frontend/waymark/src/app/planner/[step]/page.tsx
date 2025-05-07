@@ -19,7 +19,7 @@ export default function PlannerStepPage() {
     name: <NameStep />,
     dates: <DatesStep />,
     destination: <DestinationStep />,
-    activities: <ActivitiesStep />,
+    //activities: <ActivitiesStep />,
     budget: <BudgetStep />,
     collab: <CollaboratorsStep />,
     review: <ReviewStep />,

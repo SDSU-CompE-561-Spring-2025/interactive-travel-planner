@@ -66,17 +66,6 @@ export default function ReviewStep() {
 
       <div className="space-y-3">
         <Item label="🏷️ Trip Name" value={tripName || 'Not set'} editRoute="name" />
-        <Item label="💸 Budget" value={budget ? `$${budget}` : 'Not set'} editRoute="budget" />
-        <Item
-          label="🎯 Activities"
-          value={activities.length > 0 ? activities.join(', ') : 'None selected'}
-          editRoute="activities"
-        />
-        <Item
-          label="📍 Destination"
-          value={destination || 'Not chosen'}
-          editRoute="destination"
-        />
         <Item
           label="📅 Dates"
           value={
@@ -86,6 +75,16 @@ export default function ReviewStep() {
           }
           editRoute="dates"
         />
+        <Item
+          label="📍 Destination"
+          value={destination || 'Not chosen'}
+          editRoute="destination"
+        />
+        {/* <Item
+          label="🎯 Activities"
+          value={activities.length > 0 ? activities.join(', ') : 'None selected'}
+          editRoute="activities"
+        /> */}
         <Item
           label="🧑‍🤝‍🧑 Collaborators"
           value={
@@ -101,6 +100,7 @@ export default function ReviewStep() {
           }
           editRoute="collab"
         />
+        <Item label="💸 Budget" value={budget ? `$${budget}` : 'Not set'} editRoute="budget" /> 
       </div>
 
       <button
