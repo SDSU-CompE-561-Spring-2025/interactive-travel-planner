@@ -15,6 +15,7 @@ import {
   ChevronDown
 } from 'lucide-react'
 
+// Update the interface in TripTimeline.tsx
 type Event = { 
   type: 'stay' | 'flight' | 'train'; 
   label: string; 
@@ -25,7 +26,7 @@ type Event = {
 interface TimelineProps { 
   events: Event[];
   editable?: boolean;
-  onSave?: (events: Event[]) => Promise<void>;
+  onSave?: (events: Event[]) => Promise<void>; // Fixed return type
 }
 
 export default function TripTimeline({ events, editable = false, onSave }: TimelineProps) {
@@ -290,7 +291,7 @@ export default function TripTimeline({ events, editable = false, onSave }: Timel
                     )}
                   </div>
                 ) : (
-                  <h3 className="flex items-center text-base font-semibold text-gray-900">
+                  <h3 className="flex items-center text-base font-semibold text-gray-900 pl-1">
                     {e.label}
                   </h3>
                 )}
@@ -335,7 +336,7 @@ export default function TripTimeline({ events, editable = false, onSave }: Timel
               
               {/* Show sub info when not editing this specific event */}
               {(editingEventIndex !== i || !isEditing) && e.sub && (
-                <p className="text-sm font-medium text-teal-600 mt-1">
+                <p className="text-sm font-medium text-teal-600 mt-1 pl-1">
                   {e.sub}
                 </p>
               )}

@@ -33,7 +33,9 @@ export default function DestinationsMap({
   const [geocodeResults, setGeocodeResults] = useState<any[]>([]);
   const [geocodeInput, setGeocodeInput] = useState('');
   const [isGeocodingLoading, setIsGeocodingLoading] = useState(false);
-
+  const mapInstanceId = useRef(`map-${Math.random().toString(36).substring(2, 9)}`);
+  const [forceRender, setForceRender] = useState(0);
+  
   // Reset editing destinations when props change
   useEffect(() => {
     if (!isEditing) {
@@ -41,38 +43,58 @@ export default function DestinationsMap({
     }
   }, [destinations, isEditing]);
 
+  // Force a reload of the map when it becomes visible
+  useEffect(() => {
+    // Initialize map cleanup on unmount
+    return () => {
+      if (leafletMap) {
+        try {
+          leafletMap.remove();
+          setLeafletMap(null);
+        } catch (e) {
+          console.error('Error cleaning up map:', e);
+        }
+      }
+    };
+  }, []);
+
   // Add the Leaflet CSS to the document head
   useEffect(() => {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-    link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
-    link.crossOrigin = '';
-    
-    document.head.appendChild(link);
-    
-    return () => {
-      document.head.removeChild(link);
-    };
+    if (!document.querySelector('link[href*="leaflet.css"]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+      link.crossOrigin = '';
+      document.head.appendChild(link);
+    }
   }, []);
 
   // Initialize the map when Leaflet is loaded
   useEffect(() => {
-    // Only proceed if mapRef exists, Leaflet is loaded, and we have destinations
-    if (!mapLoaded || !mapRef.current) return;
+    // Only proceed if mapRef exists, Leaflet is loaded
+    if (!mapLoaded || !mapRef.current || !window.L) return;
     
     try {
-      // Clear previous map if it exists
+      // Always remove previous map instance if it exists
       if (leafletMap) {
-        leafletMap.remove();
+        try {
+          leafletMap.remove();
+        } catch (e) {
+          console.error('Error removing previous map:', e);
+        }
         setLeafletMap(null);
       }
+
+      // Assign a new unique ID to the map container
+      const uniqueId = `map-${Math.random().toString(36).substring(2, 15)}`;
+      mapRef.current.id = uniqueId;
       
-      // Create the map
+      // Create the map with new instance
       const L = window.L;
-      const map = L.map(mapRef.current, {
-        scrollWheelZoom: false, // Disable scroll wheel zoom to prevent accidental zooming
-        zoomControl: true,      // Show zoom controls
+      const map = L.map(uniqueId, {
+        scrollWheelZoom: false,
+        zoomControl: true,
       });
       
       setLeafletMap(map);
@@ -159,6 +181,13 @@ export default function DestinationsMap({
         map.setView([20, 0], 2);
       }
       
+      // Force a resize after map is initialized
+      setTimeout(() => {
+        if (map) {
+          map.invalidateSize();
+        }
+      }, 300);
+      
     } catch (error) {
       console.error('Error initializing Leaflet map:', error);
       if (mapRef.current) {
@@ -166,14 +195,22 @@ export default function DestinationsMap({
       }
     }
     
-    // Cleanup function
-    return () => {
+  }, [mapLoaded, destinations, selectedDest, isEditing, editingDestinations, forceRender]);
+
+  // Force map resize when window is resized
+  useEffect(() => {
+    const handleResize = () => {
       if (leafletMap) {
-        leafletMap.remove();
-        setLeafletMap(null);
+        leafletMap.invalidateSize();
       }
     };
-  }, [mapLoaded, destinations, selectedDest, isEditing, editingDestinations]);
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [leafletMap]);
   
   // Toggle edit mode
   const toggleEditMode = () => {
@@ -202,6 +239,9 @@ export default function DestinationsMap({
     try {
       await onSave(editingDestinations);
       setIsEditing(false);
+      
+      // Force map to reload
+      setForceRender(prev => prev + 1);
     } catch (err) {
       setError('Failed to save destinations. Please try again.');
       console.error('Error saving destinations:', err);
@@ -300,6 +340,11 @@ export default function DestinationsMap({
     updateDestination('coords', [parseFloat(result.lat), parseFloat(result.lon)], editingDestIndex);
     setGeocodeResults([]);
     setGeocodeInput('');
+  };
+  
+  // Force map to reload
+  const forceMapReload = () => {
+    setForceRender(prev => prev + 1);
   };
   
   // Fallback map if Leaflet fails to load
@@ -441,6 +486,8 @@ export default function DestinationsMap({
         crossOrigin=""
         onLoad={() => {
           setMapLoaded(true);
+          // Force a rerender of the map when script is loaded
+          setForceRender(prev => prev + 1);
         }}
         onError={() => {
           console.error('Failed to load Leaflet script');
@@ -642,7 +689,7 @@ export default function DestinationsMap({
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
         {(isEditing ? editingDestinations : destinations).map((d, i) => (
           <div
-            key={d.name + i}
+            key={`${d.name}-${i}`}
             className="relative"
           >
             <button
@@ -710,8 +757,17 @@ export default function DestinationsMap({
       <div className="mt-4 text-xs text-gray-400">
         Click on a destination to highlight it on the map
       </div>
+      
+      {/* Hidden button to force map reload */}
+      <button 
+        onClick={forceMapReload} 
+        className="hidden"
+        aria-hidden="true"
+      >
+        Reload Map
+      </button>
     </div>
-  )
+  );
 }
 
 // Add TypeScript declaration for Leaflet

@@ -15,6 +15,7 @@ import {
   ChevronRight
 } from 'lucide-react'
 
+// Update the interface in DayByDayView.tsx
 type Activity = { 
   title: string; 
   time: string; 
@@ -30,7 +31,7 @@ type Day = {
 interface DayByDayProps {
   days: Day[];
   editable?: boolean;
-  onSave?: (days: Day[]) => Promise<void>;
+  onSave?: (days: Day[]) => Promise<void>; // Fixed return type
 }
 
 export default function DayByDayView({ days, editable = false, onSave }: DayByDayProps) {
@@ -70,6 +71,22 @@ export default function DayByDayView({ days, editable = false, onSave }: DayByDa
       return `${hours}h ${minutes}m`;
     }
     return duration;
+  }
+
+  // Get highlight class for days with activities
+  const getDayHighlightClass = (day: Day, isActiveDay: boolean) => {
+    if (!day) return '';
+    
+    if (isActiveDay) {
+      return 'bg-blue-500 text-white shadow-md transform scale-105';
+    }
+    
+    // Return a highlight class if the day has activities
+    if (day.activities && day.activities.length > 0) {
+      return 'bg-white border-l-4 border-blue-500 text-gray-700';
+    }
+    
+    return 'text-gray-700 hover:bg-gray-100 shadow-sm';
   }
   
   // Toggle edit mode
@@ -342,6 +359,8 @@ export default function DayByDayView({ days, editable = false, onSave }: DayByDa
             const isActive = i === idx;
             const dayOfWeek = getDayOfWeek(d.date);
             const date = getFormattedDate(d.date);
+            const hasActivities = d.activities.length > 0;
+            const highlightClass = getDayHighlightClass(d, isActive);
             
             return (
               <button
@@ -352,9 +371,9 @@ export default function DayByDayView({ days, editable = false, onSave }: DayByDa
                 }}
                 className={`
                   flex flex-col items-center px-4 py-2 rounded-md transition-colors
-                  ${isActive 
-                    ? 'bg-blue-500 text-white shadow-md transform scale-105' 
-                    : 'text-gray-700 hover:bg-gray-100 shadow-sm'}
+                  ${highlightClass}
+                  ${hasActivities && !isActive ? 'border-l-4 border-blue-500' : ''}
+                  ${!hasActivities && !isActive ? 'border border-gray-200' : ''}
                 `}
               >
                 <span className={`text-sm font-semibold ${isActive ? 'text-white' : 'text-gray-900'}`}>
@@ -363,6 +382,10 @@ export default function DayByDayView({ days, editable = false, onSave }: DayByDa
                 <span className={`text-xs ${isActive ? 'text-white' : 'text-gray-500'}`}>
                   {date}
                 </span>
+                {/* Activity indicator dot */}
+                {hasActivities && !isActive && (
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white"></span>
+                )}
               </button>
             )
           })}
@@ -506,11 +529,15 @@ export default function DayByDayView({ days, editable = false, onSave }: DayByDa
       </div>
       
       <div className="flex justify-center mt-4 space-x-1">
-        {(isEditing ? editingDays : days).map((_, i) => (
+        {(isEditing ? editingDays : days).map((day, i) => (
           <button 
             key={i}
             className={`w-2 h-2 rounded-full ${
-              i === idx ? 'bg-blue-500' : 'bg-gray-300 hover:bg-gray-400'
+              i === idx 
+                ? 'bg-blue-500' 
+                : day.activities.length > 0 
+                  ? 'bg-blue-300 hover:bg-blue-400' 
+                  : 'bg-gray-300 hover:bg-gray-400'
             }`}
             onClick={() => {
               setIdx(i);
