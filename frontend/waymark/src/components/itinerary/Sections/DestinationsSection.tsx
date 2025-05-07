@@ -1,13 +1,15 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Plus, Edit, Trash2, MapPin } from 'lucide-react'
 import DestinationsMap from '../../itinerary/DestinationsMap'
 import { Itinerary, updateItinerarySection } from '../../../lib/api'
 
+// Extend the API‐returned type with a local-only `color` field
 interface Destination {
   name: string
-  dates: string  // formatted "YYYY-MM-DD,YYYY-MM-DD"
+  dates: string            // "YYYY-MM-DD,YYYY-MM-DD"
   lat?: number
   lng?: number
+  color?: string
 }
 
 interface DestinationsSectionProps {
@@ -23,6 +25,17 @@ interface DestinationsSectionProps {
   handleRemoveDestination: (index: number) => void
 }
 
+// The provided 11-color pastel palette
+const pastelColors = [
+  '#66C5CC', '#F6C571', '#F89C74', '#DCB0F2',
+  '#87C55F', '#9EB9F3', '#FEBB81', '#C9D874',
+  '#8DE0A4', '#B497E7', '#B3B3B3',
+]
+
+// Action button colors
+const actionBlue = '#66C5CC'
+const actionRed  = '#F89C74'
+
 const DestinationsSection: React.FC<DestinationsSectionProps> = ({
   itinerary,
   setItinerary,
@@ -32,116 +45,98 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
   setLoading,
   handleRemoveDestination,
 }) => {
-  // form state
+  // Form state
   const [formOpen, setFormOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<
-    { name: string; lat: number; lng: number }[]
-  >([])
-  const [selected, setSelected] = useState<{
-    name: string
-    lat: number
-    lng: number
-  } | null>(null)
+  const [searchResults, setSearchResults] = useState<{ name: string; lat: number; lng: number }[]>([])
+  const [selected, setSelected] = useState<{ name: string; lat: number; lng: number } | null>(null)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [editIndex, setEditIndex] = useState<number | null>(null)
+  const [selectedColor, setSelectedColor] = useState<string>(pastelColors[0])
 
-  // perform a search against Nominatim
+  // Reset color when opening blank
+  useEffect(() => {
+    if (formOpen && editIndex === null) {
+      setSelectedColor(pastelColors[0])
+    }
+  }, [formOpen, editIndex])
+
+  // Parse "YYYY-MM-DD" as local midnight
+  const parseLocalDate = (d: string) => {
+    const [y, m, day] = d.split('-').map(Number)
+    return new Date(y, m - 1, day)
+  }
+
+  // Format "June 25, 2023 → July 6, 2023"
+  const formatDateRange = (dates: string) => {
+    const [sStr, eStr] = dates.split(',').map(s => s.trim())
+    const s = parseLocalDate(sStr), e = parseLocalDate(eStr)
+    const opts = { year: 'numeric', month: 'long', day: 'numeric' } as const
+    return `${s.toLocaleDateString('en-US', opts)} → ${e.toLocaleDateString('en-US', opts)}`
+  }
+
+  // Search Nominatim
   const handleSearch = async () => {
     if (!searchQuery) return
     setLoading(true)
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=5&accept-language=en&q=${encodeURIComponent(
-          searchQuery
-        )}`
+        `https://nominatim.openstreetmap.org/search?format=json&limit=5&accept-language=en&q=${encodeURIComponent(searchQuery)}`
       )
       const data = await res.json()
       setSearchResults(
-        data.map((item: any) => ({
-          name: item.display_name,
-          lat: parseFloat(item.lat),
-          lng: parseFloat(item.lon),
+        data.map((i: any) => ({
+          name: i.display_name,
+          lat: parseFloat(i.lat),
+          lng: parseFloat(i.lon),
         }))
       )
-    } catch (err) {
-      console.error(err)
+    } catch {
+      // ignore
     }
     setLoading(false)
   }
 
-  // Corrected date formatter:
-  const formatDateRange = (dates: string) => {
-    const [startStr, endStr] = dates.split(',').map(d => new Date(d))
-    const s = startStr
-    const e = endStr
-
-    const optsStart = { month: 'short', day: 'numeric' } as const
-    const optsEndSameMonth = {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    } as const
-    const optsFull = {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    } as const
-
-    // If same month & year, shorten the start
-    if (s.getFullYear() === e.getFullYear() && s.getMonth() === e.getMonth()) {
-      return `${s.toLocaleDateString('en-US', optsStart)} — ${e.toLocaleDateString(
-        'en-US',
-        optsEndSameMonth
-      )}`
-    }
-    // Otherwise, full both sides
-    return `${s.toLocaleDateString('en-US', optsFull)} — ${e.toLocaleDateString(
-      'en-US',
-      optsFull
-    )}`
-  }
-
-  // Add or update destination
+  // Add / update destination
   const handleSave = () => {
     if (!selected || !startDate || !endDate) return
-
     const newDest: Destination = {
       name: selected.name.split(',')[0],
       dates: `${startDate},${endDate}`,
       lat: selected.lat,
       lng: selected.lng,
+      color: selectedColor,
     }
+    const existing = (itinerary.destinations || []) as Destination[]
+    const updated = editIndex != null
+      ? [
+          ...existing.slice(0, editIndex),
+          newDest,
+          ...existing.slice(editIndex + 1),
+        ]
+      : [...existing, newDest]
 
-    const updatedList =
-      editIndex != null
-        ? [
-            ...itinerary.destinations!.slice(0, editIndex),
-            newDest,
-            ...itinerary.destinations!.slice(editIndex + 1),
-          ]
-        : [...(itinerary.destinations || []), newDest]
-
-    // update state + sync days
+    // Update local state & days
     setItinerary(prev => ({
       ...prev,
-      destinations: updatedList,
-      days: syncDaysWithDestinations(updatedList, prev.days),
+      destinations: updated,
+      days: syncDaysWithDestinations(updated, prev.days),
     }))
 
-    // persist if not a new-trip
+    // Persist to server (strip out color)
     if (itinerary.id && itinerary.id !== 'new-trip') {
       setLoading(true)
-      updateItinerarySection(itinerary.id, 'destinations', updatedList)
-        .then(() => showNotification('success', 'Destinations saved!'))
-        .catch(() => showNotification('error', 'Failed to save destinations.'))
+      const serverList = updated.map(({ name, dates, lat, lng }) => ({ name, dates, lat, lng }))
+      updateItinerarySection(itinerary.id, 'destinations', serverList)
+        .then(() => showNotification('success', 'Saved!'))
+        .catch(() => showNotification('error', 'Save failed.'))
         .finally(() => setLoading(false))
     } else {
-      showNotification('success', 'Destinations saved!')
+      showNotification('success', 'Saved!')
     }
 
-    // reset and close form
+    // Reset form
     setFormOpen(false)
     setSearchQuery('')
     setSearchResults([])
@@ -160,18 +155,22 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
     setSearchQuery('')
     setFormOpen(true)
   }
-  // Open form for editing existing
+
+  // Open for editing
   const openEdit = (i: number) => {
-    const d = itinerary.destinations![i]
-    if (!d) return
+    const d = (itinerary.destinations || []) as Destination[]
+    const dest = d[i]
     setEditIndex(i)
-    setSelected({ name: d.name, lat: d.lat!, lng: d.lng! })
-    const [s, e] = d.dates.split(',').map(x => x.trim())
+    setSelected({ name: dest.name, lat: dest.lat!, lng: dest.lng! })
+    const [s, e] = dest.dates.split(',').map(x => x.trim())
     setStartDate(s)
     setEndDate(e)
-    setSearchQuery(d.name)
+    setSearchQuery(dest.name)
+    setSelectedColor(dest.color ?? pastelColors[i % pastelColors.length])
     setFormOpen(true)
   }
+
+  const dests = (itinerary.destinations || []) as Destination[]
 
   return (
     <div>
@@ -183,133 +182,162 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
           className="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200"
           aria-label="Add Destination"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-8 h-8" />
         </button>
       </div>
 
       {/* Map */}
       <div className="h-[40rem] border rounded-lg overflow-hidden mb-6">
         <DestinationsMap
-          destinations={itinerary.destinations || []}
+          destinations={dests}
           editable={false}
           onSave={() => Promise.resolve()}
         />
       </div>
 
-      {/* Slide-down form */}
-      <div
-        className={`transition-all duration-300 ease-out overflow-hidden ${
-          formOpen
-            ? 'max-h-[550px] opacity-100 mb-6'
-            : 'max-h-0 opacity-0'
-        }`}
-      >
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h3 className="text-lg font-medium mb-4">
-            {editIndex != null ? 'Edit Destination' : 'Add Destination'}
-          </h3>
+      {/* Slide-down Form */}
+      <div className={`transition-all duration-300 ease-out overflow-hidden ${
+        formOpen ? 'max-h-[700px] opacity-100 mb-6' : 'max-h-0 opacity-0'
+      }`}>
+        <div
+          className="border border-gray-200 rounded-lg overflow-hidden shadow-lg"
+          style={{ borderLeft: `4px solid ${selectedColor}` }}
+        >
+          <div className="bg-white p-6">
+            <h3 className="text-lg font-normal mb-4 text-gray-800">
+              {editIndex != null ? 'Edit Destination' : 'Add Destination'}
+            </h3>
 
-          {/* Search */}
-          <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Search location…"
-              className="w-full border p-2 rounded"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              onKeyPress={e => e.key === 'Enter' && handleSearch()}
-            />
-            {searchResults.length > 0 && (
-              <ul className="border rounded max-h-40 overflow-y-auto mt-2">
-                {searchResults.map((r, i) => (
-                  <li
-                    key={i}
-                    className="p-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => {
-                      setSelected(r)
-                      setSearchQuery(r.name)
-                      setSearchResults([])
-                    }}
-                  >
-                    {r.name}
-                  </li>
+            {/* Search */}
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Search location…"
+                className="w-full border p-2 rounded font-normal"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onKeyPress={e => e.key === 'Enter' && handleSearch()}
+              />
+              {searchResults.length > 0 && (
+                <ul className="border rounded max-h-40 overflow-y-auto mt-2">
+                  {searchResults.map((r, i) => (
+                    <li
+                      key={i}
+                      className="p-2 hover:bg-gray-100 cursor-pointer font-normal"
+                      onClick={() => {
+                        setSelected(r)
+                        setSearchQuery(r.name)
+                        setSearchResults([])
+                      }}
+                    >
+                      {r.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Color Picker */}
+            <div className="mb-4">
+              <label className="block text-sm font-normal mb-1 text-gray-700">
+                Card Color
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {pastelColors.map(c => (
+                  <button
+                    key={c}
+                    onClick={() => setSelectedColor(c)}
+                    className={`w-8 h-8 rounded-full ${
+                      selectedColor === c ? 'ring-2 ring-offset-1 ring-gray-800' : ''
+                    }`}
+                    style={{ backgroundColor: c }}
+                  />
                 ))}
-              </ul>
-            )}
-          </div>
-
-          {/* Dates */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm mb-1">Start</label>
-              <input
-                type="date"
-                className="w-full border p-2 rounded"
-                value={startDate}
-                onChange={e => setStartDate(e.target.value)}
-              />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm mb-1">End</label>
-              <input
-                type="date"
-                className="w-full border p-2 rounded"
-                value={endDate}
-                onChange={e => setEndDate(e.target.value)}
-              />
-            </div>
-          </div>
 
-          {/* Actions */}
-          <div className="flex justify-end space-x-2">
-            <button
-              onClick={() => setFormOpen(false)}
-              className="px-4 py-2 text-gray-600"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!selected || !startDate || !endDate}
-              className="px-4 py-2 bg-teal-500 text-white rounded disabled:opacity-50"
-            >
-              {editIndex != null ? 'Save' : 'Add'}
-            </button>
+            {/* Dates */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-normal mb-1 text-gray-700">Start</label>
+                <input
+                  type="date"
+                  className="w-full border p-2 rounded font-normal"
+                  value={startDate}
+                  onChange={e => setStartDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-normal mb-1 text-gray-700">End</label>
+                <input
+                  type="date"
+                  className="w-full border p-2 rounded font-normal"
+                  value={endDate}
+                  onChange={e => setEndDate(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setFormOpen(false)}
+                className="px-3 py-1 text-sm font-normal border rounded-md hover:bg-red-50"
+                style={{ color: actionRed, borderColor: actionRed }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={!selected || !startDate || !endDate}
+                className="px-3 py-1 text-sm font-normal border rounded-md hover:bg-blue-50"
+                style={{ color: actionBlue, borderColor: actionBlue }}
+              >
+                {editIndex != null ? 'Save' : 'Add'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Destination Cards */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {itinerary.destinations?.map((dest, i) => (
+        {dests.map((dest, i) => (
           <div
             key={i}
-            className="bg-white rounded-lg p-5 border border-gray-200 shadow-sm flex justify-between"
+            className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
           >
-            <div>
-              <div className="flex items-center mb-2">
-                <div className="w-9 h-9 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center mr-3">
-                  <MapPin className="w-5 h-5" />
+            {/* Pastel banner */}
+            <div
+              className="h-10 rounded-t-lg"
+              style={{
+                backgroundColor: dest.color || pastelColors[i % pastelColors.length],
+              }}
+            />
+            <div className="bg-white p-5 flex justify-between items-start">
+              <div>
+                <div className="flex items-center mb-2">
+                  <MapPin className="w-6 h-6 text-teal-600 mr-2" />
+                  <h4 className="text-xl font-semibold text-gray-800">{dest.name}</h4>
                 </div>
-                <h4 className="font-semibold text-gray-800">{dest.name}</h4>
+                <p className="text-sm font-bold text-gray-600">{formatDateRange(dest.dates)}</p>
               </div>
-              <p className="text-gray-500">{formatDateRange(dest.dates)}</p>
-            </div>
-            <div className="flex flex-col space-y-2">
-              <button
-                onClick={() => openEdit(i)}
-                className="p-1 text-gray-400 hover:text-blue-500 rounded-full"
-                aria-label="Edit"
-              >
-                <Edit className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => handleRemoveDestination(i)}
-                className="p-1 text-gray-400 hover:text-red-500 rounded-full"
-                aria-label="Remove"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
+              <div className="flex flex-col space-y-2">
+                <button
+                  onClick={() => openEdit(i)}
+                  className="p-1 border border-gray-300 rounded-full hover:bg-gray-100"
+                  aria-label="Edit"
+                >
+                  <Edit className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => handleRemoveDestination(i)}
+                  className="p-1 border border-gray-300 rounded-full hover:bg-gray-100"
+                  aria-label="Delete"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
         ))}
