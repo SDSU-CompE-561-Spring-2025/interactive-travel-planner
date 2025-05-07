@@ -1,371 +1,181 @@
-'use client'
-// src/components/itinerary/TripTimeline.tsx
-import { useState, useEffect } from 'react'
-import { 
-  Plane, 
-  Train, 
-  Home, 
-  AlertCircle, 
-  Edit2, 
-  Save, 
-  Plus, 
-  Trash2, 
-  X,
-  Check,
-  ChevronDown
-} from 'lucide-react'
+import React, { useState } from 'react';
+import { Plus } from 'lucide-react';
 
-// Update the interface in TripTimeline.tsx
-type Event = { 
-  type: 'stay' | 'flight' | 'train'; 
-  label: string; 
-  date: string; 
-  sub?: string 
+interface TimelineEvent {
+  date: string;
+  label: string;
+  type: string;
+  sub?: string;
 }
 
-interface TimelineProps { 
-  events: Event[];
-  editable?: boolean;
-  onSave?: (events: Event[]) => Promise<void>; // Fixed return type
+interface TripTimelineProps {
+  events: TimelineEvent[];
+  editable: boolean;
+  onSave: (events: TimelineEvent[]) => Promise<void>;
 }
 
-export default function TripTimeline({ events, editable = false, onSave }: TimelineProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingEvents, setEditingEvents] = useState<Event[]>([...events]);
-  const [editingEventIndex, setEditingEventIndex] = useState<number | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const TripTimeline: React.FC<TripTimelineProps> = ({ events, editable, onSave }) => {
+  const [localEvents, setLocalEvents] = useState<TimelineEvent[]>(events || []);
+  const [newEvent, setNewEvent] = useState<TimelineEvent>({
+    date: '',
+    label: '',
+    type: 'flight',
+    sub: '',
+  });
   
-  // Reset editing events when props change
-  useEffect(() => {
-    if (!isEditing) {
-      setEditingEvents([...events]);
-    }
-  }, [events, isEditing]);
-  
-  // Get icon based on event type
-  const getEventIcon = (type: string) => {
-    switch(type) {
-      case 'flight':
-        return <Plane className="w-5 h-5" />;
-      case 'train':
-        return <Train className="w-5 h-5" />;
-      case 'stay':
-        return <Home className="w-5 h-5" />;
-      default:
-        return <AlertCircle className="w-5 h-5" />;
-    }
-  };
-
-  // Get color based on event type
-  const getEventColor = (type: string) => {
-    switch(type) {
-      case 'flight':
-        return 'bg-blue-500 text-white';
-      case 'train':
-        return 'bg-green-500 text-white';
-      case 'stay':
-        return 'bg-amber-500 text-white';
-      default:
-        return 'bg-gray-500 text-white';
+  const handleAddEvent = () => {
+    if (newEvent.date && newEvent.label && newEvent.type) {
+      const updatedEvents = [...localEvents, { ...newEvent }];
+      // Sort by date
+      updatedEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      setLocalEvents(updatedEvents);
+      setNewEvent({ date: '', label: '', type: 'flight', sub: '' });
+      onSave(updatedEvents);
     }
   };
   
-  // Toggle edit mode
-  const toggleEditMode = () => {
-    if (!editable) return;
-    
-    if (isEditing) {
-      handleSaveChanges();
-    } else {
-      // Reset to original data when entering edit mode
-      setEditingEvents([...events]);
-      setIsEditing(true);
-      setError(null);
-    }
-  }
-  
-  // Handle saving all changes
-  const handleSaveChanges = async () => {
-    if (!onSave) {
-      setIsEditing(false);
-      return;
-    }
-    
-    setIsSaving(true);
-    setError(null);
-    
-    try {
-      await onSave(editingEvents);
-      setIsEditing(false);
-    } catch (err) {
-      setError('Failed to save timeline changes. Please try again.');
-      console.error('Error saving timeline:', err);
-    } finally {
-      setIsSaving(false);
-    }
+  const handleRemoveEvent = (index: number) => {
+    const updated = [...localEvents];
+    updated.splice(index, 1);
+    setLocalEvents(updated);
+    onSave(updated);
   };
   
-  // Handle event edit
-  const handleEventEdit = (eventIndex: number) => {
-    setEditingEventIndex(eventIndex);
-  }
-  
-  // Handle event save
-  const handleEventSave = (eventIndex: number) => {
-    setEditingEventIndex(null);
-  }
-  
-  // Update event
-  const updateEvent = (field: keyof Event, value: string, eventIndex: number) => {
-    const newEvents = [...editingEvents];
-    newEvents[eventIndex] = {
-      ...newEvents[eventIndex],
-      [field]: value
-    };
-    setEditingEvents(newEvents);
-  }
-  
-  // Update event type
-  const updateEventType = (value: 'stay' | 'flight' | 'train', eventIndex: number) => {
-    const newEvents = [...editingEvents];
-    newEvents[eventIndex] = {
-      ...newEvents[eventIndex],
-      type: value
-    };
-    setEditingEvents(newEvents);
-  }
-  
-  // Add new event
-  const addEvent = () => {
-    const newEvents = [...editingEvents];
-    
-    // Find position to insert based on date order
-    const newEvent = {
-      type: 'stay' as 'stay', // Explicitly cast to the correct type
-      label: "New Event",
-      date: new Date().toLocaleDateString('en-US', { 
-        month: 'long', 
-        day: 'numeric', 
-        year: 'numeric' 
-      }),
-      sub: "Add details here"
-    };
-    
-    newEvents.push(newEvent);
-    setEditingEvents(newEvents);
-    
-    // Start editing the new event immediately
-    setEditingEventIndex(newEvents.length - 1);
-  }
-  
-  // Delete event
-  const deleteEvent = (eventIndex: number) => {
-    const newEvents = [...editingEvents];
-    newEvents.splice(eventIndex, 1);
-    setEditingEvents(newEvents);
-  }
-  
-  // Discard changes
-  const discardChanges = () => {
-    setEditingEvents([...events]);
-    setIsEditing(false);
-    setEditingEventIndex(null);
-    setError(null);
-  }
-
   return (
-    <div className="text-center">
-      <div className="flex justify-between items-center mb-4">
-        {isEditing ? (
-          <div className="flex space-x-2">
-            <button 
-              onClick={handleSaveChanges}
-              disabled={isSaving}
-              className="flex items-center text-sm bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-md shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSaving ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-              ) : (
-                <Save className="w-4 h-4 mr-2" />
-              )}
-              Save Changes
-            </button>
-            <button
-              onClick={discardChanges}
-              disabled={isSaving}
-              className="flex items-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <X className="w-4 h-4 mr-2" />
-              Cancel
-            </button>
+    <div className="flex flex-col">
+      {/* Timeline display */}
+      <div className="min-h-[250px] pb-6">
+        {localEvents.length > 0 ? (
+          <div className="relative">
+            {/* Line */}
+            <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+            
+            {/* Events */}
+            <div className="space-y-6 ml-2">
+              {localEvents.map((event, i) => (
+                <div key={i} className="relative pl-10 pt-1">
+                  <div className={`absolute left-0 w-8 h-8 rounded-full flex items-center justify-center
+                    ${event.type === 'flight' ? 'bg-blue-100 text-blue-500' : 
+                      event.type === 'train' ? 'bg-green-100 text-green-500' : 
+                        'bg-amber-100 text-amber-500'}`}
+                  >
+                    {event.type === 'flight' ? (
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M22 12.5C22 11.1193 20.8807 10 19.5 10H9C8.44771 10 8 9.55228 8 9V7C8 5.89543 7.10457 5 6 5H4.5C3.11929 5 2 6.11929 2 7.5V21.5C2 21.7761 2.22386 22 2.5 22H4C4.27614 22 4.5 21.7761 4.5 21.5V17C4.5 16.4477 4.94772 16 5.5 16H18.5C19.8807 16 21 14.8807 21 13.5" />
+                        <path d="M16 10L16 6M16 2L16 6M16 6L12 6M16 6L20 6" />
+                      </svg>
+                    ) : event.type === 'train' ? (
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="4" y="3" width="16" height="16" rx="2" />
+                        <path d="M4 11H20" />
+                        <path d="M12 3V19" />
+                        <path d="M8 19L6 22" />
+                        <path d="M16 19L18 22" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" />
+                        <path d="M9 22V12H15V22" />
+                      </svg>
+                    )}
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-3 border border-gray-200">
+                    <div className="flex justify-between">
+                      <h3 className="font-medium">{event.label}</h3>
+                      {editable && (
+                        <button
+                          onClick={() => handleRemoveEvent(i)}
+                          className="text-gray-400 hover:text-red-500"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M18 6L6 18M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500">{event.date}</p>
+                    {event.sub && <p className="text-xs text-teal-600 mt-1">{event.sub}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
-          editable && (
-            <button
-              onClick={toggleEditMode}
-              className="flex items-center text-sm text-blue-500 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-2 rounded-md shadow-sm transition-colors"
-            >
-              <Edit2 className="w-4 h-4 mr-2" />
-              Edit Timeline
-            </button>
-          )
-        )}
-        
-        <div className="text-sm font-medium text-gray-500 bg-gray-50 px-3 py-1 rounded-full border border-gray-200">
-          {(isEditing ? editingEvents : events).length} events
-        </div>
-        
-        {isEditing && (
-          <button
-            onClick={addEvent}
-            className="flex items-center text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md shadow-sm transition-colors"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Event
-          </button>
+          <div className="text-center text-gray-500 py-10">
+            {editable ? 
+              'Add your first timeline event below' : 
+              'No timeline events yet'}
+          </div>
         )}
       </div>
       
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-md">
-          {error}
-        </div>
-      )}
-      
-      <ol className="relative border-l-2 border-gray-200 ml-3 text-left">
-        {(isEditing ? editingEvents : events).map((e, i) => (
-          <li 
-            key={i} 
-            className={`mb-6 ml-6 ${
-              i === editingEventIndex ? 'ring-2 ring-blue-200 rounded-lg' : ''
-            }`}
-          >
-            <div className="absolute flex items-center justify-center w-10 h-10 rounded-full -left-5 ring-8 ring-white">
-              <div className={`flex items-center justify-center w-8 h-8 rounded-full ${getEventColor(e.type)}`}>
-                {getEventIcon(e.type)}
-              </div>
+      {/* Add Event Form (only visible in edit mode) */}
+      {editable && (
+        <div className="border-t pt-6">
+          <h3 className="font-medium text-gray-700 mb-4">Add Timeline Event</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">Date</label>
+              <input
+                type="date"
+                className="border p-2 rounded w-full"
+                value={newEvent.date}
+                onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
+              />
             </div>
             
-            <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow ml-2">
-              <div className="flex justify-between items-start mb-2">
-                {editingEventIndex === i ? (
-                  <div className="flex-grow">
-                    <input
-                      type="text"
-                      value={editingEvents[i].label}
-                      onChange={(e) => updateEvent('label', e.target.value, i)}
-                      className="text-base font-semibold border rounded px-3 py-2 w-full mb-3 focus:ring-2 focus:ring-blue-300 focus:border-blue-500 outline-none"
-                    />
-                    <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0 mb-3">
-                      <div className="relative">
-                        <select
-                          value={editingEvents[i].type}
-                          onChange={(e) => updateEventType(e.target.value as 'stay' | 'flight' | 'train', i)}
-                          className="appearance-none border rounded px-3 py-2 pr-8 focus:ring-2 focus:ring-blue-300 focus:border-blue-500 outline-none"
-                        >
-                          <option value="stay">Stay</option>
-                          <option value="flight">Flight</option>
-                          <option value="train">Train</option>
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                          <ChevronDown className="w-4 h-4" />
-                        </div>
-                      </div>
-                      <input
-                        type="text"
-                        value={editingEvents[i].date}
-                        onChange={(e) => updateEvent('date', e.target.value, i)}
-                        className="text-sm border rounded px-3 py-2 flex-grow focus:ring-2 focus:ring-blue-300 focus:border-blue-500 outline-none"
-                        placeholder="Date (e.g. May 20, 2025)"
-                      />
-                    </div>
-                    {(editingEvents[i].sub !== undefined || isEditing) && (
-                      <input
-                        type="text"
-                        value={editingEvents[i].sub || ''}
-                        onChange={(e) => updateEvent('sub', e.target.value, i)}
-                        className="text-sm border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-300 focus:border-blue-500 outline-none"
-                        placeholder="Additional details (optional)"
-                      />
-                    )}
-                  </div>
-                ) : (
-                  <h3 className="flex items-center text-base font-semibold text-gray-900 pl-1">
-                    {e.label}
-                  </h3>
-                )}
-                
-                {!editingEventIndex && isEditing && (
-                  <div className="flex space-x-1 ml-2">
-                    <button
-                      onClick={() => handleEventEdit(i)}
-                      className="text-blue-500 hover:text-blue-700 p-1 rounded-full hover:bg-blue-50"
-                      aria-label="Edit event"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => deleteEvent(i)}
-                      className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50"
-                      aria-label="Delete event"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-                
-                {editingEventIndex === i && (
-                  <div className="flex space-x-1 ml-2">
-                    <button
-                      onClick={() => handleEventSave(i)}
-                      className="text-green-500 hover:text-green-700 p-1 rounded-full hover:bg-green-50"
-                      aria-label="Save event"
-                    >
-                      <Check className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-                
-                {!isEditing && (
-                  <time className="block text-sm font-normal leading-none text-gray-500 mt-0.5">
-                    {e.date}
-                  </time>
-                )}
-              </div>
-              
-              {/* Show sub info when not editing this specific event */}
-              {(editingEventIndex !== i || !isEditing) && e.sub && (
-                <p className="text-sm font-medium text-teal-600 mt-1 pl-1">
-                  {e.sub}
-                </p>
-              )}
-              
-              {/* If it's the last item, add an "End of journey" note */}
-              {i === (isEditing ? editingEvents : events).length - 1 && !isEditing && (
-                <div className="mt-2 pt-2 border-t border-dashed border-gray-200 text-xs text-gray-500">
-                  End of journey
-                </div>
-              )}
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">Event Type</label>
+              <select
+                className="border p-2 rounded w-full"
+                value={newEvent.type}
+                onChange={(e) => setNewEvent({ ...newEvent, type: e.target.value })}
+              >
+                <option value="flight">Flight</option>
+                <option value="train">Train</option>
+                <option value="stay">Accommodation</option>
+                <option value="other">Other</option>
+              </select>
             </div>
-          </li>
-        ))}
-      </ol>
-      
-      {(isEditing ? editingEvents : events).length === 0 && (
-        <div className="text-center p-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-          <p className="text-gray-500">No timeline events yet.</p>
-          {isEditing && (
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">Event Label</label>
+              <input
+                type="text"
+                placeholder="E.g., Flight to Paris"
+                className="border p-2 rounded w-full"
+                value={newEvent.label}
+                onChange={(e) => setNewEvent({ ...newEvent, label: e.target.value })}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">Details (optional)</label>
+              <input
+                type="text"
+                placeholder="E.g., Flight number, hotel name"
+                className="border p-2 rounded w-full"
+                value={newEvent.sub || ''}
+                onChange={(e) => setNewEvent({ ...newEvent, sub: e.target.value })}
+              />
+            </div>
+          </div>
+          
+          <div className="mt-4 flex justify-end">
             <button
-              onClick={addEvent}
-              className="mt-3 flex items-center text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md transition-colors shadow-sm mx-auto"
+              onClick={handleAddEvent}
+              className="bg-teal-500 text-white px-4 py-2 rounded flex items-center space-x-2 hover:bg-teal-600 transition-colors"
+              disabled={!newEvent.date || !newEvent.label || !newEvent.type}
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Event
+              <Plus size={18} />
+              <span>Add to Timeline</span>
             </button>
-          )}
+          </div>
         </div>
       )}
     </div>
-  )
-}
+  );
+};
+
+export default TripTimeline;
