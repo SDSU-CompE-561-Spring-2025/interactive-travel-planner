@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, MapPin, Search, Calendar } from 'lucide-react'
+import Link from 'next/link'
+import { Plus, Edit, Trash2, MapPin, Search, Calendar, X } from 'lucide-react'
 import DestinationsMap from '../../itinerary/DestinationsMap'
 import { Itinerary, updateItinerarySection } from '../../../lib/api'
 
-// Extend the API‐returned type with a local-only `color` field
 interface Destination {
   name: string
   dates: string            // "YYYY-MM-DD,YYYY-MM-DD"
   lat?: number
   lng?: number
   color?: string
+}
+
+interface DestWithIndex extends Destination {
+  originalIndex: number
 }
 
 interface DestinationsSectionProps {
@@ -31,13 +35,6 @@ const pastelColors = [
   '#8DE0A4', '#B497E7', '#B3B3B3',
 ]
 
-// Centralised brand colours → tweak once, everywhere updates
-const BRAND = {
-  primary: 'bg-blue-500',
-  primaryHover: 'hover:bg-blue-600',
-  danger: 'text-red-500',
-}
-
 const DestinationsSection: React.FC<DestinationsSectionProps> = ({
   itinerary,
   setItinerary,
@@ -47,34 +44,38 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
   setLoading,
   handleRemoveDestination,
 }) => {
-  /* ------------------------ Local state ------------------------ */
   const [formOpen, setFormOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<{ name: string; lat: number; lng: number }[]>([])
   const [selected, setSelected] = useState<{ name: string; lat: number; lng: number } | null>(null)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  const [editIndex, setEditIndex] = useState<number | null>(null)
+  const [editDisplayIndex, setEditDisplayIndex] = useState<number | null>(null)
   const [selectedColor, setSelectedColor] = useState<string>(pastelColors[0])
 
-  // Reset colour on new entry
+  // Reset form color on new entry
   useEffect(() => {
-    if (formOpen && editIndex === null) setSelectedColor(pastelColors[0])
-  }, [formOpen, editIndex])
+    if (formOpen && editDisplayIndex === null) {
+      setSelectedColor(pastelColors[0])
+    }
+  }, [formOpen, editDisplayIndex])
 
-  /* ------------------------ Helpers ------------------------ */
+  // Parse YYYY-MM-DD into Date
   const parseLocalDate = (d: string) => {
     const [y, m, day] = d.split('-').map(Number)
     return new Date(y, m - 1, day)
   }
 
+  // Human-friendly range
   const formatDateRange = (dates: string) => {
     const [sStr, eStr] = dates.split(',').map(s => s.trim())
-    const s = parseLocalDate(sStr), e = parseLocalDate(eStr)
+    const s = parseLocalDate(sStr)
+    const e = parseLocalDate(eStr)
     const opts = { year: 'numeric', month: 'long', day: 'numeric' } as const
     return `${s.toLocaleDateString('en-US', opts)} → ${e.toLocaleDateString('en-US', opts)}`
   }
 
+  // Geocoding search
   const handleSearch = async () => {
     if (!searchQuery) return
     setLoading(true)
@@ -94,12 +95,27 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
     setLoading(false)
   }
 
-  // Stable sorted list for map & cards
-  const dests = React.useMemo(() => {
-    return [...(itinerary.destinations || []) as Destination[]]
-      .sort((a, b) => parseLocalDate(a.dates.split(',')[0]).getTime() - parseLocalDate(b.dates.split(',')[0]).getTime())
+  // Attach original indices & sort by start date
+  const destsWithIndex = React.useMemo<DestWithIndex[]>(() => {
+    return (itinerary.destinations || []).map((d, idx) => ({
+      ...d,
+      originalIndex: idx,
+    })).sort((a, b) =>
+      parseLocalDate(a.dates.split(',')[0]).getTime() -
+      parseLocalDate(b.dates.split(',')[0]).getTime()
+    )
   }, [itinerary.destinations])
 
+  // Plain sorted array for saving
+  const sortedPlainDests: Destination[] = destsWithIndex.map(d => ({
+    name: d.name,
+    dates: d.dates,
+    lat: d.lat,
+    lng: d.lng,
+    color: d.color,
+  }))
+
+  // Save new or edited destination
   const handleSave = () => {
     if (!selected || !startDate || !endDate) return
     const newDest: Destination = {
@@ -109,21 +125,24 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
       lng: selected.lng,
       color: selectedColor,
     }
-
-    const updated: Destination[] = editIndex != null
-      ? dests.map((d, i) => i === editIndex ? newDest : d)
-      : [...dests, newDest]
+    const updatedPlain = editDisplayIndex != null
+      ? sortedPlainDests.map((d, i) => i === editDisplayIndex ? newDest : d)
+      : [...sortedPlainDests, newDest]
 
     setItinerary(prev => ({
       ...prev,
-      destinations: updated,
-      days: syncDaysWithDestinations(updated, prev.days),
+      destinations: updatedPlain,
+      days: syncDaysWithDestinations(updatedPlain, prev.days),
     }))
 
+    // Persist if trip is saved
     if (itinerary.id && itinerary.id !== 'new-trip') {
       setLoading(true)
-      const serverList = updated.map(({ name, dates, lat, lng }) => ({ name, dates, lat, lng }))
-      updateItinerarySection(itinerary.id, 'destinations', serverList)
+      updateItinerarySection(
+        itinerary.id,
+        'destinations',
+        updatedPlain.map(({ name, dates, lat, lng }) => ({ name, dates, lat, lng }))
+      )
         .then(() => showNotification('success', 'Saved!'))
         .catch(() => showNotification('error', 'Save failed.'))
         .finally(() => setLoading(false))
@@ -138,97 +157,173 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
     setSelected(null)
     setStartDate('')
     setEndDate('')
-    setEditIndex(null)
+    setEditDisplayIndex(null)
   }
 
-  /* ------------------------ Handlers to open form ------------------------ */
+  // Open add form, autofill next day
   const openAdd = () => {
-    setEditIndex(null)
-    setSelected(null)
-    setStartDate('')
-    setEndDate('')
+    if (destsWithIndex.length) {
+      const last = destsWithIndex[destsWithIndex.length - 1]
+      const end = parseLocalDate(last.dates.split(',')[1].trim())
+      end.setDate(end.getDate() + 1)
+      const iso = end.toISOString().split('T')[0]
+      setStartDate(iso)
+      setEndDate(iso)
+    } else {
+      setStartDate('')
+      setEndDate('')
+    }
+    setEditDisplayIndex(null)
     setSearchQuery('')
+    setSelected(null)
     setFormOpen(true)
   }
 
-  const openEdit = (i: number) => {
-    const dest = dests[i]
-    setEditIndex(i)
-    setSelected({ name: dest.name, lat: dest.lat!, lng: dest.lng! })
-    const [s, e] = dest.dates.split(',').map(x => x.trim())
+  // Open edit form
+  const openEdit = (i: number, e?: React.MouseEvent) => {
+    e?.preventDefault()
+    const d = destsWithIndex[i]
+    setEditDisplayIndex(i)
+    setSelected({ name: d.name, lat: d.lat!, lng: d.lng! })
+    const [s, eD] = d.dates.split(',').map(x => x.trim())
     setStartDate(s)
-    setEndDate(e)
-    setSearchQuery(dest.name)
-    setSelectedColor(dest.color || pastelColors[i % pastelColors.length])
+    setEndDate(eD)
+    setSearchQuery(d.name)
+    setSelectedColor(d.color || pastelColors[i % pastelColors.length])
     setFormOpen(true)
   }
 
-  /* ======================================================= */
   return (
     <div>
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-semibold text-gray-800">Destinations</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-gray-800">Destinations</h2>
         <button
           onClick={openAdd}
-          className="p-2 rounded-full shadow-sm bg-blue-50 text-blue-500 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+          className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition"
         >
-          <Plus className="w-6 h-6" />
+          <Plus className="w-5 h-5" />
         </button>
       </div>
 
       {/* Map */}
-      <div className="h-[40rem] border rounded-2xl overflow-hidden mb-8 shadow-sm">
-        <DestinationsMap destinations={dests} editable={false} onSave={() => Promise.resolve()} />
+      <div className="h-[40rem] border rounded-xl mb-8 shadow-sm">
+        <DestinationsMap
+          destinations={destsWithIndex}
+          editable={false}
+          onSave={() => Promise.resolve()}
+        />
       </div>
 
-      {/* Slide-down Add/Edit Form */}
-      <div
-        className={`transition-all duration-300 ease-out overflow-hidden ${
-          formOpen ? 'max-h-[750px] opacity-100 mb-8' : 'max-h-0 opacity-0'
-        }`}
-      >
-        <div
-          className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 relative"
-          style={{ borderLeft: `6px solid ${selectedColor}` }}
-        >
-          {/* Close × */}
+      {/* Add/Edit Form */}
+      {formOpen && (
+        <div style={{
+          backgroundColor: "white",
+          borderRadius: "0.75rem",
+          boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+          padding: "2rem",
+          width: "100%",
+          maxWidth: "36rem",
+          margin: "0 auto 2rem auto",
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center"
+        }}>
+          {/* Close Button */}
           <button
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"
             onClick={() => setFormOpen(false)}
+            style={{
+              position: "absolute",
+              top: "1rem",
+              right: "1rem",
+              color: "#6B7280",
+              background: "none",
+              border: "none",
+              cursor: "pointer"
+            }}
           >
-            ×
+            <X className="w-5 h-5" />
           </button>
-
+          
           {/* Title */}
-          <h3 className="text-lg font-semibold text-gray-800 mb-6">
-            {editIndex != null ? 'Edit Destination' : 'Add Destination'}
+          <h3 style={{
+            fontSize: "1.125rem",
+            fontWeight: 500,
+            textAlign: "center",
+            color: "#1F2937",
+            marginBottom: "1.5rem"
+          }}>
+            {editDisplayIndex != null ? 'Edit Destination' : 'Add Destination'}
           </h3>
-
-          {/* Search Bar */}
-          <div className="mb-6 relative max-w-sm">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-gray-400" />
+          
+          {/* Location Field */}
+          <div style={{ marginBottom: "1.5rem" }}>
+            <label style={{ 
+              display: "block", 
+              fontSize: "0.875rem", 
+              color: "#4B5563", 
+              marginBottom: "0.5rem" 
+            }}>
+              Location
+            </label>
+            <div style={{ position: "relative" }}>
+              <Search style={{
+                position: "absolute",
+                left: "0.75rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#9CA3AF",
+                zIndex: 10
+              }} />
+              <input
+                type="text"
+                placeholder="Search place..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                style={{
+                  width: "100%",
+                  paddingLeft: "2.5rem",
+                  paddingRight: "1rem",
+                  paddingTop: "0.75rem",
+                  paddingBottom: "0.75rem",
+                  fontSize: "1rem",
+                  border: "1px solid #D1D5DB",
+                  borderRadius: "0.5rem",
+                  outline: "none",
+                  WebkitAppearance: "none",
+                  MozAppearance: "none",
+                  appearance: "none",
+                  boxSizing: "border-box"
+                }}
+              />
             </div>
-            <input
-              type="text"
-              placeholder="Where to?"
-              className="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            />
             {searchResults.length > 0 && (
-              <ul className="mt-1 w-full absolute bg-white border border-gray-200 rounded-md max-h-48 overflow-y-auto shadow-lg z-10">
+              <ul style={{
+                marginTop: "0.25rem",
+                border: "1px solid #E5E7EB",
+                borderRadius: "0.5rem",
+                maxHeight: "10rem",
+                overflowY: "auto",
+                backgroundColor: "white",
+                boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)"
+              }}>
                 {searchResults.map((r, i) => (
                   <li
                     key={i}
-                    className="px-4 py-2 text-sm cursor-pointer hover:bg-gray-50 border-b last:border-b-0"
                     onClick={() => {
                       setSelected(r)
                       setSearchQuery(r.name.split(',')[0])
                       setSearchResults([])
                     }}
+                    style={{
+                      padding: "0.75rem",
+                      fontSize: "0.875rem",
+                      cursor: "pointer"
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#F3F4F6"}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = "transparent"}
                   >
                     {r.name}
                   </li>
@@ -238,81 +333,196 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
           </div>
 
           {/* Color Picker */}
-          <div className="mb-6 max-w-md">
-            <span className="block text-sm font-medium text-gray-700 mb-3">Card Color</span>
-            <div className="flex flex-wrap gap-3">
+          <div style={{ marginBottom: "1.5rem", textAlign: "center" }}>
+            <span style={{ 
+              display: "block", 
+              fontSize: "0.875rem", 
+              color: "#4B5563", 
+              marginBottom: "0.5rem" 
+            }}>
+              Card Color
+            </span>
+            <div style={{ 
+              display: "flex", 
+              justifyContent: "center", 
+              gap: "0.5rem", 
+              flexWrap: "wrap" 
+            }}>
               {pastelColors.map(c => (
                 <button
                   key={c}
                   onClick={() => setSelectedColor(c)}
-                  style={{ backgroundColor: c }}
-                  className={`w-8 h-8 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                    selectedColor === c
-                      ? 'ring-2 ring-gray-400 scale-110'
-                      : 'opacity-80 hover:opacity-100'
-                  }`}
+                  style={{
+                    width: "1.5rem",
+                    height: "1.5rem",
+                    borderRadius: "9999px",
+                    backgroundColor: c,
+                    border: selectedColor === c ? "2px solid #9CA3AF" : "none",
+                    transform: selectedColor === c ? "scale(1.1)" : "scale(1)",
+                    transition: "transform 0.2s",
+                    cursor: "pointer"
+                  }}
                 />
               ))}
             </div>
           </div>
 
-          {/* Date range */}
-          <div className="grid gap-6 sm:grid-cols-2 mb-8 max-w-md">
+          {/* Date Range */}
+          <div style={{ 
+            display: "grid", 
+            gridTemplateColumns: "1fr 1fr", 
+            gap: "1rem", 
+            marginBottom: "2rem" 
+          }}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Start</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                  <Calendar className="h-4 w-4 text-gray-400" />
-                </div>
+              <label style={{ 
+                display: "block", 
+                fontSize: "0.875rem", 
+                color: "#4B5563", 
+                marginBottom: "0.25rem" 
+              }}>
+                Start Date
+              </label>
+              <div style={{ position: "relative" }}>
+                <Calendar style={{
+                  position: "absolute",
+                  left: "0.75rem",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#9CA3AF"
+                }} />
                 <input
                   type="date"
                   value={startDate}
                   onChange={e => setStartDate(e.target.value)}
-                  className="w-full pl-10 pr-3 py-3 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                  style={{
+                    width: "100%",
+                    paddingLeft: "2.5rem",
+                    paddingRight: "0.75rem",
+                    paddingTop: "0.5rem",
+                    paddingBottom: "0.5rem",
+                    fontSize: "0.875rem",
+                    border: "1px solid #D1D5DB",
+                    borderRadius: "0.5rem",
+                    outline: "none",
+                    WebkitAppearance: "none",
+                    MozAppearance: "none",
+                    appearance: "none",
+                    boxSizing: "border-box"
+                  }}
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">End</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                  <Calendar className="h-4 w-4 text-gray-400" />
-                </div>
+              <label style={{ 
+                display: "block", 
+                fontSize: "0.875rem", 
+                color: "#4B5563", 
+                marginBottom: "0.25rem" 
+              }}>
+                End Date
+              </label>
+              <div style={{ position: "relative" }}>
+                <Calendar style={{
+                  position: "absolute",
+                  left: "0.75rem",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#9CA3AF"
+                }} />
                 <input
                   type="date"
                   value={endDate}
                   onChange={e => setEndDate(e.target.value)}
-                  className="w-full pl-10 pr-3 py-3 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                  style={{
+                    width: "100%",
+                    paddingLeft: "2.5rem",
+                    paddingRight: "0.75rem",
+                    paddingTop: "0.5rem",
+                    paddingBottom: "0.5rem",
+                    fontSize: "0.875rem",
+                    border: "1px solid #D1D5DB",
+                    borderRadius: "0.5rem",
+                    outline: "none",
+                    WebkitAppearance: "none",
+                    MozAppearance: "none",
+                    appearance: "none",
+                    boxSizing: "border-box"
+                  }}
                 />
               </div>
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end space-x-4">
+          {/* Action Buttons */}
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "center", 
+            gap: "1.5rem" 
+          }}>
             <button
               onClick={() => setFormOpen(false)}
-              className="px-6 py-2.5 text-sm font-medium text-gray-600 transition hover:text-gray-800 hover:bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+              style={{
+                paddingLeft: "1.5rem",
+                paddingRight: "1.5rem",
+                paddingTop: "0.5rem",
+                paddingBottom: "0.5rem",
+                fontSize: "1rem",
+                fontWeight: 500,
+                borderRadius: "0.5rem",
+                backgroundColor: "#E5E7EB",
+                color: "#374151",
+                border: "none",
+                cursor: "pointer",
+                transition: "background-color 0.2s"
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#D1D5DB"}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#E5E7EB"}
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={!selected || !startDate || !endDate}
-              className={`px-6 py-2.5 text-sm font-semibold text-white rounded-md shadow ${BRAND.primary} ${BRAND.primaryHover} transition disabled:opacity-50 disabled:cursor-not-allowed`}
+              style={{
+                paddingLeft: "1.5rem",
+                paddingRight: "1.5rem",
+                paddingTop: "0.5rem",
+                paddingBottom: "0.5rem",
+                fontSize: "1rem",
+                fontWeight: 500,
+                borderRadius: "0.5rem",
+                backgroundColor: "#2563EB",
+                color: "white",
+                border: "none",
+                cursor: !selected || !startDate || !endDate ? "not-allowed" : "pointer",
+                opacity: !selected || !startDate || !endDate ? 0.5 : 1,
+                transition: "background-color 0.2s"
+              }}
+              onMouseOver={(e) => {
+                if (selected && startDate && endDate) {
+                  e.currentTarget.style.backgroundColor = "#1D4ED8"
+                }
+              }}
+              onMouseOut={(e) => {
+                if (selected && startDate && endDate) {
+                  e.currentTarget.style.backgroundColor = "#2563EB"
+                }
+              }}
             >
-              {editIndex != null ? 'Save' : 'Add'}
+              {editDisplayIndex != null ? 'Save' : 'Add'}
             </button>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Destination Cards */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {dests.map((dest, i) => (
-          <div
-            key={i}
-            className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-md transition"
+        {destsWithIndex.map((dest, i) => (
+          <Link
+            key={dest.originalIndex}
+            href={`/trips/${itinerary.id}/destinations/${dest.originalIndex}/days`}
+            className="block border border-gray-200 rounded-2xl overflow-hidden bg-white shadow hover:shadow-md transition"
           >
             <div
               className="h-10 rounded-t-2xl"
@@ -330,20 +540,23 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
               </div>
               <div className="flex space-x-2">
                 <button
-                  onClick={() => openEdit(i)}
-                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+                  onClick={e => openEdit(i, e)}
+                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition"
                 >
                   <Edit className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => handleRemoveDestination(i)}
-                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-gray-100 rounded-full transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
+                  onClick={e => {
+                    e.preventDefault()
+                    handleRemoveDestination(dest.originalIndex)
+                  }}
+                  className="p-2 text-red-600 hover:bg-red-100 rounded-full transition"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
@@ -351,5 +564,3 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
 }
 
 export default DestinationsSection
-
-
