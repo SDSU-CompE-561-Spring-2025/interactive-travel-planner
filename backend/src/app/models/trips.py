@@ -22,6 +22,9 @@ class Trips(Base):
     updated_at = Column(DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
 
     user = relationship("User", back_populates="trips")
-    destinations = relationship("Destinations", back_populates="trip", cascade="all, delete")
+    destinations = relationship("Destination", back_populates="trip", cascade="all, delete-orphan")
     budgets = relationship("Budget", back_populates="trip", cascade="all, delete-orphan")
+    calendar_events = relationship("CalendarEvent", back_populates="trip", cascade="all, delete-orphan")
+    dates = relationship("Date", back_populates="trip", cascade="all, delete-orphan")
+    collaborators = relationship("User", secondary="collaborations", back_populates="collaborations")
 

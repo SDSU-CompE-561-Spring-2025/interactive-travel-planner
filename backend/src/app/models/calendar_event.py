@@ -13,3 +13,5 @@ class CalendarEvent(Base):
 
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     user = relationship("User", back_populates="events")
+    
+    trip = relationship("Trip", back_populates="calendar_events")

@@ -20,6 +20,4 @@ class Destinations(Base):
     created_at = Column(DateTime, default=datetime.now(UTC))
     updated_at = Column(DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
 
-    trip = relationship("Trips")
-    itineraries = relationship("Itinerary", back_populates="destination")
-    dates = relationship("Dates", back_populates="destination", uselist=False)  # ✅ Added for Dates sync
+    trip = relationship("Trip", back_populates="destinations")
