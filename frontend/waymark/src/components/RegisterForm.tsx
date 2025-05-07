@@ -1,8 +1,18 @@
 export default function RegistorForm() {
+
     return (
         <div className="p-20 m-20">
             <h1>SignUp Page</h1>
             <form>
+                <div className = "mb-4">
+                    <label htmlFor="username">Username:</label>
+                    <input className="bg-amber-50"
+                        type="username"
+                        id="username"
+                        name="username"
+                        required
+                        />
+                </div>
                 <div className = "mb-4">
                     <label htmlFor="email">Email:</label>
                     <input className="bg-amber-50"
@@ -18,6 +28,15 @@ export default function RegistorForm() {
                         type="password"
                         id="password"
                         name="password"
+                        required
+                        />
+                </div>
+                <div className = "mb-4">
+                    <label htmlFor="confirm password">Confirm Password:</label>
+                    <input className ="bg-amber-50"
+                        type="confirm password"
+                        id="confirm password"
+                        name="confirm password"
                         required
                         />
                 </div>

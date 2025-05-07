@@ -16,12 +16,13 @@ export default function PlannerStepPage() {
   const router = useRouter();
   const step = params.step as string;
 
-  useEffect(() => {
-    const validSteps = ["start", "name", "dates", "location", "activities", "budget", "collab", "review"]
-    if (!validSteps.includes(step)) {
-      router.push("/planner/start")
-    }
-  }, [step, router])
+  // Has bugs. uncomment after
+  // useEffect(() => {
+  //   const validSteps = ["start", "name", "dates", "location", "activities", "budget", "collab", "review"]
+  //   if (!validSteps.includes(step)) {
+  //     router.push("/planner/start")
+  //   }
+  // }, [step, router])
 
   const steps: Record<string, React.ReactNode> = {
     start: <StartStep />,

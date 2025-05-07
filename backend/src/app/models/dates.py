@@ -19,3 +19,5 @@ class Dates(Base):
             'start_date': self.start_date.isoformat() if self.start_date else None,
             'end_date': self.end_date.isoformat() if self.end_date else None
         }
+    
+    trip = relationship("Trip", back_populates="dates")

@@ -3,6 +3,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
+
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -161,8 +163,7 @@ html {
 *,
 *::before,
 *::after {
-  margin: 0;
-  padding: 0;
+  margin: 5;
+  padding: 1;
   box-sizing: border-box;
 }
-

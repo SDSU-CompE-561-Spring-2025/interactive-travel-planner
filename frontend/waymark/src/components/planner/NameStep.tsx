@@ -3,6 +3,8 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePlannerStore } from '@/store/plannerStore';
 import { useState } from 'react';
+import { motion } from 'framer-motion';
+import PlannerLayout from './PlannerLayout';
 
 export default function NameStep() {
   const router = useRouter();
@@ -30,35 +32,46 @@ export default function NameStep() {
   const handleBack = () => router.back();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-4">
-      <h1 className="text-3xl font-bold mb-4">Let's name your trip!</h1>
+    <PlannerLayout currentStep={1}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.4 }}
+        className="text-center"
+      >
+        <div className="flex flex-col items-center justify-center min-h-screen px-4">
+          <h1 className="text-3xl font-bold mb-4">Let's name your trip!</h1>
 
-      <label htmlFor="tripNameInput" className="mb-1 font-medium">Trip Name</label>
-      <input
-        id="tripNameInput"
-        type="text"
-        placeholder={tripName || 'Enter creative name here'}
-        className="border p-2 rounded mb-2 w-full max-w-md"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+          <label htmlFor="tripNameInput" className="mb-1 font-medium">Trip Name</label>
+          <input
+            id="tripNameInput"
+            type="text"
+            placeholder={tripName || 'Enter creative name here'}
+            className="border p-2 rounded mb-2 w-full max-w-md"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 
-      <div className="flex gap-4">
-        <button
-          onClick={handleBack}
-          className="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg"
-        >
-          Back
-        </button>
+          <div className="flex gap-4">
+            <button
+              onClick={handleBack}
+              className="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg"
+            >
+              Back
+            </button>
 
-        <button
-          onClick={handleNext}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg"
-        >
-          {returnToReview ? 'Return to Review' : 'Next Step'}
-        </button>
-      </div>
-    </div>
+            <button
+              onClick={handleNext}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg"
+            >
+              {returnToReview ? 'Return to Review' : 'Next Step'}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </PlannerLayout>
+    
   );
 }
