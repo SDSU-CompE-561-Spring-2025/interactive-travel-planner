@@ -1,24 +1,27 @@
+'use client';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+
 import React, { useState, FormEvent } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 export default function RegistorForm() {
     const [username, setUsername] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
-    const navigate = useNavigate();
+    const router = useRouter();
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError(null);
         try {
-        await axios.post('http://localhost:8000/auth/register', {
-            username,
-            email,
-            password,
-        });
-        navigate('/login');
+            await axios.post(
+                `${API_URL}/auth/register`,
+                { username, email, password }
+        );
+        router.push('/sign-in');
         } catch (error: any) {
         if (error.isAxiosError) {
             const detail = error.response?.data?.detail;
