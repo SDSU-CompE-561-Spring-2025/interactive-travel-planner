@@ -41,7 +41,7 @@ export function ProgressSteps({ steps, currentStep, className }: ProgressStepsPr
         <div className="absolute left-0 top-1/2 h-0.5 w-full -translate-y-1/2 bg-gray-200"></div>
         <div
           className="absolute left-0 top-1/2 h-0.5 -translate-y-1/2 bg-[#377c68]"
-          style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
+          style={{ width: `${(currentStep / (steps.length)) * 100}%` }}
         ></div>
       </div>
     </div>

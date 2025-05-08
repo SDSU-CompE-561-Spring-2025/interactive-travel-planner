@@ -1,13 +1,16 @@
 // src/store/plannerStore.ts
 import { create } from 'zustand';
 
+// UUID for tripID
+type UUID = string;
+
 interface Collaborator {
     id: string;
     name: string;
   }
   
   interface PlannerState {
-    tripId: number | null;
+    tripId: UUID | null;
     tripName: string;
     budget: string;
     activities: string[];
@@ -20,7 +23,7 @@ interface Collaborator {
   
 
   export const usePlannerStore = create<PlannerState>((set) => ({
-    tripId: 0,
+    tripId: null,
     tripName: '',
     budget: '',
     activities: [],
