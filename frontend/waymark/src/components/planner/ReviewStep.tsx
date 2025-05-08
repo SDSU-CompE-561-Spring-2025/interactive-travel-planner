@@ -107,7 +107,7 @@ export default function ReviewStep() {
   
     // ✅ Success
     // router.push(`/trips/${tripId}`);
-    router.push(`/trips/1`)
+    router.push(`/trips`)
   };
   
   const Item = ({
