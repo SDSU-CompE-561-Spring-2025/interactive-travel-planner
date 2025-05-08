@@ -1,4 +1,5 @@
 'use client'
+
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -8,79 +9,98 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { API_URL } from '@/lib/constants'
+import { useUserStore } from '@/store/userStore'
 
 const schema = z.object({
-	username: z.string().min(2),
-	password: z.string().min(3),
-	})
+	username: z.string().min(3),
+	email: z.string().email(),
+	password: z.string().min(8),
+})
 
-	type FormData = z.infer<typeof schema>
+type FormData = z.infer<typeof schema>
 
-	export default function LoginForm() {
+export default function SignupForm() {
 	const router = useRouter()
 	const form = useForm<FormData>({ resolver: zodResolver(schema) })
 
 	async function onSubmit(data: FormData) {
-		// Login to get the JWT
+		// ✅ Register the user
+		const registerRes = await fetch(`${API_URL}/auth/register`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(data),
+		})
+
+		if (!registerRes.ok) {
+			toast.error('Signup failed')
+			return
+		}
+
+		// ✅ Login the new user
 		const loginRes = await fetch(`${API_URL}/auth/token`, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: new URLSearchParams(data as any).toString(),
+			method: 'POST',
+			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+			body: new URLSearchParams({
+				username: data.username,
+				password: data.password,
+			}).toString(),
 		})
 
 		if (!loginRes.ok) {
-		toast.error('Invalid credentials')
-		alert('Invalid credentials')
-		return
+			toast.error('Login failed after signup')
+			return
 		}
 
 		const { access_token } = await loginRes.json()
 		localStorage.setItem('accessToken', access_token)
 
-		//Fetch the current user
-		const meRes = await fetch(`${API_URL}/auth/users/me`, {
+		// ✅ Fetch user info
+		const meRes = await fetch(`${API_URL}/auth/me`, {
 			headers: { Authorization: `Bearer ${access_token}` },
-			})
-			if (!meRes.ok) {
-				toast.error("Failed to fetch your profile")
-				return
-			}
-			const me = await meRes.json() as { id: number; username: string }
+		})
 
-			// now you have me.id and me.username
-			router.push(`/profile/${me.id}`)
-			toast.success(`Welcome back, ${me.username}!`)
+		if (!meRes.ok) {
+			toast.error('Could not fetch profile after signup')
+			return
+		}
 
-			alert(`Welcome back, ${me.username}!`)
+		const me = await meRes.json()
+		useUserStore.getState().setUser(me)
 
-		// Redirect to the home page after 2 seconds
-		setTimeout(() => {
-			router.push('/')
-		}, 2000)
+		router.push(`/profile/${me.id}`)
 	}
 
 	return (
 		<Form {...form}>
-		<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-			<FormField name="username" control={form.control} render={({ field }) => (
-			<FormItem>
-				<FormLabel>Username</FormLabel>
-				<FormControl><Input {...field} /></FormControl>
-				<FormMessage/>
-			</FormItem>
-			)}/>
-			<FormField name="password" control={form.control} render={({ field }) => (
-			<FormItem>
-				<FormLabel>Password</FormLabel>
-				<FormControl><Input type="password" {...field} /></FormControl>
-				<FormMessage/>
-			</FormItem>
-			)}/>
-			<Button type="submit">Sign In</Button>
-		</form>
+			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+				<FormField name="username" control={form.control} render={({ field }) => (
+					<FormItem>
+						<FormLabel>Username</FormLabel>
+						<FormControl><Input {...field} /></FormControl>
+						<FormMessage />
+					</FormItem>
+				)} />
+				<FormField name="email" control={form.control} render={({ field }) => (
+					<FormItem>
+						<FormLabel>Email</FormLabel>
+						<FormControl><Input type="email" {...field} /></FormControl>
+						<FormMessage />
+					</FormItem>
+				)} />
+				<FormField name="password" control={form.control} render={({ field }) => (
+					<FormItem>
+						<FormLabel>Password</FormLabel>
+						<FormControl><Input type="password" {...field} /></FormControl>
+						<FormMessage />
+					</FormItem>
+				)} />
+				<Button type="submit">Sign Up</Button>
+			</form>
 		</Form>
 	)
 }
+
+
 
 /*
 'use client';
