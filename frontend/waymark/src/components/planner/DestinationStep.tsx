@@ -11,7 +11,7 @@ import { usePlannerStore } from '@/store/plannerStore';
 const CITY_SUGGESTIONS = [
   'New York', 'Los Angeles', 'London', 'Paris', 'Tokyo', 'Barcelona', 'Rome',
   'Sydney', 'Berlin', 'Toronto', 'San Francisco', 'Singapore', 'Dubai', 'Amsterdam', 'Jakarta', 'Okinawa',
-  'Ho Chi Minh City', 'Seattle', 'San Diego', 'Osaka', 'Niger'
+  'Ho Chi Minh City', 'Seattle', 'San Diego', 'Osaka', 'Niger', 'Kyoto, Japan'
 ];
 
 export default function DestinationStep() {

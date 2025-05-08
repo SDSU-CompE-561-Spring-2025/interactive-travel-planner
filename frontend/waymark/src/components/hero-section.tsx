@@ -43,14 +43,14 @@ export function HeroSection() {
                 <div className="rounded-lg border bg-background p-4 shadow-sm">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <div className="relative flex-1">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        {/* <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /> */}
                         <Input
                             className="pl-9 h-10"
                             placeholder="Where do you want to go?"
                         />
                         </div>
                         <div className="relative flex-1">
-                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        {/* <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /> */}
                         <Input
                             className="pl-9 h-10"
                             placeholder="When are you traveling?"
