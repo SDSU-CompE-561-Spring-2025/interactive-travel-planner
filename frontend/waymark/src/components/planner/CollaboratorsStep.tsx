@@ -1,112 +1,144 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { usePlannerStore } from '@/store/plannerStore';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import PlannerLayout from './PlannerLayout';
+import { useRouter } from 'next/navigation'
+import { usePlannerStore } from '@/store/plannerStore'
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import PlannerLayout from './PlannerLayout'
 
 export default function CollaboratorsStep() {
-  const router = useRouter();
-  const { collaborators, setField } = usePlannerStore();
-  const [search, setSearch] = useState('');
-  const [results, setResults] = useState<{ name: string; id: string }[]>([]);
-  const [loading, setLoading] = useState(false);
+  const router = useRouter()
+  const { collaborators, setField } = usePlannerStore()
+  const [search, setSearch] = useState('')
+  const [results, setResults] = useState<{ name: string; id: string }[]>([])
+  const [loading, setLoading] = useState(false)
 
   const searchUsers = async () => {
-    if (!search.trim()) return;
-    setLoading(true);
+    if (!search.trim()) return
+    setLoading(true)
 
     try {
-      const res = await fetch(`http://localhost:8000/users/search?query=${search}`);
-      const data = await res.json(); // [{ id: 'abc', name: 'Jane Doe' }, ...]
-      setResults(data);
+      const res = await fetch(`http://localhost:8000/users/search?query=${search}`)
+      const data = await res.json()
+      setResults(data)
     } catch (err) {
-      console.error('Search failed:', err);
+      console.error('Search failed:', err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const addCollaborator = (user: { id: string; name: string }) => {
-    const alreadyAdded = collaborators.some((c) => c.id === user.id);
+    const alreadyAdded = collaborators.some((c) => c.id === user.id)
     if (!alreadyAdded) {
-      setField('collaborators', [...collaborators, user]);
+      setField('collaborators', [...collaborators, user])
     }
-    setSearch('');
-    setResults([]);
-  };
-  
+    setSearch('')
+    setResults([])
+  }
+
+  const handleBack = () => router.back()
 
   return (
     <PlannerLayout currentStep={6}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.4 }}
-        className="text-center"
-      >
-        <div>
-          <h1 className="text-3xl font-bold mb-6">Invite your friends to plan!</h1>
+      <main className="min-h-screen w-full flex items-center justify-center bg-[#fff8f0] px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.4 }}
+          className="bg-white rounded-2xl shadow-xl w-full max-w-4xl px-16 py-20 text-center"
+        >
+          <h1 className="text-5xl font-semibold text-[#377c68] mb-10">
+            Invite your friends to plan!
+          </h1>
 
-          <div className="flex gap-2 mb-4">
+          {/* Search input and button */}
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mb-8 w-full">
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name"
-              className="border p-2 rounded w-full"
+              className="w-full sm:w-96 rounded-lg border border-gray-300 px-4 py-2 text-base text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#f3a034]"
             />
-            <button onClick={searchUsers} className="bg-blue-500 text-white px-4 rounded">
+            <button
+              onClick={searchUsers}
+              className="!bg-[#f3a034] hover:!bg-[#e3962e] !text-white !text-base !font-medium !px-8 !py-3 !rounded-full !transition-all"
+            >
               {loading ? 'Searching...' : 'Search'}
             </button>
           </div>
 
+          {/* Suggestions */}
           {results.length > 0 && (
-            <ul className="border rounded p-2 mb-4">
+            <ul className="border border-gray-200 rounded p-4 mb-8 max-w-xl mx-auto text-left shadow-sm">
               {results.map((user) => (
-                <li key={user.id} className="flex justify-between items-center py-1">
-                  <span>{user.name}</span>
-                    <button
-                        onClick={() => addCollaborator(user)}
-                        className="text-sm bg-green-600 text-white px-2 py-1 rounded"
-                        >
-                        Add
-                    </button>
+                <li
+                  key={user.id}
+                  className="flex justify-between items-center py-2 border-b last:border-none"
+                >
+                  <span className="text-gray-700">{user.name}</span>
+                  <button
+                    onClick={() => addCollaborator(user)}
+                    className="text-sm bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full"
+                  >
+                    Add
+                  </button>
                 </li>
               ))}
             </ul>
           )}
 
-        <h2 className="text-lg font-semibold mb-2">Selected Collaborators:</h2>
-        <ul className="list-disc pl-5 mb-6">
-        {collaborators.map((c) => (
-            <li key={c.id} className="flex items-center justify-between text-sm text-gray-700 mb-1">
-            {c.name}
+          {/* Selected Collaborators (centered) */}
+          <div className="w-full flex flex-col items-center mb-10">
+            <h2 className="text-xl font-semibold text-[#377c68] mb-3">
+              Selected Collaborators:
+            </h2>
+            {collaborators.length > 0 ? (
+              <ul className="w-full max-w-md list-disc list-inside space-y-2 text-sm text-gray-700 text-left">
+                {collaborators.map((c) => (
+                  <li key={c.id} className="flex justify-between items-center">
+                    <span>{c.name}</span>
+                    <button
+                      onClick={() =>
+                        setField(
+                          'collaborators',
+                          collaborators.filter((x) => x.id !== c.id)
+                        )
+                      }
+                      className="text-red-500 text-xs ml-4 hover:underline"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500 italic text-center">
+                No collaborators added yet.
+              </p>
+            )}
+          </div>
+
+          {/* Navigation buttons */}
+          <div className="flex justify-center gap-6">
             <button
-                onClick={() =>
-                setField('collaborators', collaborators.filter((x) => x.id !== c.id))
-                }
-                className="text-red-500 text-xs ml-4"
+              onClick={handleBack}
+              className="!bg-gray-300 !text-gray-800 !text-base !font-medium !px-8 !py-3 !rounded-full !transition-all"
             >
-                Remove
+              Back
             </button>
-            </li>
-        ))}
-        </ul>
 
-
-
-          <button
-            onClick={() => router.push('/planner/review')}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg"
-          >
-            Next Step
-          </button>
-        </div>
-      </motion.div>
+            <button
+              onClick={() => router.push('/planner/review')}
+              className="!bg-[#f3a034] hover:!bg-[#e3962e] !text-white !text-base !font-medium !px-8 !py-3 !rounded-full !transition-all"
+            >
+              Next Step
+            </button>
+          </div>
+        </motion.div>
+      </main>
     </PlannerLayout>
-    
-  );
+  )
 }

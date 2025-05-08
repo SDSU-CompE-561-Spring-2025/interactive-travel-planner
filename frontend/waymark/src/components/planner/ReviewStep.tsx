@@ -1,12 +1,12 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { usePlannerStore } from '@/store/plannerStore';
-import { motion } from 'framer-motion';
-import PlannerLayout from './PlannerLayout';
+import { useRouter } from 'next/navigation'
+import { usePlannerStore } from '@/store/plannerStore'
+import { motion } from 'framer-motion'
+import PlannerLayout from './PlannerLayout'
 
 export default function ReviewStep() {
-  const router = useRouter();
+  const router = useRouter()
   const {
     tripName,
     budget,
@@ -15,135 +15,106 @@ export default function ReviewStep() {
     dates,
     collaborators,
     setField,
-  } = usePlannerStore();
+  } = usePlannerStore()
 
-  // --- Create trip in backend ---
   const handleSubmit = async () => {
-    const userId = useUserStore.getState().user?.id;
+    const userId = usePlannerStore.getState().user?.id
     if (!userId) {
-      alert('You must be logged in to create a trip.');
-      return;
+      alert('You must be logged in to create a trip.')
+      return
     }
-  
-    // --- Create trip ---
-    const tripPayLoad = {
-      title: tripName,
-      start_date: dates.start,
-      end_date: dates.end,
-    };
-  
+
     const tripRes = await fetch(`http://localhost:8000/users/${userId}/trips`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(tripPayLoad),
-    });
-  
+      body: JSON.stringify({
+        title: tripName,
+        start_date: dates.start,
+        end_date: dates.end,
+      }),
+    })
+
     if (!tripRes.ok) {
-      alert('Failed to create trip');
-      return;
+      alert('Failed to create trip')
+      return
     }
-  
-    const tripData = await tripRes.json();
-    const tripId = tripData.id;
-    setField('tripId', tripId);
-  
-    // --- Save Dates ---
-    const datesPayLoad = {
-      start_date: dates.start,
-      end_date: dates.end,
-    };
-  
-    const datesRes = await fetch(`http://localhost:8000/trips/${tripId}/dates`, {
+
+    const tripData = await tripRes.json()
+    const tripId = tripData.id
+    setField('tripId', tripId)
+
+    await fetch(`http://localhost:8000/trips/${tripId}/dates`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(datesPayLoad),
-    });
-  
-    if (!datesRes.ok) {
-      alert('Failed to save dates');
-      return;
-    }
-  
-    // --- Save Budget (optional endpoint) ---
-    const budgetPayLoad = { amount: budget };
-    const budgetRes = await fetch(`http://localhost:8000/trips/${tripId}/budget`, {
+      body: JSON.stringify({ start_date: dates.start, end_date: dates.end }),
+    })
+
+    await fetch(`http://localhost:8000/trips/${tripId}/budget`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(budgetPayLoad),
-    });
-  
-    if (!budgetRes.ok) {
-      alert('Failed to save budget');
-      return;
-    }
-  
-    // --- Save Destination ---
-    const destinationPayload = { destination };
-    const destinationRes = await fetch(`http://localhost:8000/trips/${tripId}/destinations`, {
+      body: JSON.stringify({ amount: budget }),
+    })
+
+    await fetch(`http://localhost:8000/trips/${tripId}/destinations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(destinationPayload),
-    });
-  
-    if (!destinationRes.ok) {
-      alert('Failed to save destination');
-      return;
-    }
-  
-    // --- Save Collaborators ---
+      body: JSON.stringify({ destination }),
+    })
+
     for (const user of collaborators) {
       const res = await fetch(`http://localhost:8000/trips/${tripId}/collaborators`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.id }),
-      });
-  
+      })
+
       if (!res.ok) {
-        alert(`Failed to add collaborator ${user.name}`);
-        return;
+        alert(`Failed to add collaborator ${user.name}`)
+        return
       }
     }
-  
-    // ✅ Success
-    router.push(`/trips/${tripId}`);
-  };
-  
+
+    router.push(`/trips/${tripId}`)
+  }
+
   const Item = ({
     label,
     value,
     editRoute,
   }: {
-    label: string;
-    value: React.ReactNode;
-    editRoute: string;
+    label: string
+    value: React.ReactNode
+    editRoute: string
   }) => (
-    <div className="flex items-start justify-between border-b pb-2 mb-3">
-      <div>
-        <p className="font-semibold">{label}</p>
-        <div className="text-gray-800 text-sm">{value}</div>
+    <div className="flex justify-between items-start border-b pb-4 mb-4">
+      <div className="text-left">
+        <p className="text-sm text-gray-500">{label}</p>
+        <div className="text-lg font-medium text-gray-800">{value}</div>
       </div>
       <button
-        className="text-sm text-blue-600 underline ml-4"
         onClick={() => router.push(`/planner/${editRoute}?return=true`)}
+        className="!bg-[#f3a034] hover:!bg-[#e3962e] !text-white !text-sm !font-medium !px-4 !py-1.5 !rounded-full !transition-all"
       >
         Edit
       </button>
     </div>
-  );
+  )
 
   return (
     <PlannerLayout currentStep={8}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.4 }}
-        className="text-center"
-      >
-         <div className="max-w-xl mx-auto py-10 px-4">
-          <h1 className="text-3xl font-bold mb-6">Review Your Trip</h1>
+      <main className="min-h-screen w-full flex items-center justify-center bg-[#fff8f0] px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.4 }}
+          className="bg-white rounded-2xl shadow-xl w-full max-w-4xl px-16 py-20"
+        >
+          <h1 className="text-5xl font-semibold text-[#377c68] text-center mb-12">
+            Review Your Trip
+          </h1>
 
-          <div className="space-y-3">
+          <div className="max-w-xl mx-auto space-y-6">
             <Item label="🏷️ Trip Name" value={tripName || 'Not set'} editRoute="name" />
             <Item
               label="📅 Dates"
@@ -168,29 +139,35 @@ export default function ReviewStep() {
               label="🧑‍🤝‍🧑 Collaborators"
               value={
                 collaborators.length > 0 ? (
-                  <ul className="list-disc ml-5">
+                  <ul className="list-disc list-inside text-sm text-gray-700 mt-2">
                     {collaborators.map((c) => (
                       <li key={c.id}>{c.name}</li>
                     ))}
                   </ul>
                 ) : (
-                  'None'
+                  'None added'
                 )
               }
               editRoute="collab"
             />
-            <Item label="💸 Budget" value={budget ? `$${budget}` : 'Not set'} editRoute="budget" /> 
+            <Item
+              label="💸 Budget"
+              value={budget ? `$${budget}` : 'Not set'}
+              editRoute="budget"
+            />
           </div>
 
-          <button
-            onClick={handleSubmit}
-            className="mt-8 bg-blue-600 text-white px-6 py-3 rounded-lg"
-          >
-            Confirm and Create Trip
-          </button>
-        </div>
-      </motion.div>
+          {/* Submit button */}
+          <div className="flex justify-center mt-12">
+            <button
+              onClick={handleSubmit}
+              className="!bg-[#4ba46c] hover:!bg-[#3f9159] !text-white !text-base !font-semibold !px-10 !py-4 !rounded-full !transition-all"
+            >
+              Confirm and Create Trip
+            </button>
+          </div>
+        </motion.div>
+      </main>
     </PlannerLayout>
-   
-  );
+  )
 }
