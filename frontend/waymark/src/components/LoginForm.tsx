@@ -12,62 +12,57 @@ import { API_URL } from '@/lib/constants'
 import { useUserStore } from '@/store/userStore'
 
 const schema = z.object({
-	username: z.string().min(3),
-	email: z.string().email(),
-	password: z.string().min(8),
+	username: z.string().min(2),
+	password: z.string().min(3),
 })
 
 type FormData = z.infer<typeof schema>
 
-export default function SignupForm() {
+export default function LoginForm() {
 	const router = useRouter()
-	const form = useForm<FormData>({ resolver: zodResolver(schema) })
+	const form = useForm<FormData>({
+		resolver: zodResolver(schema),
+		defaultValues: {
+			username: '',
+			password: '',
+		},
+	})
 
 	async function onSubmit(data: FormData) {
-		// ✅ Register the user
-		const registerRes = await fetch(`${API_URL}/auth/register`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(data),
-		})
+		console.log('working!')
+		try {
+			const loginRes = await fetch(`${API_URL}/auth/token`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body: new URLSearchParams(data).toString(),
+			})
 
-		if (!registerRes.ok) {
-			toast.error('Signup failed')
-			return
+			if (!loginRes.ok) {
+				toast.error('Invalid credentials')
+				return
+			}
+
+			const { access_token } = await loginRes.json()
+			localStorage.setItem('accessToken', access_token)
+
+			const meRes = await fetch(`${API_URL}/auth/me`, {
+				headers: { Authorization: `Bearer ${access_token}` },
+			})
+
+			if (!meRes.ok) {
+				toast.error('Failed to fetch user profile')
+				return
+			}
+
+			const me = await meRes.json()
+			useUserStore.getState().setUser(me)
+
+			toast.success(`Welcome back, ${me.username}!`)
+			router.push('/')  // ✅ redirect to homepage
+		} catch (err) {
+			console.error('Login error:', err)
+			toast.error('Something went wrong')
 		}
-
-		// ✅ Login the new user
-		const loginRes = await fetch(`${API_URL}/auth/token`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-			body: new URLSearchParams({
-				username: data.username,
-				password: data.password,
-			}).toString(),
-		})
-
-		if (!loginRes.ok) {
-			toast.error('Login failed after signup')
-			return
-		}
-
-		const { access_token } = await loginRes.json()
-		localStorage.setItem('accessToken', access_token)
-
-		// ✅ Fetch user info
-		const meRes = await fetch(`${API_URL}/auth/me`, {
-			headers: { Authorization: `Bearer ${access_token}` },
-		})
-
-		if (!meRes.ok) {
-			toast.error('Could not fetch profile after signup')
-			return
-		}
-
-		const me = await meRes.json()
-		useUserStore.getState().setUser(me)
-
-		router.push(`/profile/${me.id}`)
 	}
 
 	return (
@@ -80,13 +75,6 @@ export default function SignupForm() {
 						<FormMessage />
 					</FormItem>
 				)} />
-				<FormField name="email" control={form.control} render={({ field }) => (
-					<FormItem>
-						<FormLabel>Email</FormLabel>
-						<FormControl><Input type="email" {...field} /></FormControl>
-						<FormMessage />
-					</FormItem>
-				)} />
 				<FormField name="password" control={form.control} render={({ field }) => (
 					<FormItem>
 						<FormLabel>Password</FormLabel>
@@ -94,11 +82,12 @@ export default function SignupForm() {
 						<FormMessage />
 					</FormItem>
 				)} />
-				<Button type="submit">Sign Up</Button>
+				<Button type="submit">Sign In</Button>
 			</form>
 		</Form>
 	)
 }
+
 
 
 
