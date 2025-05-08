@@ -28,8 +28,8 @@ export function HeroSection() {
                 </div>
 
                 {/* Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4">
-                <Button asChild size="lg" className="gap-2">
+                <div className="flex flex-col sm:flex-row gap-4 text-sm text-emerald-800 hover:text-amber-500">
+                <Button asChild size="lg" className="gap-2 bg-amber-500 hover:bg-emerald-800">
                     <Link href="/new-trip">
                     <PlusCircle className="h-5 w-5" />
                         Create New Itinerary
