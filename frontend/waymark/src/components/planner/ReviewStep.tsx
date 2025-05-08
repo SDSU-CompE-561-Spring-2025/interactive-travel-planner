@@ -86,7 +86,7 @@ export default function ReviewStep() {
     value: React.ReactNode
     editRoute: string
   }) => (
-    <div className="flex justify-between items-start border-b pb-4 mb-4">
+    <div className="flex justify-between items-center border-b pb-4 mb-4">
       <div className="text-left">
         <p className="text-sm text-gray-500">{label}</p>
         <div className="text-lg font-medium text-gray-800">{value}</div>
