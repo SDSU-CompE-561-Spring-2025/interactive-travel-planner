@@ -176,7 +176,8 @@ export default function TripPage() {
         <div className="fixed bottom-16 md:bottom-4 inset-x-0 mx-auto w-full max-w-md px-4 z-50">
           <div 
             className={`flex items-center justify-between p-4 rounded-lg shadow-lg ${
-              notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+              notification.type === 'success' ? 'bg-green-500' : 
+              notification.type === 'info' ? 'bg-blue-500' : 'bg-red-500'
             } text-white`}
           >
             <span className="font-medium">{notification.message}</span>

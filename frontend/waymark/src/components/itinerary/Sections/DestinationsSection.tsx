@@ -512,7 +512,7 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
   }
 
   return (
-    <div>
+    <div className="mx-auto max-w-5xl">
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-semibold text-gray-800">Destinations</h2>
@@ -831,7 +831,7 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
     )}
 
       {/* Destination Cards */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mx-auto">
         {dests.map((dest, i) => (
           <div
             key={i}
