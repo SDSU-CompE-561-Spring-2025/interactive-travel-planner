@@ -28,7 +28,7 @@ const navList = [
 	},
     {
 		label: 'Contact us',
-		link: '/contact-us',
+		link: '/contact',
 	},
     {
 		label: 'How the site works',
