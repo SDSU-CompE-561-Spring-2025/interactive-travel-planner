@@ -18,10 +18,11 @@ const navList = [
 		link: '/trips',
 	},
 	{
-		label: 'Planner',
-		link: '/planner',
+		label: 'Quiz',
+		link: '/planner/start',
 	},
 ];
+
 
 
 export function Navbar() {
