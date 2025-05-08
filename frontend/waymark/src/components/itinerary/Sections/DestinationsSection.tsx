@@ -19,7 +19,7 @@ interface DestinationsSectionProps {
     destinations: { dates: string }[],
     currentDays?: { date: string; activities: any[] }[]
   ) => { date: string; activities: any[] }[]
-  showNotification: (type: 'success' | 'error', message: string) => void
+  showNotification: (type: 'success' | 'error' | 'info', message: string) => void
   loading: boolean
   setLoading: (loading: boolean) => void
   handleRemoveDestination: (index: number) => void
@@ -135,6 +135,8 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
 
     // Clone destinations and update based on edit or add
     let updated: Destination[]
+    let isSavingToBackend = false;
+    
     if (editIndex != null) {
       // If editing, preserve the ID
       if (dests[editIndex]?.id) {
@@ -155,10 +157,14 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
     // Save to backend if we have a trip ID
     if (itinerary.id && itinerary.id !== 'new-trip') {
       setLoading(true)
+      isSavingToBackend = true;
+      
       try {
         if (editIndex != null && dests[editIndex]?.id) {
           // UPDATE: Existing destination
           const destId = dests[editIndex].id;
+          showNotification('info', 'Saving to backend...');
+          
           const response = await fetch(`/destinations/${destId}`, {
             method: 'PUT',
             headers: {
@@ -217,12 +223,14 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
               localStorage.setItem('waymark_itinerary', JSON.stringify(updated));
             }
             
-            showNotification('success', 'Destination updated!')
+            showNotification('success', 'Destination updated in backend!');
           } else {
-            throw new Error('Failed to update destination');
+            throw new Error('Failed to update destination in backend');
           }
         } else {
           // CREATE: New destination
+          showNotification('info', 'Creating in backend...');
+          
           const response = await fetch(`/trips/${itinerary.id}/destinations`, {
             method: 'POST',
             headers: {
@@ -282,13 +290,13 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
               }));
             }
             
-            showNotification('success', 'Destination saved!');
+            showNotification('success', 'Destination created in backend!');
           } else {
-            throw new Error('Failed to create destination');
+            throw new Error('Failed to create destination in backend');
           }
         }
       } catch (error) {
-        console.error('Error saving destination:', error);
+        console.error('Error saving destination to backend:', error);
         
         // Save to localStorage as backup in case of API failure
         const stored = localStorage.getItem('waymark_itinerary');
@@ -298,12 +306,14 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
           localStorage.setItem('waymark_itinerary', JSON.stringify(failsafeUpdate));
         }
         
-        showNotification('error', 'API error, saved locally as backup.');
+        showNotification('error', 'Backend API error, saved locally as backup.');
       } finally {
         setLoading(false);
       }
     } else {
       // No trip ID, just save to localStorage
+      showNotification('info', 'Saving locally only (no backend connection)...');
+      
       const stored = localStorage.getItem('waymark_itinerary');
       if (stored) {
         const current = JSON.parse(stored);
@@ -316,7 +326,7 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
         }));
       }
       
-      showNotification('success', 'Destination saved locally!');
+      showNotification('success', 'Destination saved to localStorage!');
     }
 
     // Reset form
@@ -334,8 +344,56 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
     setEditIndex(null)
     setSelected(null)
     setSearchQuery('')
-    setStartDate('')
-    setEndDate('')
+    
+    // Auto-populate dates based on trip dates or last destination
+    // First check if we have existing destinations with dates
+    if (dests.length > 0) {
+      try {
+        // Sort by end date to get the last destination
+        const sortedDests = [...dests].sort((a, b) => {
+          const aEndDate = a.dates.split(',')[1].trim();
+          const bEndDate = b.dates.split(',')[1].trim();
+          return parseLocalDate(aEndDate).getTime() - parseLocalDate(bEndDate).getTime();
+        });
+        
+        // Get the latest end date from destinations
+        const lastDest = sortedDests[sortedDests.length - 1];
+        const lastEndDate = lastDest.dates.split(',')[1].trim();
+        
+        // Set dates to day after the last end date, and day after that
+        const nextDay = new Date(parseLocalDate(lastEndDate));
+        nextDay.setDate(nextDay.getDate() + 1);
+        
+        const dayAfterNext = new Date(nextDay);
+        dayAfterNext.setDate(dayAfterNext.getDate() + 1);
+        
+        // Format as YYYY-MM-DD
+        const formatDate = (date: Date) => {
+          return date.toISOString().split('T')[0];
+        };
+        
+        setStartDate(formatDate(nextDay));
+        setEndDate(formatDate(dayAfterNext));
+      } catch (error) {
+        console.error('Error auto-populating dates:', error);
+        // Fallback to current date
+        const today = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1);
+        
+        setStartDate(today.toISOString().split('T')[0]);
+        setEndDate(tomorrow.toISOString().split('T')[0]);
+      }
+    } else {
+      // No destinations yet, use current date and tomorrow
+      const today = new Date();
+      const tomorrow = new Date();
+      tomorrow.setDate(today.getDate() + 1);
+      
+      setStartDate(today.toISOString().split('T')[0]);
+      setEndDate(tomorrow.toISOString().split('T')[0]);
+    }
+    
     setFormOpen(true)
   }
 

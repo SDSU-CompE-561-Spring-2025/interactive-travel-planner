@@ -82,48 +82,72 @@ async function fetchDestinations(tripId: string) {
   try {
     const response = await fetch(`${API_BASE}/trips/${tripId}/destinations`);
     
-    if (response.ok) {
-      const data = await response.json();
-      
-      // Transform the data to match our frontend structure
-      // Map through destinations and fetch dates for each
-      const destinationsWithDates = await Promise.all(
-        data.map(async (dest: any) => {
-          try {
-            // Fetch dates for this destination
-            const datesResponse = await fetch(`${API_BASE}/destinations/${dest.id}/dates`);
-            
-            if (datesResponse.ok) {
-              const datesData = await datesResponse.json();
-              // Format dates as "YYYY-MM-DD,YYYY-MM-DD"
+    if (!response.ok) {
+      console.error(`Failed to fetch destinations: ${response.status} ${response.statusText}`);
+      return []; // Return empty array on error
+    }
+    
+    // Check if response is JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error('Response is not JSON, received:', contentType);
+      // Return empty array when not getting JSON
+      return [];
+    }
+    
+    const data = await response.json();
+    
+    // Transform the data to match our frontend structure
+    // Map through destinations and fetch dates for each
+    const destinationsWithDates = await Promise.all(
+      data.map(async (dest: any) => {
+        try {
+          // Fetch dates for this destination
+          const datesResponse = await fetch(`${API_BASE}/destinations/${dest.id}/dates`);
+          
+          if (datesResponse.ok) {
+            // Check if response is JSON
+            const contentType = datesResponse.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+              // Default dates if not JSON
               return {
                 id: dest.id,
                 name: dest.name,
-                dates: `${datesData.start_date},${datesData.end_date}`,
+                dates: '2025-01-01,2025-01-07', // Default dates
                 lat: parseFloat(dest.lat) || undefined,
                 lng: parseFloat(dest.lng) || undefined,
-                color: undefined // Backend doesn't store color, frontend will assign
+                color: undefined
               };
             }
-          } catch (error) {
-            console.error(`Error fetching dates for destination ${dest.id}:`, error);
+            
+            const datesData = await datesResponse.json();
+            // Format dates as "YYYY-MM-DD,YYYY-MM-DD"
+            return {
+              id: dest.id,
+              name: dest.name,
+              dates: `${datesData.start_date},${datesData.end_date}`,
+              lat: parseFloat(dest.lat) || undefined,
+              lng: parseFloat(dest.lng) || undefined,
+              color: undefined // Backend doesn't store color, frontend will assign
+            };
           }
-          
-          // If dates fetch fails, return destination with default dates
-          return {
-            id: dest.id,
-            name: dest.name,
-            dates: '2025-01-01,2025-01-07', // Default dates
-            lat: parseFloat(dest.lat) || undefined,
-            lng: parseFloat(dest.lng) || undefined,
-            color: undefined
-          };
-        })
-      );
-      
-      return destinationsWithDates;
-    }
-    return [];
+        } catch (error) {
+          console.error(`Error fetching dates for destination ${dest.id}:`, error);
+        }
+        
+        // If dates fetch fails, return destination with default dates
+        return {
+          id: dest.id,
+          name: dest.name,
+          dates: '2025-01-01,2025-01-07', // Default dates
+          lat: parseFloat(dest.lat) || undefined,
+          lng: parseFloat(dest.lng) || undefined,
+          color: undefined
+        };
+      })
+    );
+    
+    return destinationsWithDates;
   } catch (error) {
     console.error('Error fetching destinations:', error);
     return [];

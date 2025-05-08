@@ -15,7 +15,7 @@ export default function TripPage() {
   const [itinerary, setItinerary] = useState<Partial<Itinerary>>({})
   const [activeSection, setActiveSection] = useState<'destinations' | 'timeline' | 'days'>('destinations')
   const [loading, setLoading] = useState(false)
-  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [notification, setNotification] = useState<{ type: 'info' | 'success' | 'error'; message: string } | null>(null)
 
   useEffect(() => {
     if (!tripId) return
@@ -35,7 +35,7 @@ export default function TripPage() {
     fetchItinerary()
   }, [tripId])
 
-  const showNotification = (type: 'success' | 'error', message: string) => {
+  const showNotification = (type: 'info' | 'success' | 'error', message: string) => {
     setNotification({ type, message })
     setTimeout(() => setNotification(null), 3000)
   }

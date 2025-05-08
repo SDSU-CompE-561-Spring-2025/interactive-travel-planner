@@ -39,7 +39,7 @@ def update_dates(date_id: int, update: DatesCreate, db: Session = Depends(get_db
     db.refresh(dates)
     return dates
 
-# Delete a date entry
+# Delete a single date entry
 @router.delete("/dates/{date_id}")
 def delete_dates(date_id: int, db: Session = Depends(get_db)):
     dates = db.query(Dates).filter(Dates.id == date_id).first()
@@ -49,6 +49,12 @@ def delete_dates(date_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": f"Date entry {date_id} deleted"}
 
-@router.delete("/destinations/{destination_id}")
-def delete_destination(destination_id: int, db: Session = Depends(get_db)):
-    return {"message": f"Destination {destination_id} deleted successfully"}
+@router.delete("/destinations/{destination_id}/dates")
+def delete_all_dates(destination_id: int, db: Session = Depends(get_db)):
+    entries = db.query(Dates).filter(Dates.trip_id == destination_id).all()
+    if not entries:
+        raise HTTPException(status_code=404, detail="No dates to delete")
+    for entry in entries:
+        db.delete(entry)
+    db.commit()
+    return {"message": f"All dates for destination {destination_id} deleted"}
