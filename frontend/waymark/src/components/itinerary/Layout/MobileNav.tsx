@@ -13,7 +13,7 @@ const MobileNav = ({ activeSection, setActiveSection }: MobileNavProps) => {
         <button 
           onClick={() => setActiveSection('destinations')}
           className={`flex flex-col items-center justify-center py-3 flex-1 ${
-            activeSection === 'destinations' ? 'text-teal-600' : 'text-gray-500'
+            activeSection === 'destinations' ? 'text-blue-600' : 'text-gray-500'
           }`}
         >
           <MapPin className="h-6 w-6" />
@@ -23,7 +23,7 @@ const MobileNav = ({ activeSection, setActiveSection }: MobileNavProps) => {
         <button 
           onClick={() => setActiveSection('timeline')}
           className={`flex flex-col items-center justify-center py-3 flex-1 ${
-            activeSection === 'timeline' ? 'text-teal-600' : 'text-gray-500'
+            activeSection === 'timeline' ? 'text-blue-600' : 'text-gray-500'
           }`}
         >
           <Clock className="h-6 w-6" />
@@ -33,7 +33,7 @@ const MobileNav = ({ activeSection, setActiveSection }: MobileNavProps) => {
         <button 
           onClick={() => setActiveSection('days')}
           className={`flex flex-col items-center justify-center py-3 flex-1 ${
-            activeSection === 'days' ? 'text-teal-600' : 'text-gray-500'
+            activeSection === 'days' ? 'text-blue-600' : 'text-gray-500'
           }`}
         >
           <Calendar className="h-6 w-6" />

@@ -1,3 +1,4 @@
+// Enhanced DestinationsMap component with chronological lines
 import React, { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 
@@ -9,6 +10,7 @@ interface Destination {
   lng?: number;
   color?: string;
   originalIndex?: number;
+  id?: number | string;
 }
 
 interface DestinationsMapProps {
@@ -29,12 +31,12 @@ const DestinationsMapComponent: React.FC<DestinationsMapProps> = ({ destinations
   const mapRef = useRef<any>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<any[]>([]);
+  const polylineRef = useRef<any>(null);
   const [mapInitialized, setMapInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
   // Import Leaflet dynamically only on client side
   useEffect(() => {
-    // Dynamic imports for client-side only
     let L: any;
     let cleanup: (() => void) | undefined;
 
@@ -43,8 +45,7 @@ const DestinationsMapComponent: React.FC<DestinationsMapProps> = ({ destinations
         // Dynamic import of Leaflet (client-side only)
         L = (await import('leaflet')).default;
         
-        // Add Leaflet CSS manually to avoid TypeScript errors
-        // This is a workaround for the CSS import error
+        // Add Leaflet CSS manually
         if (typeof document !== 'undefined') {
           const linkExists = document.querySelector('link[href*="leaflet.css"]');
           if (!linkExists) {
@@ -90,6 +91,12 @@ const DestinationsMapComponent: React.FC<DestinationsMapProps> = ({ destinations
               });
               markersRef.current = [];
               
+              // Remove polyline
+              if (polylineRef.current && mapRef.current) {
+                polylineRef.current.removeFrom(mapRef.current);
+                polylineRef.current = null;
+              }
+              
               // Remove map
               mapRef.current.remove();
               mapRef.current = null;
@@ -130,6 +137,33 @@ const DestinationsMapComponent: React.FC<DestinationsMapProps> = ({ destinations
     return () => clearTimeout(timer);
   }, [destinations, mapInitialized]);
 
+  // Parse YYYY-MM-DD into Date
+  const parseLocalDate = (d: string) => {
+    try {
+      const [y, m, day] = d.split('-').map(Number);
+      return new Date(y, m - 1, day);
+    } catch (e) {
+      console.error('Error parsing date:', d, e);
+      return new Date(); // Return current date as fallback
+    }
+  };
+
+  // Sort destinations by date
+  const sortDestinationsByDate = (dests: Destination[]) => {
+    return [...dests].sort((a, b) => {
+      if (!a.dates || !b.dates) return 0;
+      
+      try {
+        const aStartDate = a.dates.split(',')[0].trim();
+        const bStartDate = b.dates.split(',')[0].trim();
+        return parseLocalDate(aStartDate).getTime() - parseLocalDate(bStartDate).getTime();
+      } catch (e) {
+        console.error('Error sorting destinations:', e);
+        return 0;
+      }
+    });
+  };
+
   // Function to update map markers
   const updateMarkers = async (L: any, map: any) => {
     if (!map) return;
@@ -145,6 +179,16 @@ const DestinationsMapComponent: React.FC<DestinationsMapProps> = ({ destinations
       });
       markersRef.current = [];
       
+      // Remove existing polyline
+      if (polylineRef.current) {
+        try {
+          polylineRef.current.removeFrom(map);
+          polylineRef.current = null;
+        } catch (e) {
+          console.error('Error removing polyline:', e);
+        }
+      }
+      
       // Get pastel colors array
       const pastelColors = [
         '#66C5CC', '#F6C571', '#F89C74', '#DCB0F2',
@@ -159,15 +203,26 @@ const DestinationsMapComponent: React.FC<DestinationsMapProps> = ({ destinations
       
       if (validDestinations.length === 0) return;
       
+      // Sort destinations chronologically
+      const sortedDestinations = sortDestinationsByDate(validDestinations);
+      
       // Add new markers
       const bounds = L.latLngBounds([]);
-      validDestinations.forEach((dest, i) => {
+      const polylinePoints: [number, number][] = [];
+      
+      sortedDestinations.forEach((dest, i) => {
         if (dest.lat === undefined || dest.lng === undefined) return;
         
         try {
+          // Add point to polyline
+          polylinePoints.push([dest.lat, dest.lng]);
+          
           // Create marker with popup
           const marker = L.marker([dest.lat, dest.lng])
-            .bindPopup(dest.name)
+            .bindPopup(`
+              <strong>${dest.name}</strong><br/>
+              ${dest.dates.split(',').map(d => d.trim()).join(' → ')}
+            `)
             .setIcon(
               L.divIcon({
                 className: 'custom-div-icon',
@@ -175,6 +230,7 @@ const DestinationsMapComponent: React.FC<DestinationsMapProps> = ({ destinations
                   dest.color || pastelColors[i % pastelColors.length]
                 }; width: 25px; height: 25px; border-radius: 50%; display: flex; 
                 justify-content: center; align-items: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                <span style="color: white; font-weight: bold; font-size: 10px;">${i + 1}</span>
                 </div>`,
                 iconSize: [25, 25],
                 iconAnchor: [12, 12],
@@ -189,6 +245,22 @@ const DestinationsMapComponent: React.FC<DestinationsMapProps> = ({ destinations
           console.error('Error adding marker:', e);
         }
       });
+      
+      // Add polyline connecting destinations in chronological order
+      if (polylinePoints.length > 1) {
+        try {
+          polylineRef.current = L.polyline(polylinePoints, {
+            color: '#2563eb',
+            weight: 3,
+            opacity: 0.7,
+            dashArray: '5, 10',
+            lineCap: 'round',
+            lineJoin: 'round',
+          }).addTo(map);
+        } catch (e) {
+          console.error('Error adding polyline:', e);
+        }
+      }
       
       // Center and zoom map to fit all markers
       if (bounds.isValid()) {

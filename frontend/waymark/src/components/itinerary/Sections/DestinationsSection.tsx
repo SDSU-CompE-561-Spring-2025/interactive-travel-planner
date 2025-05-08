@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Plus, Edit, Trash2, MapPin, Search, Calendar, X } from 'lucide-react'
 import DestinationsMap from '../../itinerary/DestinationsMap'
-import { Itinerary, updateItinerarySection } from '../../../lib/api'
+import { Itinerary } from '../../../lib/api'
 
 interface Destination {
   id?: number | string
@@ -30,13 +30,6 @@ const pastelColors = [
   '#87C55F', '#9EB9F3', '#FEBB81', '#C9D874',
   '#8DE0A4', '#B497E7', '#B3B3B3',
 ]
-
-// Brand colours 
-const BRAND = {
-  primary: 'bg-blue-500',
-  primaryHover: 'hover:bg-blue-600',
-  danger: 'text-red-500',
-}
 
 const DestinationsSection: React.FC<DestinationsSectionProps> = ({
   itinerary,
@@ -83,30 +76,55 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
     if (!searchQuery) return
     setLoading(true)
     try {
+      // We'll use the Nominatim OpenStreetMap API for geocoding
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&limit=5&accept-language=en&q=${encodeURIComponent(searchQuery)}`
       )
+      
+      if (!res.ok) {
+        throw new Error('Location search failed')
+      }
+      
       const data = await res.json()
-      setSearchResults(
-        data.map((i: any) => ({
-          name: i.display_name,
-          lat: parseFloat(i.lat),
-          lng: parseFloat(i.lon),
-        }))
-      )
-    } catch {}
-    setLoading(false)
+      
+      if (data && Array.isArray(data)) {
+        setSearchResults(
+          data.map((i: any) => ({
+            name: i.display_name,
+            lat: parseFloat(i.lat),
+            lng: parseFloat(i.lon),
+          }))
+        )
+      } else {
+        setSearchResults([])
+        showNotification('error', 'No locations found')
+      }
+    } catch (error) {
+      console.error("Error fetching location data:", error)
+      showNotification('error', 'Location search failed')
+      setSearchResults([])
+    } finally {
+      setLoading(false)
+    }
   }
 
   // Stable sorted list for map & cards
   const dests = React.useMemo(() => {
     return [...(itinerary.destinations || []) as Destination[]]
-      .sort((a, b) => parseLocalDate(a.dates.split(',')[0]).getTime() - parseLocalDate(b.dates.split(',')[0]).getTime())
+      .sort((a, b) => {
+        try {
+          return parseLocalDate(a.dates.split(',')[0]).getTime() - parseLocalDate(b.dates.split(',')[0]).getTime()
+        } catch (e) {
+          return 0
+        }
+      })
   }, [itinerary.destinations])
 
   // Save new or edited destination
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selected || !startDate || !endDate) return
+    
+    // Create new destination object
     const newDest: Destination = {
       name: selected.name.split(',')[0],
       dates: `${startDate},${endDate}`,
@@ -115,35 +133,200 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
       color: selectedColor,
     }
 
-    const updated: Destination[] = editIndex != null
-      ? dests.map((d, i) => i === editIndex ? newDest : d)
-      : [...dests, newDest]
+    // Clone destinations and update based on edit or add
+    let updated: Destination[]
+    if (editIndex != null) {
+      // If editing, preserve the ID
+      if (dests[editIndex]?.id) {
+        newDest.id = dests[editIndex].id;
+      }
+      updated = dests.map((d, i) => i === editIndex ? newDest : d)
+    } else {
+      updated = [...dests, newDest]
+    }
 
+    // Update UI immediately for better UX
     setItinerary(prev => ({
       ...prev,
       destinations: updated,
       days: syncDaysWithDestinations(updated, prev.days),
     }))
 
+    // Save to backend if we have a trip ID
     if (itinerary.id && itinerary.id !== 'new-trip') {
       setLoading(true)
-      const serverList = updated.map(({ name, dates, lat, lng }) => ({ name, dates, lat, lng }))
-      updateItinerarySection(itinerary.id, 'destinations', serverList)
-        .then(() => showNotification('success', 'Saved!'))
-        .catch(() => showNotification('error', 'Save failed.'))
-        .finally(() => setLoading(false))
+      try {
+        if (editIndex != null && dests[editIndex]?.id) {
+          // UPDATE: Existing destination
+          const destId = dests[editIndex].id;
+          const response = await fetch(`/destinations/${destId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              name: newDest.name,
+              location: newDest.name, // Backend expects a location field
+              description: "Updated via WayMark",
+              order: editIndex.toString(),
+            }),
+          });
+
+          // Also update the dates separately using the dates endpoint
+          if (response.ok) {
+            const [startDateStr, endDateStr] = newDest.dates.split(',');
+            
+            // First check if dates record exists
+            const datesResponse = await fetch(`/destinations/${destId}/dates`);
+            
+            if (datesResponse.ok) {
+              // Update existing dates
+              const datesData = await datesResponse.json();
+              await fetch(`/dates/${datesData.id}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  start_date: startDateStr.trim(),
+                  end_date: endDateStr.trim()
+                }),
+              });
+            } else {
+              // Create new dates
+              await fetch(`/destinations/${destId}/dates`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  start_date: startDateStr.trim(),
+                  end_date: endDateStr.trim()
+                }),
+              });
+            }
+            
+            // Save to localStorage as backup
+            const stored = localStorage.getItem('waymark_itinerary');
+            if (stored) {
+              const current = JSON.parse(stored);
+              const updated = { 
+                ...current, 
+                destinations: dests.map((d, i) => i === editIndex ? newDest : d) 
+              };
+              localStorage.setItem('waymark_itinerary', JSON.stringify(updated));
+            }
+            
+            showNotification('success', 'Destination updated!')
+          } else {
+            throw new Error('Failed to update destination');
+          }
+        } else {
+          // CREATE: New destination
+          const response = await fetch(`/trips/${itinerary.id}/destinations`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              name: newDest.name,
+              location: newDest.name,
+              description: "Added via WayMark",
+              order: (dests.length - 1).toString(),
+            }),
+          });
+          
+          if (response.ok) {
+            const destinationData = await response.json();
+            const destId = destinationData.id;
+            
+            // Add dates for this destination
+            const [startDateStr, endDateStr] = newDest.dates.split(',');
+            await fetch(`/destinations/${destId}/dates`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                start_date: startDateStr.trim(),
+                end_date: endDateStr.trim()
+              }),
+            });
+            
+            // Update the ID in our local state
+            const updatedWithId = updated.map((d, i) => {
+              if (i === updated.length - 1) {
+                return {
+                  ...d,
+                  id: destId
+                };
+              }
+              return d;
+            });
+            
+            setItinerary(prev => ({
+              ...prev,
+              destinations: updatedWithId
+            }));
+            
+            // Save to localStorage as backup
+            const stored = localStorage.getItem('waymark_itinerary');
+            if (stored) {
+              const current = JSON.parse(stored);
+              const updatedStorage = { ...current, destinations: updatedWithId };
+              localStorage.setItem('waymark_itinerary', JSON.stringify(updatedStorage));
+            } else {
+              localStorage.setItem('waymark_itinerary', JSON.stringify({
+                id: itinerary.id,
+                destinations: updatedWithId
+              }));
+            }
+            
+            showNotification('success', 'Destination saved!');
+          } else {
+            throw new Error('Failed to create destination');
+          }
+        }
+      } catch (error) {
+        console.error('Error saving destination:', error);
+        
+        // Save to localStorage as backup in case of API failure
+        const stored = localStorage.getItem('waymark_itinerary');
+        if (stored) {
+          const current = JSON.parse(stored);
+          const failsafeUpdate = { ...current, destinations: updated };
+          localStorage.setItem('waymark_itinerary', JSON.stringify(failsafeUpdate));
+        }
+        
+        showNotification('error', 'API error, saved locally as backup.');
+      } finally {
+        setLoading(false);
+      }
     } else {
-      showNotification('success', 'Saved!')
+      // No trip ID, just save to localStorage
+      const stored = localStorage.getItem('waymark_itinerary');
+      if (stored) {
+        const current = JSON.parse(stored);
+        const updatedStorage = { ...current, destinations: updated };
+        localStorage.setItem('waymark_itinerary', JSON.stringify(updatedStorage));
+      } else {
+        localStorage.setItem('waymark_itinerary', JSON.stringify({
+          id: 'new-trip',
+          destinations: updated
+        }));
+      }
+      
+      showNotification('success', 'Destination saved locally!');
     }
 
     // Reset form
-    setFormOpen(false)
-    setSearchQuery('')
-    setSearchResults([])
-    setSelected(null)
-    setStartDate('')
-    setEndDate('')
-    setEditIndex(null)
+    setFormOpen(false);
+    setSearchQuery('');
+    setSearchResults([]);
+    setSelected(null);
+    setStartDate('');
+    setEndDate('');
+    setEditIndex(null);
   }
 
   // Open add form
@@ -173,7 +356,7 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
   const onRemoveDestination = async (index: number) => {
     // Get the destination to be removed
     const destToRemove = dests[index]
-    const destinationId = destToRemove.id || index
+    const destinationId = destToRemove.id 
 
     // Remove from local state first for immediate UI feedback
     const updatedDests = dests.filter((_, i) => i !== index)
@@ -185,47 +368,88 @@ const DestinationsSection: React.FC<DestinationsSectionProps> = ({
     }))
     
     // If we have an itinerary ID and it's not a new trip, make the API call
-    if (itinerary.id && itinerary.id !== 'new-trip') {
+    if (itinerary.id && itinerary.id !== 'new-trip' && destinationId) {
       setLoading(true)
       
       try {
-        // Make a DELETE request to the backend
+        // First try to delete any dates associated with this destination
+        try {
+          const datesResponse = await fetch(`/destinations/${destinationId}/dates`);
+          if (datesResponse.ok) {
+            const datesData = await datesResponse.json();
+            if (datesData && datesData.id) {
+              await fetch(`/dates/${datesData.id}`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+            }
+          }
+        } catch (datesError) {
+          console.error('Error removing dates:', datesError);
+          // Continue with destination deletion even if dates deletion fails
+        }
+        
+        // Make the main DELETE request to remove the destination
         const response = await fetch(`/destinations/${destinationId}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
           },
-        })
+        });
         
         if (!response.ok) {
-          throw new Error('Failed to delete destination')
+          throw new Error('Failed to delete destination');
         }
         
-        showNotification('success', 'Destination removed successfully')
+        // Update localStorage after successful API deletion
+        const stored = localStorage.getItem('waymark_itinerary');
+        if (stored) {
+          const current = JSON.parse(stored);
+          const updatedStorage = { 
+            ...current, 
+            destinations: updatedDests
+          };
+          localStorage.setItem('waymark_itinerary', JSON.stringify(updatedStorage));
+        }
         
-        // Update server-side destinations list
-        const serverList = updatedDests.map(({ name, dates, lat, lng }) => ({ name, dates, lat, lng }))
-        await updateItinerarySection(itinerary.id, 'destinations', serverList)
+        showNotification('success', 'Destination removed successfully');
       } catch (error) {
-        console.error('Error removing destination:', error)
-        showNotification('error', 'Failed to remove destination')
+        console.error('Error removing destination:', error);
+        showNotification('error', 'Failed to remove destination');
         
         // Restore the destination in case of an error
         setItinerary(prev => ({
           ...prev,
           destinations: dests,
           days: syncDaysWithDestinations(dests, prev.days),
-        }))
+        }));
+        
+        // At least try to save locally
+        const stored = localStorage.getItem('waymark_itinerary');
+        if (stored) {
+          const current = JSON.parse(stored);
+          localStorage.setItem('waymark_itinerary', JSON.stringify(current));
+        }
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     } else {
-      showNotification('success', 'Destination removed')
+      // No trip ID or destination ID, just update localStorage
+      const stored = localStorage.getItem('waymark_itinerary');
+      if (stored) {
+        const current = JSON.parse(stored);
+        const updatedStorage = { ...current, destinations: updatedDests };
+        localStorage.setItem('waymark_itinerary', JSON.stringify(updatedStorage));
+      }
+      
+      showNotification('success', 'Destination removed');
     }
     
     // Call the parent's handleRemoveDestination if provided
     if (handleRemoveDestination) {
-      handleRemoveDestination(index)
+      handleRemoveDestination(index);
     }
   }
 
