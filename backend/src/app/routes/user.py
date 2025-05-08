@@ -11,6 +11,10 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from datetime import timedelta
 from app.models.user import User
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+from app.core.config import get_settings
+
 
 router = APIRouter()
 
@@ -55,3 +59,7 @@ def get_user(id: int, db: Session = Depends(get_db)):
 @router.post("/users/verify-email/{verification_code}")
 def verify_email(verification_code: str):
     return {"message": "Email verified successfully"}
+
+@router.get("/auth/me", response_model=UserOut)
+def read_users_me(current_user: User = Depends(get_current_user)):
+    return current_user
