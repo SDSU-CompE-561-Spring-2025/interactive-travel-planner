@@ -3,11 +3,14 @@
 import Logo from '@/components/Logo';
 import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LogIn, UserRoundPlus } from 'lucide-react';
 import { ThemeSwitcherButton } from '@/components/ThemeSwitcherButton';
 import UserButton from '@/components/UserButton';
+import { useState, useEffect } from 'react';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 const navList = [
 	{
@@ -18,18 +21,33 @@ const navList = [
 		label: 'Planner',
 		link: '/planner',
 	},
-	{
-		label: 'sign in',
-		link: '/sign-in',
-	},
-	{
-		label: 'profile',
-		link: '/profile/userID',
-	},
-
 ];
 
-function Navbar() {
+
+export function Navbar() {
+	const [username, setUsername] = useState<string | null>(null);
+	const pathname = usePathname();
+	const router = useRouter();
+
+
+	useEffect(() => {
+		const token = localStorage.getItem('jwt')
+		if (!token) return;
+
+		fetch(`${API_URL}auth//users/me`, {
+		headers: { Authorization: `Bearer ${token}` },
+		})
+		.then(res => {
+			if (!res.ok) throw new Error();
+			return res.json();
+		})
+		.then((data: { username: string }) => setUsername(data.username))
+		.catch(() => {
+			localStorage.removeItem('jwt');
+			setUsername(null);
+		});
+	}, []);
+
 	return (
 		<div className="w-full border-separate border-b bg-background">
 			<div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
@@ -49,7 +67,12 @@ function Navbar() {
 						</div>
 					</div>
 					<div className="flex items-center space-x-4">
-						<Link href={'/sign-in'}>
+						{username && (
+							<span className="text-sm font-medium">
+							Hi,&nbsp;<span className="text-foreground">{username}</span>
+							</span>
+							)}
+						<Link href={'/log-in'}>
 							<Button
 								variant={'ghost'}
 								size={'icon'}
@@ -58,24 +81,9 @@ function Navbar() {
 								<LogIn className="h-5 w-5" />
 							</Button>
 						</Link>
-						<Link href={'/sign-up'}>
-							<Button
-								variant={'ghost'}
-								size={'icon'}
-								className="flex items-center justify-center"
-							>
-								<UserRoundPlus className="h-5 w-5" />
-							</Button>
-						</Link>
 						<ThemeSwitcherButton />
-						<Link href={'/profile/userID'}>
-							<Button
-								variant={'ghost'}
-								size={'icon'}
-								className="flex items-center justify-center"
-							>
-								<UserButton />
-							</Button>
+						<Link href={'/profile/{userID}'}>
+							<UserButton />
 						</Link>
 					</div>
 				</nav>

@@ -1,18 +1,16 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { User } from 'lucide-react';
+import { Link, User } from 'lucide-react';
 
 function UserButton() {
 	return (
 		<div>
-			<a href="/profile/[userId]">
-				<Button
-					variant={'ghost'}
-					size={'icon'}
-				>
-					<User />
-				</Button>
-			</a>
+			<Button
+				variant={'ghost'}
+				size={'icon'}
+			>
+				<User />
+			</Button>
 		</div>
 	);
 }
