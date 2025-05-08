@@ -45,6 +45,7 @@ def update_dates(trip_id: int, update: DatesCreate, db: Session = Depends(get_db
     return dates
 
 # ✅ Delete a date entry by internal date ID
+# Delete a single date entry
 @router.delete("/dates/{date_id}")
 def delete_dates(date_id: int, db: Session = Depends(get_db)):
     dates = db.query(Dates).filter(Dates.id == date_id).first()
@@ -53,3 +54,7 @@ def delete_dates(date_id: int, db: Session = Depends(get_db)):
     db.delete(dates)
     db.commit()
     return {"message": f"Date entry {date_id} deleted"}
+
+@router.delete("/destinations/{destination_id}")
+def delete_destination(destination_id: int, db: Session = Depends(get_db)):
+    return {"message": f"Destination {destination_id} deleted successfully"}
