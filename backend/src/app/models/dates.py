@@ -6,11 +6,9 @@ class Dates(Base):
     __tablename__ = 'dates'
 
     id = Column(Integer, primary_key=True)  # unique ID for the date entry
-    trip_id = Column(Integer, ForeignKey('destinations.id'), nullable=False, unique=True)  # links to destination
+    trip_id = Column(Integer, ForeignKey('trips.id'), nullable=False, unique=True)  # links to destination
     start_date = Column(Date, nullable=False)  # trip start
     end_date = Column(Date, nullable=False)  # trip end
-
-    destination = relationship('Destinations', back_populates='dates', uselist=False)  # one-to-one with destination
 
     def to_dict(self):
         return {
@@ -19,3 +17,5 @@ class Dates(Base):
             'start_date': self.start_date.isoformat() if self.start_date else None,
             'end_date': self.end_date.isoformat() if self.end_date else None
         }
+    
+    trip = relationship("Trip", back_populates="dates")

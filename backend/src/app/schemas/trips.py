@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from enum import Enum
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
 
 
@@ -20,7 +21,7 @@ class TripCreate(TripBase):
     pass
 
 class Trip(TripBase):
-    id: int
+    id: UUID
     user_id: int
     created_at: datetime
     updated_at: datetime
