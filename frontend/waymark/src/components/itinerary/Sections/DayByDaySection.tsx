@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Edit, Save, Calendar, Plus, X, MapPin } from 'lucide-react';
 import { Itinerary, updateItinerarySection } from '../../../lib/api';
 
@@ -32,6 +32,32 @@ const DayByDaySection: React.FC<DayByDaySectionProps> = ({
     activity: { time: '', title: '' }
   });
   const [activeEditDay, setActiveEditDay] = useState<number>(-1);
+  
+  // ── AUTOPOPULATE DAYS FROM TRIP START/END ────────────────────────────────────
+  /**
+   * When the trip has a start & end date but no days yet,
+   * build a days[] entry for each calendar day in between.
+   */
+  useEffect(() => {
+    if (
+      itinerary.start &&
+      itinerary.end &&
+      (!itinerary.days || itinerary.days.length === 0)
+    ) {
+      const start = new Date(itinerary.start);
+      const end = new Date(itinerary.end);
+      const daysArr: typeof itinerary.days = [];
+
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const iso = d.toISOString().split('T')[0];
+        // carry over any existing activities (if you re-open the editor)
+        const existing = itinerary.days?.find((dd) => dd.date === iso)?.activities || [];
+        daysArr.push({ date: iso, activities: existing });
+      }
+      setItinerary((prev) => ({ ...prev, days: daysArr }));
+    }
+  }, [itinerary.start, itinerary.end, setItinerary]);
+  // ─────────────────────────────────────────────────────────────────────────────
   
   const handleSaveDays = () => {
     if (itinerary.id && itinerary.id !== 'new-trip') {
@@ -237,6 +263,26 @@ const DayByDaySection: React.FC<DayByDaySectionProps> = ({
 
       {(itinerary.days || []).length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* ── ADD A NEW DAY ───────────────────────────────────*/}
+          {editingSection === 'days' && (
+            <div className="flex items-center space-x-2 mb-6">
+              <label className="text-sm text-gray-700">New Day:</label>
+              <input
+                type="date"
+                className="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring focus:ring-teal-200"
+                value={newDay.date}
+                onChange={(e) => setNewDay({ date: e.target.value })}
+              />
+              <button
+                className="inline-flex items-center bg-teal-600 hover:bg-teal-700 text-white px-3 py-1 rounded-md shadow-sm text-sm"
+                onClick={handleAddDay}
+                disabled={!newDay.date}
+              >
+                <Plus size={14} className="mr-1" /> Add Day
+              </button>
+            </div>
+          )}
+          {/* ── YOUR EXISTING DAY CARDS BELOW HERE ──────────────── */}
           {(itinerary.days || []).map((day, dayIndex) => (
             <div 
               key={dayIndex} 
