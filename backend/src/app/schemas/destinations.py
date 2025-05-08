@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import Optional
 
 class DestinationBase(BaseModel):
-    name: str
     location: str
     description: Optional[str] = None
     order: Optional[str] = None
