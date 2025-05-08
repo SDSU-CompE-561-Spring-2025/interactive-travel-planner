@@ -12,9 +12,7 @@ from fastapi import HTTPException, status
 from datetime import timedelta
 from app.models.user import User
 
-
 router = APIRouter()
-
 
 @router.post("/register", response_model=UserResponse)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -44,9 +42,14 @@ async def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/users/me")
-def read_current_user(current_user: User = Depends(get_current_user)):
+@router.get("/users/{userID}", response_model=UserResponse)
+def get_user(id: int, db: Session = Depends(get_db)):
+    current_user = user_service.get_user_by_id(db=db, id=id)
+    if not current_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    print(f"[✅] user successfully loged in: id={current_user.id}, username={current_user.username}")
     return current_user
+
 
 
 @router.post("/users/verify-email/{verification_code}")
