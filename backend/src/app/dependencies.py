@@ -33,24 +33,3 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
-
-
-
-
-
-
-
-
-
-def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db),
-):
-    username = decode_token(token)
-    user = get_user_by_username(db, username)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-        )
-    return user

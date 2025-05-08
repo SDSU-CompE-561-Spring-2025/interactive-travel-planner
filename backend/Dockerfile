@@ -15,4 +15,4 @@ RUN hatch run uv sync
 EXPOSE 8000
 
 
-CMD ["hatch", "run","start"]
+CMD ["hatch", "run","dev"]
