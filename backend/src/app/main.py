@@ -1,8 +1,13 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.database import Base, engine
 from app.routes import api_router
+
+logging.getLogger("passlib.handlers.bcrypt").setLevel(logging.WARNING)
+
 
 Base.metadata.create_all(bind=engine)
 

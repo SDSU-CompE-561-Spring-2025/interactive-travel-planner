@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.core.auth import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token
 from app.schemas.token import Token
 from app.schemas.user import UserOut
-from app.schemas.user import UserResponse, UserCreate
+from app.schemas.user import UserResponse, UserCreate, User
 import app.services.user as user_service
 from app.dependencies import get_db, get_current_user
 from sqlalchemy.orm import Session
@@ -48,6 +48,15 @@ def get_user(id: int, db: Session = Depends(get_db)):
     if not current_user:
         raise HTTPException(status_code=404, detail="User not found")
     print(f"[✅] user successfully loged in: id={current_user.id}, username={current_user.username}")
+    return current_user
+
+
+
+@router.get("/users/me", response_model=UserResponse)
+def read_current_user(current_user: User = Depends(get_current_user)):
+    """
+    Returns the User record for whoever sent the bearer token.
+    """
     return current_user
 
 

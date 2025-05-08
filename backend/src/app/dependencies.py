@@ -6,6 +6,7 @@ from app.core.security import decode_token
 from app.services.user import get_user_by_username
 from starlette.status import HTTP_401_UNAUTHORIZED
 from typing import Generator
+from app.models.user import User
 
 
 
@@ -23,8 +24,8 @@ def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ):
-    username = decode_token(token)
-    user = get_user_by_username(db, username=username)
+    username = decode_token(token)               # raises 401 if invalid
+    user = db.query(User).filter(User.username == username).first()
     if not user:
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED,
