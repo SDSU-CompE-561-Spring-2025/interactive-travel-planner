@@ -12,7 +12,7 @@ type Trip = {
   destination: string
   start_date: string
   end_date: string
-  color: string
+  image?: string
 }
 
 const sampleTrips: Trip[] = [
@@ -22,7 +22,7 @@ const sampleTrips: Trip[] = [
     destination: "Kyoto, Japan",
     start_date: "2025-05-20",
     end_date: "2025-05-28",
-    color: "bg-red-100",
+    image: "https://boutiquejapan.com/wp-content/uploads/2019/07/yasaka-pagoda-higashiyama-kyoto-japan.jpg",
   },
   {
     id: 2,
@@ -30,7 +30,7 @@ const sampleTrips: Trip[] = [
     destination: "Maui, Hawaii",
     start_date: "2025-06-10",
     end_date: "2025-06-17",
-    color: "bg-yellow-100",
+    image: "https://freedomdestinations.co.uk/wp-content/uploads/HonoluluHawaii.jpg",
   },
   {
     id: 3,
@@ -38,7 +38,7 @@ const sampleTrips: Trip[] = [
     destination: "New York, USA",
     start_date: "2025-07-01",
     end_date: "2025-07-07",
-    color: "bg-blue-100",
+    image: "https://i.natgeofe.com/k/5b396b5e-59e7-43a6-9448-708125549aa1/new-york-statue-of-liberty.jpg",
   },
   {
     id: 4,
@@ -46,7 +46,7 @@ const sampleTrips: Trip[] = [
     destination: "Paris, France",
     start_date: "2025-08-12",
     end_date: "2025-08-25",
-    color: "bg-pink-100",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg/960px-La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg",
   },
   {
     id: 5,
@@ -54,7 +54,7 @@ const sampleTrips: Trip[] = [
     destination: "Oslo, Norway",
     start_date: "2025-09-15",
     end_date: "2025-09-22",
-    color: "bg-purple-100",
+    image: "https://miro.medium.com/v2/resize:fit:1400/0*uzryjySGRMRPuCTh",
   },
   {
     id: 6,
@@ -62,7 +62,7 @@ const sampleTrips: Trip[] = [
     destination: "Dubai, UAE",
     start_date: "2025-10-03",
     end_date: "2025-10-10",
-    color: "bg-orange-100",
+    image: "https://cdn.britannica.com/15/189715-050-4310222B/Dubai-United-Arab-Emirates-Burj-Khalifa-top.jpg",
   },
 ]
 
@@ -113,16 +113,19 @@ export default function TripsPage() {
 
             return (
               <Link key={trip.id} href={`/trips/${trip.id}`}>
-                <Card className="overflow-hidden rounded-xl h-full cursor-pointer hover:shadow-md transition-all duration-300">
-                  {/* Thin colored top bar with rounded top corners */}
-                  <div className={`relative w-full h-12 ${trip.color} rounded-t-xl`}>
+                <Card className="overflow-hidden h-full cursor-pointer hover:shadow-md transition-all duration-300 border-[#f3a034]/20 hover:border-[#f3a034]/40">
+                  <div className="relative w-full h-[200px] overflow-hidden">
+                    <img
+                      src={trip.image || "https://via.placeholder.com/400x250?text=Trip"}
+                      alt={trip.name}
+                      className="w-full h-full object-cover object-center"
+                    />
                     {daysUntil > 0 && daysUntil < 30 && (
-                      <Badge className="absolute top-2 right-3 z-20 bg-[#f3a034] hover:bg-[#f3a034] text-white font-normal text-xs">
+                      <Badge className="absolute top-3 right-3 z-20 bg-[#f3a034] hover:bg-[#f3a034] text-white font-normal text-xs">
                         In {daysUntil} days
                       </Badge>
                     )}
                   </div>
-
                   <CardHeader className="pb-2">
                     <h2 className="text-xl font-semibold text-[#377c68]">{trip.name}</h2>
                     <div className="flex items-center text-[#4ba46c] text-lg">
@@ -130,7 +133,6 @@ export default function TripsPage() {
                       <p className="font-normal">{trip.destination}</p>
                     </div>
                   </CardHeader>
-
                   <CardContent className="pb-6 text-lg text-gray-600 font-normal">
                     <div className="flex items-center">
                       <Calendar className="h-5 w-5 mr-1 flex-shrink-0" />
