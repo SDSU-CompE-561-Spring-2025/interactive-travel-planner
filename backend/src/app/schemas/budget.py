@@ -5,9 +5,9 @@ from typing import Optional
 
 class BudgetBase(BaseModel):
     amount: float
-    currency: str
+    currency: Optional[str]= None
     description: Optional[str] = None
-    category: str
+    category: Optional[str]= None
     
 # For creating a new budget
 class BudgetCreate(BudgetBase):
