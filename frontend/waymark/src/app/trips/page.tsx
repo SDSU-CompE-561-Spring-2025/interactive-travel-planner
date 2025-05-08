@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation';
 import Link from "next/link"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -68,6 +69,7 @@ const sampleTrips: Trip[] = [
 
 export default function TripsPage() {
   const trips = sampleTrips
+  const router = useRouter();
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -101,7 +103,7 @@ export default function TripsPage() {
           <p className="text-[#4ba46c] text-base">
             You have {trips.length} upcoming adventures
           </p>
-          <Button className="bg-white hover:bg-white/90 text-black border-0 font-normal text-sm sm:text-base px-3 py-2">
+          <Button className="bg-white hover:bg-white/90 text-black border-0 font-normal text-sm sm:text-base px-3 py-2" onClick={() => router.push('/planner/start')}>
             <PlusCircle className="mr-2 h-4 w-4" />
             New Trip
           </Button>

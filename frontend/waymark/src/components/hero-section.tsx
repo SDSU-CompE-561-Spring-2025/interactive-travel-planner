@@ -28,8 +28,8 @@ export function HeroSection() {
                 </div>
 
                 {/* Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4">
-                <Button asChild size="lg" className="gap-2">
+                <div className="flex flex-col sm:flex-row gap-4 text-sm text-emerald-800 hover:text-amber-500">
+                <Button asChild size="lg" className="gap-2 bg-amber-500 hover:bg-emerald-800">
                     <Link href="/new-trip">
                     <PlusCircle className="h-5 w-5" />
                         Create New Itinerary
@@ -41,18 +41,27 @@ export function HeroSection() {
                 {/* Input row */}
 
                 <div className="rounded-lg border bg-background p-4 shadow-sm">
-                <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="relative flex-1">
-                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input className="pl-9" placeholder="Where do you want to go?" />
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                        <div className="relative flex-1">
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            className="pl-9 h-10"
+                            placeholder="Where do you want to go?"
+                        />
+                        </div>
+                        <div className="relative flex-1">
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            className="pl-9 h-10"
+                            placeholder="When are you traveling?"
+                        />
+                        </div>
+                        <div>
+                        <Button className="h-10 w-full sm:w-auto">Search</Button>
+                        </div>
                     </div>
-                    <div className="relative flex-1">
-                    <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input className="pl-9" placeholder="When are you traveling?" />
-                    </div>
-                    <Button className="w-auto ">Search</Button>
                 </div>
-                </div>
+
             </div>
 
             {/* Right Side - Map image and overlays */}

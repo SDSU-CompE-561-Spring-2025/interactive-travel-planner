@@ -19,7 +19,7 @@ const navList = [
 	},
 	{
 		label: 'Planner',
-		link: '/planner',
+		link: '/planner/start',
 	},
 ];
 
