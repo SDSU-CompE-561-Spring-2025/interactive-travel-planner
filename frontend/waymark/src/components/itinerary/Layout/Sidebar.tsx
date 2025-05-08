@@ -1,59 +1,39 @@
-import React from 'react';
+// File: src/components/itinerary/Layout/Sidebar.tsx
+import React from 'react'
+import { MapPin, Clock, CalendarDays } from 'lucide-react'
 
 interface SidebarProps {
-  activeSection: string;
-  setActiveSection: (section: string) => void;
+  activeSection: 'destinations' | 'timeline' | 'days'
+  setActiveSection: (section: 'destinations' | 'timeline' | 'days') => void
 }
 
-const Sidebar = ({ activeSection, setActiveSection }: SidebarProps) => {
+export default function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
+  const navItems = [
+    { key: 'destinations', label: 'Destinations', icon: MapPin },
+    { key: 'timeline', label: 'Timeline', icon: Clock },
+    { key: 'days', label: 'Day by Day', icon: CalendarDays },
+  ] as const
+
   return (
-    <aside className="w-56 bg-white border-r hidden md:flex flex-col">
-      <div className="p-5 border-b">
-        <div className="flex items-center">
-          <svg viewBox="0 0 24 24" className="h-5 w-5 text-teal-500 mr-2" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
-          <span className="font-medium text-gray-700">WayMark</span>
-        </div>
-        <p className="text-xs text-gray-500 ml-7">Travel Companion</p>
-      </div>
-      
-      <nav className="flex-1 py-6">
-        <button 
-          onClick={() => setActiveSection('destinations')}
-          className={`w-full text-left px-5 py-3 flex items-center ${
-            activeSection === 'destinations' 
-              ? 'text-teal-600 border-r-2 border-teal-500 bg-teal-50 font-medium' 
-              : 'text-gray-600 hover:bg-gray-50'
-          }`}
-        >
-          <span className="text-base">Destinations</span>
-        </button>
-        
-        <button 
-          onClick={() => setActiveSection('timeline')}
-          className={`w-full text-left px-5 py-3 flex items-center ${
-            activeSection === 'timeline' 
-              ? 'text-teal-600 border-r-2 border-teal-500 bg-teal-50 font-medium' 
-              : 'text-gray-600 hover:bg-gray-50'
-          }`}
-        >
-          <span className="text-base">Timeline</span>
-        </button>
-        
-        <button 
-          onClick={() => setActiveSection('days')}
-          className={`w-full text-left px-5 py-3 flex items-center ${
-            activeSection === 'days' 
-              ? 'text-teal-600 border-r-2 border-teal-500 bg-teal-50 font-medium' 
-              : 'text-gray-600 hover:bg-gray-50'
-          }`}
-        >
-          <span className="text-base">Day by Day</span>
-        </button>
+    <aside className="w-64 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4 flex flex-col min-h-screen">
+      <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Itinerary</h2>
+      <nav className="flex-1">
+        <ul className="space-y-2">
+          {navItems.map(({ key, label, icon: Icon }) => {
+            const isActive = activeSection === key
+            return (
+              <li
+                key={key}
+                onClick={() => setActiveSection(key)}
+                className={`flex items-center cursor-pointer p-2 rounded-md transition-all duration-150 ease-in-out ${isActive ? 'bg-blue-100 text-blue-600 font-medium dark:bg-blue-900 dark:text-blue-300' : 'text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700'}`}
+              >
+                <Icon className="mr-2" size={16} />
+                <span className="text-base leading-tight">{label}</span>
+              </li>
+            )
+          })}
+        </ul>
       </nav>
     </aside>
-  );
-};
-
-export default Sidebar;
+  )
+}
