@@ -14,31 +14,100 @@ export default function ReviewStep() {
     destination,
     dates,
     collaborators,
+    setField,
   } = usePlannerStore();
 
+  // --- Create trip in backend ---
   const handleSubmit = async () => {
-    const response = await fetch('http://localhost:8000/trips', {
+    const userId = useUserStore.getState().user?.id;
+    if (!userId) {
+      alert('You must be logged in to create a trip.');
+      return;
+    }
+  
+    // --- Create trip ---
+    const tripPayLoad = {
+      title: tripName,
+      start_date: dates.start,
+      end_date: dates.end,
+    };
+  
+    const tripRes = await fetch(`http://localhost:8000/users/${userId}/trips`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        trip_name: tripName,
-        budget,
-        activities,
-        destination,
-        start_date: dates.start,
-        end_date: dates.end,
-        collaborators: collaborators.map((c) => c.id),
-      }),
+      body: JSON.stringify(tripPayLoad),
     });
-
-    if (response.ok) {
-      const data = await response.json();
-      router.push(`/trips/${data.id}`);
-    } else {
+  
+    if (!tripRes.ok) {
       alert('Failed to create trip');
+      return;
     }
+  
+    const tripData = await tripRes.json();
+    const tripId = tripData.id;
+    setField('tripId', tripId);
+  
+    // --- Save Dates ---
+    const datesPayLoad = {
+      start_date: dates.start,
+      end_date: dates.end,
+    };
+  
+    const datesRes = await fetch(`http://localhost:8000/trips/${tripId}/dates`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datesPayLoad),
+    });
+  
+    if (!datesRes.ok) {
+      alert('Failed to save dates');
+      return;
+    }
+  
+    // --- Save Budget (optional endpoint) ---
+    const budgetPayLoad = { amount: budget };
+    const budgetRes = await fetch(`http://localhost:8000/trips/${tripId}/budget`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(budgetPayLoad),
+    });
+  
+    if (!budgetRes.ok) {
+      alert('Failed to save budget');
+      return;
+    }
+  
+    // --- Save Destination ---
+    const destinationPayload = { destination };
+    const destinationRes = await fetch(`http://localhost:8000/trips/${tripId}/destinations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(destinationPayload),
+    });
+  
+    if (!destinationRes.ok) {
+      alert('Failed to save destination');
+      return;
+    }
+  
+    // --- Save Collaborators ---
+    for (const user of collaborators) {
+      const res = await fetch(`http://localhost:8000/trips/${tripId}/collaborators`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id }),
+      });
+  
+      if (!res.ok) {
+        alert(`Failed to add collaborator ${user.name}`);
+        return;
+      }
+    }
+  
+    // ✅ Success
+    router.push(`/trips/${tripId}`);
   };
-
+  
   const Item = ({
     label,
     value,
