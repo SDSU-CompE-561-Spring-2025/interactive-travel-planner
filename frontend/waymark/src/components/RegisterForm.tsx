@@ -19,9 +19,12 @@ export default function RegisterForm() {
         try {
             await axios.post(
                 `${API_URL}/auth/register`,
-                { username, email, password }
+                { username, email, password } // add verify password
         );
-        router.push('/sign-in');
+            // Handle successful registration (e.g., show a success message, redirect, etc.)
+            alert('Registration successful! Please log in.');
+            // Redirect to the login page
+        router.push('/log-in');
         } catch (error: any) {
         if (error.isAxiosError) {
             const detail = error.response?.data?.detail;

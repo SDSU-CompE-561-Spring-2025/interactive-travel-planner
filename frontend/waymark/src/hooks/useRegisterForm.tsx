@@ -64,7 +64,7 @@ export function useRegisterForm() {
 			}
 
 			setTimeout(() => {
-				window.location.href = 'sign-in';
+				window.location.href = 'log-in';
 			}, 2000);
 		} catch (error) {
 			toast({
