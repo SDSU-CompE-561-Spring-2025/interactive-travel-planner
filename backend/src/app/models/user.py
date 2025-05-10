@@ -1,24 +1,14 @@
-from datetime import UTC, datetime
-from sqlalchemy import Boolean, Column, DateTime, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
-from app.core.database import Base
+from app.database import Base
+from app.models.itineraries import Itinerary
+from app.models.association import itinerary_trip_association
+
 
 class User(Base):
-    __tablename__ = "users"
-
+    __tablename__ = 'users'
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
-    email = Column(String, unique=True, index=True)
-    password_hash = Column(String)
-    is_active = Column(Boolean, default=True)
-    is_verified = Column(Boolean, default=True)
-    verification_code = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.now(UTC))
+    hashed_password = Column(String)
 
-
-    trips = relationship("Trips", back_populates="user")
-    events = relationship(
-        "CalendarEvent",
-        back_populates="user",
-        cascade="all, delete-orphan"
-    )
+Itinerary.trips = relationship('Trip', secondary=itinerary_trip_association, back_populates='itineraries')

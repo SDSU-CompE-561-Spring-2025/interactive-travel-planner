@@ -1,45 +1,28 @@
-from sqlalchemy.orm import Session
-
-from app.core.auth import get_password_hash
-from app.core.config import get_settings
-from app.core.security import verify_password
+from datetime import timedelta, datetime, timezone
+from jose import jwt
+from dotenv import load_dotenv
+import os
 from app.models.user import User
-from app.schemas.user import UserCreate
-
-settings = get_settings()
+from app.deps import bcrypt_context
 
 
-
-# User CRUD operations
-def create_user(db: Session, user: UserCreate):
-    hashed_password = get_password_hash(user.password)
-    verification_code = "1234"  # TODO: Implement verification code
-
-    db_user = User(
-        username=user.username,
-        email=user.email,
-        password_hash=hashed_password,
-        verification_code=verification_code,
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
+load_dotenv()
 
 
-def authenticate_user(db: Session, username: str, password: str):
+SECRET_KEY = os.getenv("AUTH_SECRET_KEY")
+ALGORITHM = os.getenv("AUTH_ALGORITHM")
+
+
+def authenticate_user(username: str, password: str, db):
     user = db.query(User).filter(User.username == username).first()
     if not user:
         return False
-    if not verify_password(password, user.password_hash):
+    if not bcrypt_context.verify(password, user.hashed_password):
         return False
     return user
 
-
-def get_user_by_username(db: Session, username: str):
-    user = db.query(User).filter(User.username == username).first()
-    return user
-
-def get_user_by_id(db: Session, id: int):
-    user = db.query(User).filter(User.id == id).first()
-    return user
+def create_access_token(username: str, user_id: int, expires_delta: timedelta):
+    encode = {'sub': username, 'id': user_id}
+    expires = datetime.now(timezone.utc) + expires_delta
+    encode.update({'exp': expires})
+    return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)

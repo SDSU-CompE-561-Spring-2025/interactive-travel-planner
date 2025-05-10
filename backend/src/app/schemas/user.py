@@ -1,40 +1,10 @@
-from datetime import datetime
-from pydantic import BaseModel, constr, EmailStr, Field
+from pydantic import BaseModel
 
 
-class UserBase(BaseModel):
-    username: constr(min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_]+$")
-    email: EmailStr
-
-
-class UserCreate(UserBase):
-    password: constr(min_length=8, max_length=64)
-
-
-class User(UserBase):
-    id: int = Field(..., gt=0)
-    username: constr(min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_]+$")
-    email: EmailStr
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-class UserResponse(BaseModel):
-    id: int = Field(..., gt=0)
-    username: constr(min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_]+$")
-    email: EmailStr
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-class UserOut(BaseModel):
-    id: int
+class UserCreateRequest(BaseModel):
     username: str
-    email: EmailStr
+    password: str
 
-    class Config:
-        from_attributes = True
+class Token(BaseModel):
+    access_token: str
+    token_type: str

@@ -4,11 +4,10 @@ from app.database import Base
 from app.models.association import itinerary_trip_association
 
 
-
-class Trip(Base): # routines --> trips
-    __tablename__ = 'trips'
+class Itinerary(Base): #workout --> itinerary
+    __tablename__ = 'itineraries'
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id'))
     name = Column(String, index=True)
     description = Column(String, index=True)
-    itineraries = relationship('Itinerary', secondary=itinerary_trip_association, back_populates='trips')
+    trips = relationship('Trip', secondary=itinerary_trip_association, back_populates='itineraries')

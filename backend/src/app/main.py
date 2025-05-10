@@ -1,28 +1,25 @@
-import logging
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from .routers import auth, itineraries, trips
 
-from app.core.database import Base, engine
-from app.routes import api_router
-
-logging.getLogger("passlib.handlers.bcrypt").setLevel(logging.WARNING)
-
-
-Base.metadata.create_all(bind=engine)
+from .database import Base, engine
 
 app = FastAPI()
 
+Base.metadata.create_all(bind=engine)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=['http://localhost:3000'],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=['*'],
+    allow_headers=['*'],
 )
 
-app.include_router(api_router)
-
 @app.get("/")
-def read_root():
-    return {"Hello": "World"}
+def health_check():
+    return 'Health check complete'
+
+app.include_router(auth.router)
+app.include_router(itineraries.router)
+app.include_router(trips.router)
