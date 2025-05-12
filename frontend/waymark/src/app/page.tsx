@@ -2,7 +2,7 @@
 
 import { useContext, useState, useEffect } from 'react';
 import AuthContext from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute from '../components/ProtectedRoute';
 import axios from 'axios';
 
 const Home = () => {

@@ -18,14 +18,6 @@ const navList = [
 		label: 'My Itinerary',
 		link: '/planner',
 	},
-	{
-		label: 'About',
-		link: '/about',
-	},
-	{
-		label: 'Support',
-		link: '/support',
-	},
 ];
 
 function Navbar() {
@@ -53,7 +45,7 @@ function Navbar() {
 							<LogIn />
 						</Button>
 					</Link>
-					<Link href={'/sign-up'}>
+					<Link href={'/login'}>
 						<Button
 							variant={'ghost'}
 							size={'icon'}
