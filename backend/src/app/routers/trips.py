@@ -18,9 +18,23 @@ def get_trips(db: db_dependency, user: user_dependency):
     return db.query(Trip).options(joinedload(Trip.itineraries)).filter(Trip.user_id == user.get('id')).all()
 
 
+@router.get("/{trip_id}")
+def get_trip(trip_id: int, db: db_dependency, user: user_dependency):
+    trip = db.query(Trip).options(joinedload(Trip.itineraries)).filter(Trip.id == trip_id, Trip.user_id == user.get('id')).first()
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    return trip
+
+
 @router.post("/")
 def create_trip(db: db_dependency, user: user_dependency, trip: TripCreate):
-    db_trip = Trip(name=trip.name, description=trip.description, user_id=user.get('id'))
+    db_trip = Trip(
+        name=trip.name,
+        description=trip.description,
+        user_id=user.get('id'),
+        start_date=trip.start_date,
+        end_date=trip.end_date
+    )
     for itinerary_id in trip.itineraries:
         itinerary = db.query(Itinerary).filter(Itinerary.id == itinerary_id).first()
         if itinerary:
