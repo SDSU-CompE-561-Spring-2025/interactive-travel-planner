@@ -2,8 +2,8 @@ from datetime import timedelta, datetime, timezone
 from jose import jwt
 from dotenv import load_dotenv
 import os
-from app.models.user import User
-from app.deps import bcrypt_context
+from ..models.user import User
+from ..deps import bcrypt_context
 
 
 load_dotenv()

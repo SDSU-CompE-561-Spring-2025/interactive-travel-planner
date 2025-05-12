@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException, status
-from sqlalchemy.orm import joinedload
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session, joinedload
 from typing import List
-from app.deps import db_dependency, user_dependency
-from app.schemas.itineraries import ItineraryCreate, ItineraryUpdate
-from app.models.itineraries import Itinerary
-from app.services.itineraries import update_itinerary as _update_itinerary
+from ..deps import db_dependency, user_dependency
+from ..schemas.itineraries import ItineraryCreate, ItineraryUpdate
+from ..models.itineraries import Itinerary
+from ..models.user import User
+from ..services.itineraries import update_itinerary as _update_itinerary
 
 
 router = APIRouter(
@@ -36,7 +37,7 @@ def create_itinerary(db: db_dependency, user: user_dependency, itinerary: Itiner
 
     # Associate with trips
     if itinerary.trips:
-        from app.models.trips import Trip
+        from ..models.trips import Trip
         for trip_id in itinerary.trips:
             trip = db.query(Trip).filter(Trip.id == trip_id).first()
             if trip:

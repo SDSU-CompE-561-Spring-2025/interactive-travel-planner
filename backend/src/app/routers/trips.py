@@ -1,11 +1,12 @@
 from pydantic import BaseModel
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException
-from sqlalchemy.orm import joinedload
-from app.models.trips import Trip
-from app.models.itineraries import Itinerary
-from app.deps import db_dependency, user_dependency
-from app.schemas.trips import TripCreate, TripUpdate
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session, joinedload
+from ..models.trips import Trip
+from ..models.itineraries import Itinerary
+from ..deps import db_dependency, user_dependency
+from ..schemas.trips import TripCreate, TripUpdate
+from ..services.trips import update_trip as _update_trip
 
 router = APIRouter(
     prefix='/trips',
@@ -47,7 +48,6 @@ def create_trip(db: db_dependency, user: user_dependency, trip: TripCreate):
 
 @router.put("/")
 def update_trip(trip_id: int, trip_data: TripUpdate, db: db_dependency):
-    from app.services.trips import update_trip as _update_trip
     db_trip = _update_trip(db, trip_id, trip_data)
     if not db_trip:
         raise HTTPException(status_code=404, detail="Trip not found")

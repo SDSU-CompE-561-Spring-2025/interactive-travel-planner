@@ -1,10 +1,11 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
-from app.database import Base
+from ..database import Base
 
 
 itinerary_trip_association = Table(
-    'itinerary_trip', Base.metadata,
-    Column('trip_id', Integer, ForeignKey('trips.id')),
-    Column('itinerary_id', Integer, ForeignKey('itineraries.id'))
+    'itinerary_trip_association',
+    Base.metadata,
+    Column('itinerary_id', Integer, ForeignKey('itineraries.id')),
+    Column('trip_id', Integer, ForeignKey('trips.id'))
 )

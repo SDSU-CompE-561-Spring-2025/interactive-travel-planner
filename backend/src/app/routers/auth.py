@@ -4,10 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from dotenv import load_dotenv
 import os
-from app.models.user import User
-from app.deps import db_dependency, bcrypt_context
-from app.schemas.user import UserCreateRequest, Token
-from app.services.user import create_access_token, authenticate_user
+from ..models.user import User
+from ..deps import db_dependency, bcrypt_context
+from ..schemas.user import UserCreateRequest, Token
+from ..services.user import create_access_token, authenticate_user
 
 load_dotenv()
 

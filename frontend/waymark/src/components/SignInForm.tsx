@@ -45,7 +45,7 @@ export default function SignInForm() {
             const data = await response.json();
             
             // Store the token in localStorage
-            localStorage.setItem('auth_token', data.access_token);
+            localStorage.setItem('token', data.access_token);
             
             // Redirect to the home page
             router.push('/');

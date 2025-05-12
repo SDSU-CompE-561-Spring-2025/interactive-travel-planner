@@ -1,10 +1,10 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from datetime import UTC, datetime
 from sqlalchemy.orm import relationship
-from app.database import Base
-from app.models.association import itinerary_trip_association
+from ..database import Base
+from .association import itinerary_trip_association
 from fastapi import HTTPException, status
-from app.deps import db_dependency
+from ..deps import db_dependency
 from sqlalchemy.inspection import inspect
 
 
@@ -31,7 +31,7 @@ class Trip(Base): # routines --> trips
 
         # 1) handle relationship
         if "itineraries" in trip_data:
-            from app.models.itineraries import Itinerary
+            from .itineraries import Itinerary
             ids = trip_data.pop("itineraries")
             db_trip.itineraries = (
                 db.query(Itinerary)

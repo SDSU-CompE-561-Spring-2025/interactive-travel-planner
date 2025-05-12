@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
-from app.database import Base
-from app.models.itineraries import Itinerary
-from app.models.association import itinerary_trip_association
+from ..database import Base
+from .itineraries import Itinerary
+from .association import itinerary_trip_association
 
 
 class User(Base):

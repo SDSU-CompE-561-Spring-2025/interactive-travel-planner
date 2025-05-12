@@ -1,6 +1,6 @@
-from app.models.trips import Trip as TripModel
-from app.schemas.trips import TripUpdate
-from app.deps import db_dependency
+from ..models.trips import Trip as TripModel
+from ..schemas.trips import TripUpdate
+from ..deps import db_dependency
 
 
 def update_trip(db: db_dependency, trip_id: int, trip_data: TripUpdate):

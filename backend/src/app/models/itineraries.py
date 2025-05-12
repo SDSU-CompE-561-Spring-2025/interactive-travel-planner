@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from datetime import UTC, datetime
-from app.database import Base
-from app.models.association import itinerary_trip_association
+from ..database import Base
+from .association import itinerary_trip_association
 from fastapi import HTTPException, status
 from sqlalchemy.inspection import inspect
 
@@ -26,7 +26,7 @@ class Itinerary(Base): #workout --> itinerary
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Itinerary not found")
 
         if "trips" in data:
-            from app.models.trips import Trip
+            from .trips import Trip
             trip_ids = data.pop("trips") or []
             db_itin.trips = (
                 db.query(Trip)
