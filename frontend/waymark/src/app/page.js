@@ -15,6 +15,7 @@ const Home = () => {
   const [tripDescription, setTripDescription] = useState('');
   const [selectedItineraries, setSelectedItineraries] = useState([]);
 
+
   useEffect(() => {
     const fetchItinerariesAndTrips = async () => {
       try {
