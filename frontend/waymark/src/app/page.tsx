@@ -31,7 +31,7 @@ interface Trip {
 
 const LandingPage = () => {
   return (
-    <div className="container max-w-7xl py-10">
+    <div className="w-full min-h-screen bg-background">
       <HeroSection />
       <TravelersImage />
       <HowItWorks />
