@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -11,3 +11,13 @@ class ItineraryBase(BaseModel):
 
 class ItineraryCreate(ItineraryBase):
     pass
+
+class ItineraryUpdate(BaseModel):
+    name: Optional[str]
+    description: Optional[str]
+    start_date: Optional[datetime]
+    end_date: Optional[datetime]
+    trips: Optional[List[int]]
+
+    class Config:
+        orm_mode = True

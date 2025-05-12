@@ -1,9 +1,10 @@
-from pydantic import BaseModel
-from typing import Optional
-from fastapi import APIRouter, status
-from app.schemas.itineraries import ItineraryCreate
-from app.models.itineraries import Itinerary
+from fastapi import APIRouter, HTTPException, status
+from sqlalchemy.orm import joinedload
+from typing import List
 from app.deps import db_dependency, user_dependency
+from app.schemas.itineraries import ItineraryCreate, ItineraryUpdate
+from app.models.itineraries import Itinerary
+from app.services.itineraries import update_itinerary as _update_itinerary
 
 
 router = APIRouter(
@@ -27,6 +28,20 @@ def create_itinerary(db: db_dependency, user: user_dependency, itinerary: Itiner
     db.commit()
     db.refresh(db_itinerary)
     return db_itinerary
+
+
+@router.put("/")
+def update_itinerary(itinerary_id: int,payload: ItineraryUpdate, db: db_dependency, user: user_dependency,):
+    updated = _update_itinerary(db, itinerary_id, payload)
+    if updated.user_id != user.get("id"):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not yours")
+    return (
+        db.query(Itinerary)
+            .options(joinedload(Itinerary.trips))
+            .filter(Itinerary.id == updated.id)
+            .first()
+    )
+
 
 @router.delete("/")
 def delete_itinerary(db: db_dependency, user: user_dependency, itinerary_id: int):

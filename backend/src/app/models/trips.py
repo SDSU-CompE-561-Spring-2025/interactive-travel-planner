@@ -6,7 +6,7 @@ from app.models.association import itinerary_trip_association
 from fastapi import HTTPException, status
 from app.deps import db_dependency
 from sqlalchemy.inspection import inspect
-from app.models.itineraries import Itinerary
+
 
 
 
@@ -31,12 +31,14 @@ class Trip(Base): # routines --> trips
 
         # 1) handle relationship
         if "itineraries" in trip_data:
+            from app.models.itineraries import Itinerary
             ids = trip_data.pop("itineraries")
             db_trip.itineraries = (
                 db.query(Itinerary)
-                .filter(Itinerary.id.in_(ids))
-                .all()
+                    .filter(Itinerary.id.in_(ids))
+                    .all()
             )
+
 
         # 2) handle real columns only
         mapper = inspect(cls)
