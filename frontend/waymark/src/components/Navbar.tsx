@@ -9,6 +9,7 @@ import { ThemeSwitcherButton } from '@/components/ThemeSwitcherButton';
 import UserButton from '@/components/UserButton';
 import { LogOut, UserRoundPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Logo from './Logo';
 
 interface NavbarItemProps {
 	link: string;
@@ -25,11 +26,8 @@ const Navbar = () => {
 			<div className="max-w-7xl mx-auto px-4">
 				<div className="flex justify-between h-16">
 					<div className="flex items-center">
-						<Link href="/" className="text-xl font-bold text-gray-800">
-							Waymark
-						</Link>
+						<Logo />
 					</div>
-
 					<div className="flex items-center space-x-4">
 						{user ? (
 							<>

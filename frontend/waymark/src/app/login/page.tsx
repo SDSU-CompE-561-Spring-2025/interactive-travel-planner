@@ -3,6 +3,12 @@
 import { useContext, useState, FormEvent } from "react";
 import AuthContext from "../context/AuthContext";
 import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const Login = () => {
     const { login } = useContext(AuthContext);
@@ -13,9 +19,14 @@ const Login = () => {
     const [registerEmail, setRegisterEmail] = useState('');
     const [error, setError] = useState<string | null>(null);
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        login(username, password)
+        setError(null);
+        try {
+            await login(username, password);
+        } catch (error: any) {
+            setError(error?.response?.data?.detail || 'Login failed. Please try again.');
+        }
     };
 
     const handleRegister = async (e: FormEvent) => {
@@ -34,79 +45,99 @@ const Login = () => {
             });
 
             if (response.status === 201) {
-                // Registration successful, now login
                 await login(registerUsername, registerPassword);
             }
         } catch(error: any) {
-            console.error('Registration failed:', {
-                message: error?.message,
-                status: error?.response?.status,
-                data: error?.response?.data
-            });
             setError(error?.response?.data?.detail || 'Registration failed. Please try again.');
         }
     }
 
     return (
-        <div className="container">
+        <div className="container max-w-2xl py-10">
             {error && (
-                <div className="alert alert-danger" role="alert">
-                    {error}
-                </div>
+                <Alert variant="destructive" className="mb-6">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
             )}
-            <h2>Login</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label htmlFor="username" className="form-label">Username</label>
-                    <input type="text" className="form-control" id="username" value={username} onChange={(e) => setUsername(e.target.value)} required />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="password" className="form-label">Password</label>
-                    <input type="password" className="form-control" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                </div>
-                <button type="submit" className="btn btn-primary">Login</button>
-            </form>
 
-            <h2 className='mt-5'>Register</h2>
-            <form onSubmit={handleRegister}>
-                <div className="mb-3">
-                    <label htmlFor="registerUsername" className="form-label">Username</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="registerUsername"
-                        value={registerUsername}
-                        onChange={(e) => setRegisterUsername(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="registerEmail" className="form-label">Email</label>
-                    <input
-                        type="email"
-                        className="form-control"
-                        id="registerEmail"
-                        value={registerEmail}
-                        onChange={(e) => setRegisterEmail(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="registerPassword" className="form-label">Password</label>
-                    <input
-                        type="password"
-                        className="form-control"
-                        id="registerPassword"
-                        value={registerPassword}
-                        onChange={(e) => setRegisterPassword(e.target.value)}
-                        required
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary">Register</button>
-            </form>
+            <div className="grid gap-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Login</CardTitle>
+                        <CardDescription>Enter your credentials to access your account</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="username">Username</Label>
+                                <Input
+                                    id="username"
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="password">Password</Label>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <Button type="submit" className="w-full">Login</Button>
+                        </form>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Register</CardTitle>
+                        <CardDescription>Create a new account to get started</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleRegister} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="registerUsername">Username</Label>
+                                <Input
+                                    id="registerUsername"
+                                    type="text"
+                                    value={registerUsername}
+                                    onChange={(e) => setRegisterUsername(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="registerEmail">Email</Label>
+                                <Input
+                                    id="registerEmail"
+                                    type="email"
+                                    value={registerEmail}
+                                    onChange={(e) => setRegisterEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="registerPassword">Password</Label>
+                                <Input
+                                    id="registerPassword"
+                                    type="password"
+                                    value={registerPassword}
+                                    onChange={(e) => setRegisterPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <Button type="submit" className="w-full">Register</Button>
+                        </form>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
-
 };
 
 export default Login;

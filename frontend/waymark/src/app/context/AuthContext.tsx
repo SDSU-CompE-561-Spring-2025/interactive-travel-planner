@@ -28,15 +28,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const login = async (username: string, password: string) => {
         try {
-            const formData = new FormData();
+            const formData = new URLSearchParams();
             formData.append('username', username);
             formData.append('password', password);
             const response = await axios.post<AuthResponse>('http://localhost:8000/auth/token', formData, {
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json'
+                }
             });
-            axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
-            localStorage.setItem('token', response.data.access_token);
-            setUser(response.data);
+            const token = response.data.access_token;
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            localStorage.setItem('token', token);
+            setUser({ username, token });
             router.push('/');
         } catch (error: any) {
             console.error('Login Failed:', {
@@ -44,6 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 status: error?.response?.status,
                 data: error?.response?.data
             });
+            throw error; // Re-throw to handle in the component
         }
     };
 
