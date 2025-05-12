@@ -1,200 +1,55 @@
 "use client";
 
-import { useContext, useState, useEffect } from 'react';
-import AuthContext from './context/AuthContext';
-import ProtectedRoute from '../components/ProtectedRoute';
-import axios from 'axios';
-
-const Home = () => {
-  const { user, logout } = useContext(AuthContext);
-  const [itineraries, setItineraries] = useState([]);
-  const [trips, setTrips] = useState([]);
-  const [itineraryName, setItineraryName] = useState('');
-  const [itineraryDescription, setItineraryDescription] = useState('');
-  const [tripName, setTripName] = useState('');
-  const [tripDescription, setTripDescription] = useState('');
-  const [selectedItineraries, setSelectedItineraries] = useState([]);
+import { useContext } from "react";
+import AuthContext from "./context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { HeroSection } from "@/components/hero-section";
+import { TravelersImage } from "@/components/TravelersImage";
+import { HowItWorks } from "@/components/how-it-works";
 
 
-  useEffect(() => {
-    const fetchItinerariesAndTrips = async () => {
-      try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-        if (!token) return;
-
-        const [itinerariesResponse, tripsResponse] = await Promise.all([
-          axios.get('http://localhost:8000/itineraries/itineraries', {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get('http://localhost:8000/trips', {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
-
-        setItineraries(itinerariesResponse.data);
-        setTrips(tripsResponse.data);
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-      }
-    };
-
-    fetchItinerariesAndTrips();
-  }, []);
-
-  const handleCreateItinerary = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post('http://localhost:8000/itineraries', {
-        name: itineraryName,
-        description: itineraryDescription,
-      });
-      setItineraries([...itineraries, response.data]);
-      setItineraryName('');
-      setItineraryDescription('');
-    } catch (error) {
-      console.error('Failed to create itinerary:', error);
-    }
-  };
-
-  const handleCreateTrip = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post('http://localhost:8000/trips', {
-        name: tripName,
-        description: tripDescription,
-        itineraries: selectedItineraries,
-      });
-      setTripName('');
-      setTripDescription('');
-      setSelectedItineraries([]);
-    } catch (error) {
-      console.error('Failed to create trip:', error);
-    }
-  };
-
+const LandingPage = () => {
   return (
-    <ProtectedRoute>
-      <div className="container">
-        <h1>Welcome!</h1>
-        <button onClick={logout} className="btn btn-danger">Logout</button>
-
-        <div className="accordion mt-5 mb-5" id="accordionExample">
-          <div className="accordion-item">
-            <h2 className="accordion-header" id="headingOne">
-              <button className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                Create Itinerary
-              </button>
-            </h2>
-            <div id="collapseOne" className="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
-              <div className="accordion-body">
-                <form onSubmit={handleCreateItinerary}>
-                  <div className="mb-3">
-                    <label htmlFor="itineraryName" className="form-label">Itinerary Name</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="itineraryName"
-                      value={itineraryName}
-                      onChange={(e) => setItineraryName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="itineraryDescription" className="form-label">Itinerary Description</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="itineraryDescription"
-                      value={itineraryDescription}
-                      onChange={(e) => setItineraryDescription(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <button type="submit" className="btn btn-primary">Create Itinerary</button>
-                </form>
-              </div>
-            </div>
-          </div>
-          <div className="accordion-item">
-            <h2 className="accordion-header" id="headingTwo">
-              <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                Create Trip
-              </button>
-            </h2>
-            <div id="collapseTwo" className="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
-              <div className="accordion-body">
-                <form onSubmit={handleCreateTrip}>
-                  <div className="mb-3">
-                    <label htmlFor="tripName" className="form-label">Trip Name</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="tripName"
-                      value={tripName}
-                      onChange={(e) => setTripName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="tripDescription" className="form-label">Trip Description</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="tripDescription"
-                      value={tripDescription}
-                      onChange={(e) => setTripDescription(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="itinerarySelect" className="form-label">Select Itineraries</label>
-                    <select
-                      multiple
-                      className="form-control"
-                      id="itinerarySelect"
-                      value={selectedItineraries}
-                      onChange={(e) => setSelectedItineraries([...e.target.selectedOptions].map(option => option.value))}
-                    >
-                      {itineraries.map(itinerary => (
-                        <option key={itinerary.id} value={itinerary.id}>
-                          {itinerary.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <button type="submit" className="btn btn-primary">Create Trip</button>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h3>Your trips:</h3>
-
-          <ul>
-          {trips.map(trip => (
-              <div className="card" key={trip.id}>
-                <div className="card-body">
-                <h5 className="card-title">{trip.name}</h5>
-                <p className="card-text">{trip.description}</p>
-                <ul className="card-text">
-                  {trip.itineraries && trip.itineraries.map(itinerary => (
-                    <li key={itinerary.id}>
-                      {itinerary.name}: {itinerary.description}
-                    </li>
-                  ))}
-                </ul>
-
-                </div>
-              </div>
-            ))}
-
-          </ul>
-        </div>
-      </div>
-    </ProtectedRoute>
+    <div className="container max-w-7xl py-10">
+      <HeroSection />
+      <TravelersImage />
+      <HowItWorks />
+    </div>
   );
 };
 
-export default Home;
+const TripsList = () => {
+  return (
+    <div className="container max-w-7xl py-10">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">My Trips</h1>
+        <Link href="/new-trip">
+          <Button>Create New Trip</Button>
+        </Link>
+      </div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* Trip cards will be added here */}
+        <Card>
+          <CardHeader>
+            <CardTitle>No Trips Yet</CardTitle>
+            <CardDescription>Start planning your first adventure!</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/new-trip">
+              <Button className="w-full">Create Your First Trip</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default function Home() {
+  const { user } = useContext(AuthContext);
+
+  return user ? <TripsList /> : <LandingPage />;
+}
