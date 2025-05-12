@@ -10,7 +10,7 @@ class ItineraryBase(BaseModel):
     end_date: datetime
 
 class ItineraryCreate(ItineraryBase):
-    pass
+    trips: Optional[List[int]] = []
 
 class ItineraryUpdate(BaseModel):
     name: Optional[str]

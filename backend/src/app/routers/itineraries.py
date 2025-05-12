@@ -23,10 +23,27 @@ def get_itineraries(db: db_dependency, user: user_dependency):
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_itinerary(db: db_dependency, user: user_dependency, itinerary: ItineraryCreate):
-    db_itinerary = Itinerary(**itinerary.model_dump(), user_id=user.get('id'))
+    db_itinerary = Itinerary(
+        name=itinerary.name,
+        description=itinerary.description,
+        start_date=itinerary.start_date,
+        end_date=itinerary.end_date,
+        user_id=user.get('id')
+    )
     db.add(db_itinerary)
     db.commit()
     db.refresh(db_itinerary)
+
+    # Associate with trips
+    if itinerary.trips:
+        from app.models.trips import Trip
+        for trip_id in itinerary.trips:
+            trip = db.query(Trip).filter(Trip.id == trip_id).first()
+            if trip:
+                db_itinerary.trips.append(trip)
+        db.commit()
+        db.refresh(db_itinerary)
+
     return db_itinerary
 
 
