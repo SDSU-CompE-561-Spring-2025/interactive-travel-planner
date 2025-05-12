@@ -1,21 +1,13 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 import { Calendar, Clock, MapPin } from "lucide-react";
 import Link from "next/link";
-
-interface Itinerary {
-  id: number;
-  name: string;
-  description: string;
-  start_date: string;
-  end_date: string;
-}
 
 interface Trip {
   id: number;
@@ -23,26 +15,30 @@ interface Trip {
   description: string;
   start_date: string;
   end_date: string;
-  itineraries: Itinerary[];
+  itineraries: Array<{
+    id: number;
+    name: string;
+    description: string;
+    start_date: string;
+    end_date: string;
+  }>;
 }
 
 export default function TripPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
   const router = useRouter();
   const { toast } = useToast();
-  const [trip, setTrip] = useState<Trip | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [trip, setTrip] = React.useState<Trip | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const { id } = React.use(params);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchTrip = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          router.push("/login");
-          return;
+          throw new Error("No authentication token found");
         }
-
-        const response = await axios.get<Trip>(`http://localhost:8000/trips/${resolvedParams.id}`, {
+        const response = await axios.get<Trip>(`http://localhost:8000/trips/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -50,27 +46,17 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
         setTrip(response.data);
       } catch (error) {
         console.error("Failed to fetch trip:", error);
-        if (axios.isAxiosError(error) && error.response?.status === 404) {
-          toast({
-            title: "Error",
-            description: "Trip not found. It may have been deleted or you don't have access to it.",
-            variant: "destructive",
-          });
-          router.push("/");
-        } else {
-          toast({
-            title: "Error",
-            description: "Failed to load trip details. Please try again.",
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: "Error",
+          description: "Failed to fetch trip details. Please try again.",
+          variant: "destructive",
+        });
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
-
     fetchTrip();
-  }, [resolvedParams.id, toast, router]);
+  }, [id, toast]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -80,7 +66,7 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
     });
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="container max-w-7xl py-10">
         <div className="flex justify-center items-center h-64">
@@ -139,7 +125,6 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
           <Card>
             <CardHeader>
               <CardTitle>No Itineraries Yet</CardTitle>
-              <CardDescription>Create your first itinerary for this trip!</CardDescription>
             </CardHeader>
             <CardContent>
               <Link href={`/trips/${trip.id}/new-itinerary`}>
@@ -154,7 +139,6 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
                 <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
                   <CardHeader>
                     <CardTitle>{itinerary.name}</CardTitle>
-                    <CardDescription>{itinerary.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">

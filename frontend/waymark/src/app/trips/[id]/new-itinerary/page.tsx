@@ -42,7 +42,7 @@ export default function NewItinerary({ params }: { params: Promise<{ id: string 
         trips: [parseInt(id)], // Associate with the current trip
       };
 
-      const response = await axios.post(
+      await axios.post(
         "http://localhost:8000/itineraries/",
         itineraryData,
         {
@@ -58,8 +58,9 @@ export default function NewItinerary({ params }: { params: Promise<{ id: string 
         description: "Your itinerary has been created successfully.",
       });
 
-      // Redirect back to the trip page
-      router.push(`/trips/${id}`);
+      // Redirect back to the trip page and force a refresh
+      router.replace(`/trips/${id}`);
+      router.refresh();
     } catch (error) {
       console.error("Failed to create itinerary:", error);
       toast({
