@@ -10,6 +10,7 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [registerUsername, setRegisterUsername] = useState('');
     const [registerPassword, setRegisterPassword] = useState('');
+    const [registerEmail, setRegisterEmail] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -22,12 +23,13 @@ const Login = () => {
         const response = await axios.post('http://localhost:8000/auth', {
           username: registerUsername,
           password: registerPassword,
+          email: registerEmail
         });
         login(registerUsername, registerPassword);
       } catch(error) {
         console.error('Failed to register user:', error);
+      }
     }
-  }
 
     return (
         <div className="container">
@@ -44,34 +46,45 @@ const Login = () => {
             <button type="submit" className="btn btn-primary">Login</button>
           </form>
 
-      <h2 className='mt-5'>Register</h2>
-      <form onSubmit={handleRegister}>
-        <div className="mb-3">
-          <label htmlFor="registerUsername" className="form-label">Username</label>
-          <input
-            type="text"
-            className="form-control"
-            id="registerUsername"
-            value={registerUsername}
-            onChange={(e) => setRegisterUsername(e.target.value)}
-            required
-          />
+          <h2 className='mt-5'>Register</h2>
+          <form onSubmit={handleRegister}>
+            <div className="mb-3">
+              <label htmlFor="registerUsername" className="form-label">Username</label>
+              <input
+                type="text"
+                className="form-control"
+                id="registerUsername"
+                value={registerUsername}
+                onChange={(e) => setRegisterUsername(e.target.value)}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="registerEmail" className="form-label">Email</label>
+              <input
+                type="email"
+                className="form-control"
+                id="registerEmail"
+                value={registerEmail}
+                onChange={(e) => setRegisterEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="registerPassword" className="form-label">Password</label>
+              <input
+                type="password"
+                className="form-control"
+                id="registerPassword"
+                value={registerPassword}
+                onChange={(e) => setRegisterPassword(e.target.value)}
+                required
+              />
+            </div>
+            <button type="submit" className="btn btn-primary">Register</button>
+          </form>
         </div>
-        <div className="mb-3">
-          <label htmlFor="registerPassword" className="form-label">Password</label>
-          <input
-            type="password"
-            className="form-control"
-            id="registerPassword"
-            value={registerPassword}
-            onChange={(e) => setRegisterPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">Register</button>
-      </form>
-        </div>
-      );
+    );
 
 };
 

@@ -15,12 +15,12 @@ const Home = () => {
   const [tripDescription, setTripDescription] = useState('');
   const [selectedItineraries, setSelectedItineraries] = useState([]);
 
-  const token = localStorage.getItem('token');
-
   useEffect(() => {
     const fetchItinerariesAndTrips = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        if (!token) return;
+
         const [itinerariesResponse, tripsResponse] = await Promise.all([
           axios.get('http://localhost:8000/itineraries/itineraries', {
             headers: { Authorization: `Bearer ${token}` },
