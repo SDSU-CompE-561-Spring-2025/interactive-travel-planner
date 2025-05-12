@@ -24,6 +24,7 @@ ALGORITHM = os.getenv("AUTH_ALGORITHM")
 async def create_user(db: db_dependency, create_user_request: UserCreateRequest):
     create_user_model = User(
         username=create_user_request.username,
+        email =create_user_request.email,
         hashed_password=bcrypt_context.hash(create_user_request.password)
     )
     db.add(create_user_model)

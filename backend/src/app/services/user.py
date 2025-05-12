@@ -8,7 +8,6 @@ from app.deps import bcrypt_context
 
 load_dotenv()
 
-
 SECRET_KEY = os.getenv("AUTH_SECRET_KEY")
 ALGORITHM = os.getenv("AUTH_ALGORITHM")
 
