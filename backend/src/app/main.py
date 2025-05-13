@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import auth, itineraries, trips
+from fastapi.staticfiles import StaticFiles
 
 from .database import Base, engine
 
@@ -15,6 +16,8 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*'],
 )
+
+app.mount("/media", StaticFiles(directory="src/media"), name="media")
 
 @app.get("/")
 def health_check():

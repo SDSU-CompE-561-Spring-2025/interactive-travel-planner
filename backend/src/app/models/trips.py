@@ -20,6 +20,8 @@ class Trip(Base): # routines --> trips
     description = Column(String, index=True)
     start_date = Column(DateTime, default=datetime.now(UTC))
     end_date = Column(DateTime, default=datetime.now(UTC))
+    image_url = Column(String, nullable=True)
+    color = Column(String, nullable=True)
 
     itineraries = relationship('Itinerary', secondary=itinerary_trip_association, back_populates='trips')
 
