@@ -31,6 +31,8 @@ interface Trip {
   collaborators?: { id: number; username: string; email: string }[];
   owner_name?: string;
   owner_email?: string;
+  image_url?: string;
+  color?: string;
 }
 
 const LandingPage = () => {
@@ -118,8 +120,21 @@ const TripsList = () => {
         ) : (
           trips.map((trip) => (
             <Link href={`/trips/${trip.id}`} key={trip.id}>
-              <Card className={`h-full hover:shadow-lg transition-shadow cursor-pointer ${trip.is_owner ? '' : 'border-yellow-400 border-2 bg-yellow-50'}`}>
-                <CardHeader>
+              <Card className={`h-full hover:shadow-lg transition-shadow cursor-pointer flex flex-col ${trip.is_owner ? '' : 'border-yellow-400 border-2 bg-yellow-50'}`}>
+                {/* Image or Color Block at the top */}
+                {trip.image_url ? (
+                  <img
+                    src={`http://localhost:8000${trip.image_url}`}
+                    alt="Trip"
+                    className="w-full h-40 object-cover rounded-t-lg shadow-sm"
+                  />
+                ) : (
+                  <div
+                    className="w-full h-40 rounded-t-lg"
+                    style={{ background: trip.color || '#f5f5dc' }}
+                  />
+                )}
+                <CardHeader className="flex-1">
                   <CardTitle>{trip.name}</CardTitle>
                   <CardDescription>{trip.description}</CardDescription>
                   {!trip.is_owner && (

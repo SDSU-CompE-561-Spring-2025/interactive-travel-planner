@@ -45,6 +45,8 @@ def get_trips(db: db_dependency, user: user_dependency):
             "collaborators": [
                 {"id": u.id, "username": u.username, "email": u.email} for u in trip.collaborators
             ],
+            "color": trip.color,
+            "image_url": trip.image_url,
         }
         owner = db.query(User).filter(User.id == trip.user_id).first()
         d["owner_name"] = owner.username if owner else None
