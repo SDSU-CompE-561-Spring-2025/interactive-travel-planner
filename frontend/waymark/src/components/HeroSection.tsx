@@ -4,8 +4,8 @@ import { ArrowRight } from "lucide-react";
 
 export default function HeroSection() {
   return (
-    <div className="relative isolate overflow-hidden bg-gradient-to-b from-amber-50 to-white dark:from-amber-950 dark:to-background w-full">
-      <div className="max-w-7xl mx-auto px-4 w-full grid grid-cols-1 lg:grid-cols-2 items-center py-16 gap-8">
+    <div className="relative isolate overflow-hidden bg-gradient-to-b from-amber-50/80 via-white to-white dark:from-amber-950 dark:to-background w-full px-4">
+      <div className="w-full grid grid-cols-1 lg:grid-cols-2 items-center py-16 gap-8">
         <div className="flex flex-col justify-center items-center lg:items-start text-center lg:text-left">
           <div className="mt-12 sm:mt-20 lg:mt-0">
             <Link href="/login" className="inline-flex space-x-6">
