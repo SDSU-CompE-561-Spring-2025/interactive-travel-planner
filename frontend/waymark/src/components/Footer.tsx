@@ -1,92 +1,110 @@
-'use client';
+import Link from "next/link"
+import { MapPin } from "lucide-react"
 
-import Logo from '@/components/Logo';
-import { cn } from '@/lib/utils';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { LogIn, UserRoundPlus } from 'lucide-react';
-import { ThemeSwitcherButton } from '@/components/ThemeSwitcherButton';
-import UserButton from '@/components/UserButton';
+export default function Footer() {
+  return (
+    <footer className="w-full bg-[#377c68] text-white">
+      <div className="w-full px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <MapPin className="h-6 w-6" />
+              <span className="font-bold text-xl">Waymark</span>
+            </div>
+            <p className="text-sm text-white/80">
+              Plan your journey with ease. Create, organize, and share your travel itineraries.
+            </p>
+          </div>
 
-const navList = [
-	{
-		label: 'Create account',
-		link: '/sign-up',
-	},
-	{
-		label: 'About us',
-		link: '/about-us',
-	},
-	{
-		label: 'Jobs',
-		link: '/jobs',
-	},
-	{
-		label: 'privacy policy',
-		link: '/privacy-policy',
-	},
-    {
-		label: 'Contact us',
-		link: '/contact-us',
-	},
-    {
-		label: 'How the site works',
-		link: '/logistics',
-	},
-];
+          <div>
+            <h3 className="font-semibold mb-4">Features</h3>
+            <ul className="space-y-2 text-sm text-white/80">
+              <li>
+                <Link href="#" className="hover:text-white">
+                  Trip Planning
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-white">
+                  Itineraries
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-white">
+                  Collaboration
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-white">
+                  Budget Tracking
+                </Link>
+              </li>
+            </ul>
+          </div>
 
-function Footer() {
-	return (
-		<div className={'hidden border-separate border-b bg-background md:block h-64 justify-center'}>
-			<nav className={'container flex items-center justify-between px-8'}>
-				<div className={'flex h-[80px] min-h-[60px] items-center gap-x-4'}>
-					<div className="flex h-full gap-12 text-sm font-medium text-muted-foreground">
-					{navList.map((item) => (
-							<FooterItem
-								key={item.label}
-								link={item.link}
-								label={item.label}
-							/>
-						))}
-					</div>
-				</div>
-			</nav>
-		</div>
-	);
+          <div>
+            <h3 className="font-semibold mb-4">Company</h3>
+            <ul className="space-y-2 text-sm text-white/80">
+              <li>
+                <Link href="#" className="hover:text-white">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-white">
+                  Careers
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-white">
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-white">
+                  Contact
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-4">Legal</h3>
+            <ul className="space-y-2 text-sm text-white/80">
+              <li>
+                <Link href="#" className="hover:text-white">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-white">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-white">
+                  Cookie Policy
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-8 text-white/80">
+          <p>© {new Date().getFullYear()} Waymark. All rights reserved.</p>
+          <div className="flex space-x-4 mt-4 md:mt-0">
+            <Link href="#" className="hover:text-white">
+              Twitter
+            </Link>
+            <Link href="#" className="hover:text-white">
+              Instagram
+            </Link>
+            <Link href="#" className="hover:text-white">
+              Facebook
+            </Link>
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
 }
-
-interface FooterItemProps {
-	link: string;
-	label: string;
-	clickCallBack?: () => void;
-}
-
-function FooterItem({ link, label, clickCallBack }: FooterItemProps) {
-	const pathname = usePathname();
-	const isActive = pathname === link;
-	return (
-		<>
-			<div className="relative flex items-center">
-				<Link
-					href={link}
-					className={cn(
-						buttonVariants({ variant: 'ghost' }),
-						'w-full justify-start text-lg text-muted-foreground hover:text-foreground',
-						isActive && 'text-amber-300'
-					)}
-					onClick={() => {
-						if (clickCallBack) clickCallBack();
-					}}
-				>
-					{label}
-				</Link>
-				{isActive && (
-					<div className="absolute -bottom-[2px] left-1/2 hidden h-[5px] w-[80%] -translate-x-1/2 rounded-xl bg-amber-500 md:block" />
-				)}
-			</div>
-		</>
-	);
-}
-
-export default Footer;
