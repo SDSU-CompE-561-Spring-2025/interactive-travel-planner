@@ -27,6 +27,10 @@ interface Trip {
   start_date: string;
   end_date: string;
   itineraries: Itinerary[];
+  is_owner?: boolean;
+  collaborators?: { id: number; username: string; email: string }[];
+  owner_name?: string;
+  owner_email?: string;
 }
 
 const LandingPage = () => {
@@ -114,10 +118,16 @@ const TripsList = () => {
         ) : (
           trips.map((trip) => (
             <Link href={`/trips/${trip.id}`} key={trip.id}>
-              <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
+              <Card className={`h-full hover:shadow-lg transition-shadow cursor-pointer ${trip.is_owner ? '' : 'border-yellow-400 border-2 bg-yellow-50'}`}>
                 <CardHeader>
                   <CardTitle>{trip.name}</CardTitle>
                   <CardDescription>{trip.description}</CardDescription>
+                  {!trip.is_owner && (
+                    <>
+                      <span className="text-xs text-yellow-700 font-semibold bg-yellow-200 rounded px-2 py-1 ml-2">Collaborator</span>
+                      <div className="text-xs text-gray-700 mt-1">Owner: {trip.owner_name}</div>
+                    </>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">

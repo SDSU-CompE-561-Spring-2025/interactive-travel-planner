@@ -27,6 +27,12 @@ interface Trip {
   color?: string | null;
 }
 
+interface Collaborator {
+  id: number;
+  email: string;
+  username: string;
+}
+
 export default function TripPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -38,6 +44,68 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
   const [editImage, setEditImage] = React.useState<File | null>(null);
   const [editColor, setEditColor] = React.useState("#aabbcc");
   const [editError, setEditError] = React.useState("");
+  const [collaborators, setCollaborators] = React.useState<Collaborator[]>([]);
+  const [collabLoading, setCollabLoading] = React.useState(false);
+  const [inviteEmail, setInviteEmail] = React.useState("");
+  const [inviteError, setInviteError] = React.useState("");
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [searchResults, setSearchResults] = React.useState<Collaborator[]>([]);
+  const [searchLoading, setSearchLoading] = React.useState(false);
+  const [searchError, setSearchError] = React.useState("");
+
+  const fetchCollaborators = React.useCallback(async () => {
+    setCollabLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      const res = await axios.get<Collaborator[]>(`http://localhost:8000/trips/${id}/collaborators/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCollaborators(res.data);
+    } catch (e) {
+      setCollaborators([]);
+    } finally {
+      setCollabLoading(false);
+    }
+  }, [id]);
+
+  React.useEffect(() => {
+    fetchCollaborators();
+  }, [fetchCollaborators]);
+
+  const handleInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setInviteError("");
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+      await axios.post(
+        `http://localhost:8000/trips/${id}/collaborators/`,
+        new URLSearchParams({ collaborator_email: inviteEmail }),
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setInviteEmail("");
+      fetchCollaborators();
+      toast({ title: "Success!", description: "Collaborator invited." });
+    } catch (error: any) {
+      setInviteError(error?.response?.data?.detail || "Failed to invite collaborator.");
+    }
+  };
+
+  const handleRemoveCollaborator = async (collaboratorId: number) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+      await axios.delete(
+        `http://localhost:8000/trips/${id}/collaborators/${collaboratorId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchCollaborators();
+      toast({ title: "Success!", description: "Collaborator removed." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error?.response?.data?.detail || "Failed to remove collaborator.", variant: "destructive" });
+    }
+  };
 
   React.useEffect(() => {
     const fetchTrip = async () => {
@@ -154,6 +222,50 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
     }
   };
 
+  React.useEffect(() => {
+    if (searchQuery.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    setSearchLoading(true);
+    setSearchError("");
+    const timeout = setTimeout(async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const res = await axios.get<Collaborator[]>(
+          `http://localhost:8000/trips/users/search?query=${encodeURIComponent(searchQuery)}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setSearchResults(res.data);
+      } catch (e) {
+        setSearchError("Failed to search users.");
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
+
+  const handleAddCollaborator = async (user: Collaborator) => {
+    setInviteError("");
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+      await axios.post(
+        `http://localhost:8000/trips/${id}/collaborators/`,
+        new URLSearchParams({ collaborator_email: user.email }),
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSearchQuery("");
+      setSearchResults([]);
+      fetchCollaborators();
+      toast({ title: "Success!", description: "Collaborator added." });
+    } catch (error: any) {
+      setInviteError(error?.response?.data?.detail || "Failed to add collaborator.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="container max-w-7xl py-10">
@@ -266,6 +378,50 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
         <Button className="mt-2" variant="outline" onClick={() => setShowEditModal(true)}>
           Edit Image/Color
         </Button>
+      </div>
+      {/* Collaborators UI */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold mb-2">Collaborators</h2>
+        {collabLoading ? (
+          <div>Loading collaborators...</div>
+        ) : (
+          <ul className="mb-2">
+            {collaborators.map((c) => (
+              <li key={c.id} className="flex items-center justify-between py-1">
+                <span>{c.username} ({c.email})</span>
+                <Button size="sm" variant="destructive" onClick={() => handleRemoveCollaborator(c.id)}>
+                  Remove
+                </Button>
+              </li>
+            ))}
+            {collaborators.length === 0 && <li className="text-gray-500">No collaborators yet.</li>}
+          </ul>
+        )}
+        {/* User search for adding collaborators */}
+        <div className="mb-2">
+          <input
+            type="text"
+            placeholder="Search users by username or email"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="border rounded px-2 py-1 w-full"
+          />
+          {searchLoading && <div className="text-sm text-gray-500">Searching...</div>}
+          {searchError && <div className="text-red-500 text-sm">{searchError}</div>}
+          {searchResults.length > 0 && (
+            <ul className="border rounded bg-white shadow mt-1 max-h-40 overflow-y-auto">
+              {searchResults.map(user => (
+                <li key={user.id} className="flex items-center justify-between px-2 py-1 hover:bg-gray-100 cursor-pointer">
+                  <span>{user.username} ({user.email})</span>
+                  <Button size="sm" onClick={() => handleAddCollaborator(user)}>
+                    Add
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        {inviteError && <div className="text-red-500 text-sm mt-1">{inviteError}</div>}
       </div>
       {showEditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">

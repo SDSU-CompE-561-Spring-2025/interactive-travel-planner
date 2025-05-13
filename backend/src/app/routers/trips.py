@@ -10,6 +10,7 @@ import os
 from uuid import uuid4
 from fastapi.responses import FileResponse
 from app.services.trips import update_trip as _update_trip
+from app.models.user import User
 
 router = APIRouter(
     prefix='/trips',
@@ -19,7 +20,38 @@ router = APIRouter(
 
 @router.get("/")
 def get_trips(db: db_dependency, user: user_dependency):
-    return db.query(Trip).options(joinedload(Trip.itineraries)).filter(Trip.user_id == user.get('id')).all()
+    user_id = user.get('id')
+    # Owned trips
+    owned_trips = db.query(Trip).options(joinedload(Trip.itineraries), joinedload(Trip.collaborators)).filter(Trip.user_id == user_id).all()
+    # Collaborating trips (not owned)
+    collab_trips = db.query(Trip).options(joinedload(Trip.itineraries), joinedload(Trip.collaborators)).filter(Trip.collaborators.any(id=user_id), Trip.user_id != user_id).all()
+    def trip_to_dict(trip, is_owner):
+        d = {
+            "id": trip.id,
+            "name": trip.name,
+            "description": trip.description,
+            "start_date": trip.start_date.isoformat() if trip.start_date else None,
+            "end_date": trip.end_date.isoformat() if trip.end_date else None,
+            "itineraries": [
+                {
+                    "id": it.id,
+                    "name": it.name,
+                    "description": it.description,
+                    "start_date": it.start_date.isoformat() if it.start_date else None,
+                    "end_date": it.end_date.isoformat() if it.end_date else None
+                } for it in trip.itineraries
+            ],
+            "is_owner": is_owner,
+            "collaborators": [
+                {"id": u.id, "username": u.username, "email": u.email} for u in trip.collaborators
+            ],
+        }
+        owner = db.query(User).filter(User.id == trip.user_id).first()
+        d["owner_name"] = owner.username if owner else None
+        d["owner_email"] = owner.email if owner else None
+        return d
+    result = [trip_to_dict(t, True) for t in owned_trips] + [trip_to_dict(t, False) for t in collab_trips]
+    return result
 
 
 @router.get("/{trip_id}")
@@ -144,3 +176,56 @@ def delete_trip(db: db_dependency, user: user_dependency, trip_id: int):
         db.delete(db_trip)
         db.commit()
     return db_trip
+
+@router.post("/{trip_id}/collaborators/")
+def add_collaborator(trip_id: int, collaborator_email: str = Form(...), db: db_dependency = None, user: user_dependency = None):
+    trip = db.query(Trip).filter(Trip.id == trip_id).first()
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    # Only allow if user is owner or collaborator
+    if user.get('id') != trip.user_id and user.get('id') not in [u.id for u in trip.collaborators]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    collaborator = db.query(User).filter(User.email == collaborator_email).first()
+    if not collaborator:
+        raise HTTPException(status_code=404, detail="User not found")
+    if collaborator in trip.collaborators:
+        raise HTTPException(status_code=400, detail="User already a collaborator")
+    trip.collaborators.append(collaborator)
+    db.commit()
+    db.refresh(trip)
+    return {"detail": "Collaborator added"}
+
+@router.delete("/{trip_id}/collaborators/{collaborator_id}")
+def remove_collaborator(trip_id: int, collaborator_id: int, db: db_dependency = None, user: user_dependency = None):
+    trip = db.query(Trip).filter(Trip.id == trip_id).first()
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    # Only allow if user is owner or collaborator
+    if user.get('id') != trip.user_id and user.get('id') not in [u.id for u in trip.collaborators]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    collaborator = db.query(User).filter(User.id == collaborator_id).first()
+    if not collaborator or collaborator not in trip.collaborators:
+        raise HTTPException(status_code=404, detail="Collaborator not found")
+    trip.collaborators.remove(collaborator)
+    db.commit()
+    db.refresh(trip)
+    return {"detail": "Collaborator removed"}
+
+@router.get("/{trip_id}/collaborators/")
+def list_collaborators(trip_id: int, db: db_dependency = None, user: user_dependency = None):
+    trip = db.query(Trip).filter(Trip.id == trip_id).first()
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    # Only allow if user is owner or collaborator
+    if user.get('id') != trip.user_id and user.get('id') not in [u.id for u in trip.collaborators]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    return [{"id": u.id, "email": u.email, "username": u.username} for u in trip.collaborators]
+
+@router.get("/users/search")
+def search_users(query: str, db: db_dependency = None, user: user_dependency = None):
+    if not query or len(query) < 2:
+        return []
+    users = db.query(User).filter(
+        (User.username.ilike(f"%{query}%")) | (User.email.ilike(f"%{query}%"))
+    ).all()
+    return [{"id": u.id, "username": u.username, "email": u.email} for u in users]

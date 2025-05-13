@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from datetime import UTC, datetime
 from sqlalchemy.orm import relationship
 from app.database import Base
-from app.models.association import itinerary_trip_association
+from app.models.association import itinerary_trip_association, trip_collaborators
 from fastapi import HTTPException, status
 from app.deps import db_dependency
 from sqlalchemy.inspection import inspect
@@ -24,6 +24,11 @@ class Trip(Base): # routines --> trips
     color = Column(String, nullable=True)
 
     itineraries = relationship('Itinerary', secondary=itinerary_trip_association, back_populates='trips')
+    collaborators = relationship(
+        "User",
+        secondary=trip_collaborators,
+        back_populates="collaborating_trips"
+    )
 
     @classmethod
     def update_trip(cls, db, trip_id, trip_data):
