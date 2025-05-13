@@ -40,10 +40,6 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
   const [loading, setLoading] = React.useState(true);
   const [selectedItinerary, setSelectedItinerary] = React.useState<Trip["itineraries"][0] | null>(null);
   const { id } = React.use(params);
-  const [showEditModal, setShowEditModal] = React.useState(false);
-  const [editImage, setEditImage] = React.useState<File | null>(null);
-  const [editColor, setEditColor] = React.useState("#aabbcc");
-  const [editError, setEditError] = React.useState("");
   const [collaborators, setCollaborators] = React.useState<Collaborator[]>([]);
   const [collabLoading, setCollabLoading] = React.useState(false);
   const [inviteEmail, setInviteEmail] = React.useState("");
@@ -120,7 +116,6 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
           },
         });
         setTrip(response.data);
-        setEditColor(response.data.color || "#aabbcc");
       } catch (error) {
         console.error("Failed to fetch trip:", error);
         toast({
@@ -159,68 +154,6 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
       </div>
     );
   }
-
-  const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    if (file) {
-      if (!["image/jpeg", "image/png"].includes(file.type)) {
-        setEditError("Image must be JPEG or PNG");
-        setEditImage(null);
-        return;
-      }
-      setEditError("");
-      setEditImage(file);
-    } else {
-      setEditImage(null);
-    }
-  };
-
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setEditError("");
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No authentication token found");
-      if (!editImage && !editColor) {
-        setEditError("Please select a color or upload an image.");
-        return;
-      }
-      const form = new FormData();
-      form.append("trip_id", String(trip?.id));
-      form.append("name", trip?.name || "");
-      form.append("description", trip?.description || "");
-      form.append("start_date", trip?.start_date || "");
-      form.append("end_date", trip?.end_date || "");
-      form.append("itineraries", JSON.stringify(trip?.itineraries?.map(i => i.id) || []));
-      if (editImage) {
-        form.append("image", editImage);
-      } else if (editColor) {
-        form.append("color", editColor);
-      }
-      await axios.put(
-        "http://localhost:8000/trips/",
-        form,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      toast({ title: "Success!", description: "Trip updated." });
-      setShowEditModal(false);
-      setEditImage(null);
-      setEditError("");
-      // Refetch trip
-      const response = await axios.get<Trip>(`http://localhost:8000/trips/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setTrip(response.data);
-      setEditColor(response.data.color || "#aabbcc");
-    } catch (error: any) {
-      setEditError(error?.response?.data?.detail || "Failed to update trip.");
-    }
-  };
 
   React.useEffect(() => {
     if (searchQuery.length < 2) {
@@ -288,6 +221,21 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
 
   return (
     <div className="container max-w-7xl py-10">
+      {/* Trip image/color block at the top */}
+      <div className="mb-8">
+        {trip.image_url ? (
+          <img
+            src={`http://localhost:8000${trip.image_url}`}
+            alt="Trip"
+            className="w-full h-64 object-cover rounded-lg shadow"
+          />
+        ) : (
+          <div
+            className="w-full h-64 rounded-lg shadow"
+            style={{ background: trip.color || "#aabbcc" }}
+          />
+        )}
+      </div>
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">{trip.name}</h1>
@@ -363,24 +311,7 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
         />
       )}
       <div className="mb-8">
-        {trip.image_url ? (
-          <img
-            src={`http://localhost:8000${trip.image_url}`}
-            alt="Trip"
-            className="w-full h-64 object-cover rounded-lg shadow"
-          />
-        ) : (
-          <div
-            className="w-full h-64 rounded-lg shadow"
-            style={{ background: trip.color || "#aabbcc" }}
-          />
-        )}
-        <Button className="mt-2" variant="outline" onClick={() => setShowEditModal(true)}>
-          Edit Image/Color
-        </Button>
-      </div>
-      {/* Collaborators UI */}
-      <div className="mb-8">
+        {/* Collaborators UI */}
         <h2 className="text-xl font-bold mb-2">Collaborators</h2>
         {collabLoading ? (
           <div>Loading collaborators...</div>
@@ -423,43 +354,6 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
         </div>
         {inviteError && <div className="text-red-500 text-sm mt-1">{inviteError}</div>}
       </div>
-      {showEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full relative">
-            <button className="absolute top-2 right-2 text-gray-400" onClick={() => setShowEditModal(false)}>✕</button>
-            <h2 className="text-xl font-bold mb-4">Edit Trip Image/Color</h2>
-            <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div>
-                <label className="block mb-1">Trip Image (JPEG/PNG, optional)</label>
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png"
-                  onChange={handleEditImageChange}
-                />
-                {editError && <div className="text-red-500 text-sm mt-1">{editError}</div>}
-              </div>
-              {!editImage && (
-                <div>
-                  <label className="block mb-1">Trip Color (if no image)</label>
-                  <div className="flex items-center space-x-4">
-                    <HexColorPicker color={editColor} onChange={setEditColor} />
-                    <div
-                      className="w-10 h-10 rounded-full border"
-                      style={{ background: editColor }}
-                    />
-                  </div>
-                </div>
-              )}
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setShowEditModal(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">Save</Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

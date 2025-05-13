@@ -47,7 +47,7 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --background:  #fff8f0;
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
@@ -156,8 +156,8 @@
 
 
 button {
-  background: none;
-  border: none;
+  background: #f3a034;
+  border: #bf791d;
   cursor: pointer;
   font: inherit;
   color: inherit;
@@ -198,4 +198,12 @@ html {
   margin: 5;
   padding: 1;
   box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* or center for vertical centering */
+  min-height: 100vh;
 }
