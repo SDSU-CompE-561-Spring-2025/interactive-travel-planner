@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
+import { HexColorPicker } from "react-colorful";
 
 interface TripResponse {
   id: number;
@@ -17,6 +18,20 @@ interface TripResponse {
   start_date: string;
   end_date: string;
   itineraries: number[];
+}
+
+function renderErrorDetail(detail: any) {
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    return detail.map((err, idx) =>
+      typeof err === "object" && err.msg ? <div key={idx}>{err.msg}</div> : <div key={idx}>{JSON.stringify(err)}</div>
+    );
+  }
+  if (typeof detail === "object" && detail !== null) {
+    if (detail.msg) return detail.msg;
+    return JSON.stringify(detail);
+  }
+  return String(detail);
 }
 
 export default function NewTrip() {
@@ -30,47 +45,62 @@ export default function NewTrip() {
     end_date: "",
     itineraries: [] as number[]
   });
+  const [image, setImage] = useState<File | null>(null);
+  const [color, setColor] = useState("#aabbcc");
+  const [showColorError, setShowColorError] = useState(false);
+  const [showImageError, setShowImageError] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
+    setShowColorError(false);
+    setShowImageError("");
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         throw new Error("No authentication token found");
       }
-
-      // Convert dates to ISO format
-      const tripData = {
-        ...formData,
-        start_date: new Date(formData.start_date).toISOString(),
-        end_date: new Date(formData.end_date).toISOString(),
-      };
-
+      if (!image && !color) {
+        setShowColorError(true);
+        setIsLoading(false);
+        return;
+      }
+      const form = new FormData();
+      form.append("name", formData.name);
+      form.append("description", formData.description);
+      form.append("start_date", new Date(formData.start_date).toISOString());
+      form.append("end_date", new Date(formData.end_date).toISOString());
+      form.append("itineraries", JSON.stringify(formData.itineraries));
+      if (image) {
+        form.append("image", image);
+      } else if (color) {
+        form.append("color", color);
+      }
+      // Debug: log all FormData
+      console.log("FormData being sent:");
+      for (let [key, value] of form.entries()) {
+        console.log(key, value);
+      }
       const response = await axios.post<TripResponse>(
         "http://localhost:8000/trips/",
-        tripData,
+        form,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+            "Content-Type": "multipart/form-data",
           },
         }
       );
-
       toast({
         title: "Success!",
         description: "Your trip has been created successfully.",
       });
-
-      // Redirect to the trip details page
       router.push(`/trips/${response.data.id}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create trip:", error);
       toast({
         title: "Error",
-        description: "Failed to create trip. Please try again.",
+        description: renderErrorDetail(error?.response?.data?.detail || error?.message),
         variant: "destructive",
       });
     } finally {
@@ -86,6 +116,21 @@ export default function NewTrip() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (file) {
+      if (!["image/jpeg", "image/png"].includes(file.type)) {
+        setShowImageError("Image must be JPEG or PNG");
+        setImage(null);
+        return;
+      }
+      setShowImageError("");
+      setImage(file);
+    } else {
+      setImage(null);
+    }
   };
 
   return (
@@ -145,6 +190,36 @@ export default function NewTrip() {
                 />
               </div>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="image">Trip Image (JPEG/PNG, optional)</Label>
+              <Input
+                id="image"
+                name="image"
+                type="file"
+                accept="image/jpeg,image/png"
+                onChange={handleImageChange}
+              />
+              {showImageError && (
+                <div className="text-red-500 text-sm">{showImageError}</div>
+              )}
+            </div>
+
+            {!image && (
+              <div className="space-y-2">
+                <Label htmlFor="color">Trip Color (if no image)</Label>
+                <div className="flex items-center space-x-4">
+                  <HexColorPicker color={color} onChange={setColor} />
+                  <div
+                    className="w-10 h-10 rounded-full border"
+                    style={{ background: color }}
+                  />
+                </div>
+                {showColorError && (
+                  <div className="text-red-500 text-sm">Please select a color or upload an image.</div>
+                )}
+              </div>
+            )}
 
             <div className="flex justify-end space-x-4">
               <Button
