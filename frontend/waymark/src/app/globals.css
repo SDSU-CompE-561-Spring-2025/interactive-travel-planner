@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    --background: 39 100% 97%;
+    --background: 36 100% 97%;
     --foreground: 20 10% 10%;
 
     --primary: 33 89% 58%;
@@ -17,14 +17,14 @@
     --accent: 157 38% 35%;
     --accent-foreground: 0 0% 100%;
 
-    --muted: 39 30% 90%;
+    --muted: 36 30% 90%;
     --muted-foreground: 20 10% 40%;
 
-    --card: 39 100% 99%;
+    --card: 36 100% 99%;
     --card-foreground: 20 10% 10%;
 
-    --border: 39 30% 85%;
-    --input: 39 30% 85%;
+    --border: 36 30% 85%;
+    --input: 36 30% 85%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -33,12 +33,82 @@
   }
 
   * {
-    border-color: hsl(var(--border)); /* ✅ use direct CSS, not @apply */
+    border-color: hsl(var(--border));
+    @apply transition-colors duration-200;
   }
 
   body {
-    background-color: hsl(var(--background)); /* ✅ direct CSS */
+    background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-[#f3a034] text-[#ffffff] px-6 py-3 rounded-lg font-medium
+    transform transition-all duration-200 ease-in-out
+    hover:bg-[#f3a034]/90 hover:scale-105 hover:shadow-lg
+    active:scale-95 active:shadow-inner
+    focus:outline-none focus:ring-2 focus:ring-[#f3a034]/50 focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply bg-[#4ba46c] text-[#ffffff] px-6 py-3 rounded-lg font-medium
+    transform transition-all duration-200 ease-in-out
+    hover:bg-[#4ba46c]/90 hover:scale-105 hover:shadow-lg
+    active:scale-95 active:shadow-inner
+    focus:outline-none focus:ring-2 focus:ring-[#4ba46c]/50 focus:ring-offset-2;
+  }
+
+  .input-primary {
+    @apply px-4 py-3 rounded-lg border-2 border-[#4ba46c]/20
+    transition-all duration-200 ease-in-out
+    focus:border-[#4ba46c] focus:ring-2 focus:ring-[#4ba46c]/20
+    hover:border-[#4ba46c]/40 placeholder:text-[#377c68]/40;
+  }
+
+  .card-hover {
+    @apply transform transition-all duration-300 ease-in-out
+    hover:scale-[1.02] hover:shadow-xl;
+  }
+
+  .floating-animation {
+    animation: floating 3s ease-in-out infinite;
+  }
+
+  .shine-effect {
+    @apply relative overflow-hidden;
+  }
+
+  .shine-effect::after {
+    @apply absolute inset-0;
+    content: '';
+    background: linear-gradient(
+      45deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%
+    );
+    transform: translateX(-100%);
+    animation: shine 3s infinite;
+  }
+}
+
+@keyframes floating {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  20%, 100% {
+    transform: translateX(100%);
   }
 }
 
