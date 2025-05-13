@@ -47,7 +47,7 @@
 
 :root {
   --radius: 0.625rem;
-  --background:  #fff8f0;
+  --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
@@ -115,17 +115,49 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  :root {
+    --background: 36 100% 97%;
+    --foreground: 20 10% 10%;
+
+    --primary: 33 89% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 146 38% 47%;
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 157 38% 35%;
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 36 30% 90%;
+    --muted-foreground: 20 10% 40%;
+
+    --card: 36 100% 99%;
+    --card-foreground: 20 10% 10%;
+
+    --border: 36 30% 85%;
+    --input: 36 30% 85%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --radius: 0.5rem;
   }
+
+  * {
+    border-color: hsl(var(--border));
+    @apply transition-colors duration-200;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }
 
+
 button {
-  background: #f3a034;
-  border: #f3a034;
+  background: none;
+  border: none;
   cursor: pointer;
   font: inherit;
   color: inherit;
@@ -163,15 +195,7 @@ html {
 *,
 *::before,
 *::after {
-  margin: 0;
-  padding: 2;
+  margin: 5;
+  padding: 1;
   box-sizing: border-box;
-}
-
-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start; /* or center for vertical centering */
-  min-height: 100vh;
 }

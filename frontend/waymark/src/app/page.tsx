@@ -31,13 +31,13 @@ interface Trip {
 
 const LandingPage = () => {
   return (
-    <div className="container max-w-7xl py-10">
-      <HeroSection />
-      <TravelersImage />
-      <HowItWorks />
-    </div>
-  );
-};
+      <div className="container max-w-7xl py-10">
+        <HeroSection />
+        <TravelersImage />
+        <HowItWorks />
+      </div>
+    );
+  };
 
 const TripsList = () => {
   const { toast } = useToast();
