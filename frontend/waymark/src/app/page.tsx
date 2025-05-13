@@ -1,158 +1,133 @@
-"use client";
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { MapPin, Calendar, Users, Compass, PlaneTakeoff, Briefcase } from "lucide-react"
 
-import { useContext, useState, useEffect } from "react";
-import AuthContext from "./context/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Link from "next/link";
-import { HeroSection } from "@/components/hero-section";
-import { TravelersImage } from "@/components/TravelersImage";
-import { HowItWorks } from "@/components/how-it-works";
-import axios from "axios";
-import { useToast } from "@/components/ui/use-toast";
-import { Calendar, MapPin, Clock } from "lucide-react";
-
-interface Itinerary {
-  id: number;
-  name: string;
-  description: string;
-  start_date: string;
-  end_date: string;
-}
-
-interface Trip {
-  id: number;
-  name: string;
-  description: string;
-  start_date: string;
-  end_date: string;
-  itineraries: Itinerary[];
-}
-
-const LandingPage = () => {
+export default function LandingPage() {
   return (
-    <div className="w-full min-h-screen bg-background">
-      <HeroSection />
-      <TravelersImage />
-      <HowItWorks />
-    </div>
-  );
-};
-
-const TripsList = () => {
-  const { toast } = useToast();
-  const [trips, setTrips] = useState<Trip[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchTrips = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-
-        const response = await axios.get<Trip[]>("http://localhost:8000/trips/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setTrips(response.data);
-      } catch (error) {
-        console.error("Failed to fetch trips:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load trips. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTrips();
-  }, [toast]);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="container max-w-7xl py-10">
-        <div className="flex justify-center items-center h-64">
-          <p className="text-lg text-gray-500">Loading trips...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container max-w-7xl py-10">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">My Trips</h1>
-        <Link href="/new-trip">
-          <Button>Create New Trip</Button>
-        </Link>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {trips.length === 0 ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>No Trips Yet</CardTitle>
-              <CardDescription>Start planning your first adventure!</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link href="/new-trip">
-                <Button className="w-full">Create Your First Trip</Button>
+    <div className="flex flex-col min-h-screen">
+      {/* Hero Section */}
+      <section className="hero-pattern py-16 md:py-24">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+              Plan Your Perfect Journey with Waymark
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground mb-8">
+              Create, organize, and share your travel itineraries with ease. Your all-in-one travel companion for
+              memorable adventures.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link href="/signup">
+                <Button size="lg" className="bg-primary text-white hover:bg-primary/90 w-full sm:w-auto">
+                  Get Started
+                </Button>
               </Link>
-            </CardContent>
-          </Card>
-        ) : (
-          trips.map((trip) => (
-            <Link href={`/trips/${trip.id}`} key={trip.id}>
-              <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader>
-                  <CardTitle>{trip.name}</CardTitle>
-                  <CardDescription>{trip.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      <span>
-                        {formatDate(trip.start_date)} - {formatDate(trip.end_date)}
-                      </span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Clock className="w-4 h-4 mr-2" />
-                      <span>
-                        {trip.itineraries.length} Itinerary
-                        {trip.itineraries.length !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-                    {trip.itineraries.length === 0 && (
-                      <div className="pt-4">
-                        <Button variant="outline" className="w-full">
-                          Create Itinerary
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))
-        )}
-      </div>
-    </div>
-  );
-};
+              <Link href="/login">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary hover:text-white w-full sm:w-auto"
+                >
+                  Log In
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
-export default function Home() {
-  const { user } = useContext(AuthContext);
-  return user ? <TripsList /> : <LandingPage />;
+      {/* Features Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">Everything You Need for Travel Planning</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <MapPin className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Destination Planning</h3>
+              <p className="text-muted-foreground">
+                Discover and organize your destinations with detailed information and recommendations.
+              </p>
+            </div>
+
+            <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+              <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mb-4">
+                <Calendar className="h-6 w-6 text-secondary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Itinerary Builder</h3>
+              <p className="text-muted-foreground">
+                Create detailed day-by-day itineraries with activities, reservations, and notes.
+              </p>
+            </div>
+
+            <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+              <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mb-4">
+                <Users className="h-6 w-6 text-accent" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Collaboration</h3>
+              <p className="text-muted-foreground">
+                Share and collaborate on trip plans with friends and family in real-time.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-16 bg-muted">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">How Waymark Works</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                <Compass className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Plan</h3>
+              <p className="text-muted-foreground">
+                Create your trip and add destinations, dates, and travel companions.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+                <PlaneTakeoff className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Organize</h3>
+              <p className="text-muted-foreground">
+                Build your itinerary with activities, accommodations, and transportation.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
+                <Briefcase className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Travel</h3>
+              <p className="text-muted-foreground">
+                Access your plans on the go and share updates with your travel group.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 bg-primary/10">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-6">Ready to Start Your Journey?</h2>
+          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Join thousands of travelers who use Waymark to create unforgettable experiences.
+          </p>
+          <Link href="/signup">
+            <Button size="lg" className="bg-primary text-white hover:bg-primary/90">
+              Create Your First Trip
+            </Button>
+          </Link>
+        </div>
+      </section>
+    </div>
+  )
 }
