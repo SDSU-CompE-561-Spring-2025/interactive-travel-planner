@@ -5,36 +5,36 @@ import Image from "next/image"
 const team = [
   {
     name: "Ethan Quach",
-    role: "Fullstack Developer",
-    desc: "Loves one-bag travel and hotkeys",
+    role: "Tweak",
+    desc: "GYM GYM GYM",
     img: "/etan.png",
   },
   {
-    name: "c",
+    name: "Kohki Kita",
     role: "UX Designer",
-    desc: "Coffee snob with a thing for airports",
+    desc: "I love databases",
     img: "/kookie.png",
   },
   {
-    name: "q",
+    name: "Micah Davis",
     role: "Backend Engineer",
-    desc: "Hiker, biker, database whisperer",
+    desc: "please get me out of here",
     img: "/mog.jpg",
   },
   {
-    name: "c",
+    name: "Riley McGregor",
     role: "Product Manager",
-    desc: "Obsessed with clean roadmaps",
+    desc: "Oh by the way, I'm a pilot",
     img: "/ryry.png",
   },
   {
-    name: "n",
+    name: "Rojin Osman",
     role: "Frontend Engineer",
-    desc: "Animates everything, even spreadsheets",
-    img: "/placeholder-user.jpg",
+    desc: "Miss Leader",
+    img: "/brickjin.png",
   },
   {
-    name: "Maya L.",
+    name: "Tri & Ugur",
     role: "Community & Support",
     desc: "Answers faster than your group chat",
     img: "/placeholder-user.jpg",
@@ -46,39 +46,39 @@ export default function AboutUsPage() {
     <div className="flex flex-col items-center w-full bg-white pt-8">
       <div className="w-full max-w-5xl px-4">
         {/* Header */}
-        <div className="text-center mb-10">
+        <div className="text-center" style={{ marginBottom: '5rem' }}>
           <h1 className="text-4xl font-bold mb-4 text-gray-800">About Us</h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            We don't know what we're doing — we're just guessing and checking.
-          </p>
         </div>
 
         {/* Team Section */}
         <section className="mt-8">
-          <h2 className="text-2xl font-semibold mb-8 text-center text-gray-800">Meet the Team</h2>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
             {team.map((member, index) => (
               <div key={index} className="flex flex-col items-center">
-                {/* Simple circular image container */}
-                <div className="w-32 h-32 mb-4 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200 flex items-center justify-center">
-                  {/* Fallback for image loading issues */}
-                  <div className="absolute flex items-center justify-center text-gray-400 text-xl">
-                    {member.name.charAt(0).toUpperCase()}
+                {/* Circular image container */}
+                <div className="relative w-32 h-32 mb-4">
+                  {/* Background circle with border */}
+                  <div className="absolute inset-0 rounded-full bg-gray-100 border-2 border-gray-200 flex items-center justify-center">
+                    <span className="text-gray-400 text-2xl font-medium">
+                      {member.name.charAt(0).toUpperCase()}
+                    </span>
                   </div>
-
-                  {/* Image with object-cover and position center */}
-                  <Image
-                    src={member.img || "/placeholder.svg"}
-                    alt={`Photo of ${member.name}`}
-                    width={96}
-                    height={96}
-                    className="min-w-full min-h-full object-cover"
-                    style={{ objectPosition: "center" }}
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none"
-                    }}
-                  />
+                  
+                  {/* Image */}
+                  <div className="absolute inset-0 rounded-full overflow-hidden">
+                    <Image
+                      src={member.img}
+                      alt={`Photo of ${member.name}`}
+                      width={128}
+                      height={128}
+                      className="team-member-image rounded-full"
+                      priority
+                      onError={(e) => {
+                        const target = e.target as HTMLElement;
+                        target.parentElement?.classList.add('hidden');
+                      }}
+                    />
+                  </div>
                 </div>
 
                 {/* Member Info */}

@@ -143,7 +143,6 @@ canvas,
 svg {
   display: block;
   max-width: 100%;
-  height: auto;
 }
 
 a {
@@ -163,7 +162,15 @@ html {
 *,
 *::before,
 *::after {
-  margin: 5;
-  padding: 1;
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
+}
+
+/* Add specific styles for team member images */
+.team-member-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
