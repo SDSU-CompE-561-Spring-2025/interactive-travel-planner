@@ -5,19 +5,17 @@ import { Button } from "@/components/ui/button"
 import { HeroSection } from "@/components/hero-section"
 import { TravelersImage } from "@/components/TravelersImage"
 import { HowItWorks } from "@/components/how-it-works"
-import { Separator } from "@/components/ui/separator"
-import Image from "next/image"
 
 export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col justify-between bg-background">
       <main className="flex-1">
-          <div className="p-10">
-            <HeroSection />
-            <TravelersImage />
-            <HowItWorks />
-          </div>
-          <section className="container py-16 md:py-24 lg:py-32">
+        <div className="p-10">
+          <HeroSection />
+          <TravelersImage />
+          <HowItWorks />
+        </div>
+        <section className="container py-16 md:py-24 lg:py-32">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
               Ready to plan your next adventure?
@@ -33,7 +31,6 @@ export default function HomePage() {
             </Button>
           </div>
         </section>
-
       </main>
       <footer className="border-t py-6 md:py-10">
         <div className="container flex flex-col items-center justify-between gap-4 md:flex-row">
