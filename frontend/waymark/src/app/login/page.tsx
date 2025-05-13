@@ -18,6 +18,7 @@ const Login = () => {
     const [registerPassword, setRegisterPassword] = useState('');
     const [registerEmail, setRegisterEmail] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [showRegister, setShowRegister] = useState(false);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -53,7 +54,7 @@ const Login = () => {
     }
 
     return (
-        <div className="container max-w-2xl py-10">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-white">
             {error && (
                 <Alert variant="destructive" className="mb-6">
                     <AlertCircle className="h-4 w-4" />
@@ -61,7 +62,7 @@ const Login = () => {
                 </Alert>
             )}
 
-            <div className="grid gap-6">
+            <div className="grid gap-6 w-full max-w-2xl">
                 <Card>
                     <CardHeader>
                         <CardTitle>Login</CardTitle>
@@ -91,15 +92,26 @@ const Login = () => {
                             </div>
                             <Button type="submit" className="w-full">Login</Button>
                         </form>
+                        <div className="mt-4 text-center">
+                            <span className="text-sm text-gray-600">Don't have an account?{' '}
+                                <button
+                                    type="button"
+                                    className="text-blue-600 hover:underline font-medium"
+                                    onClick={() => setShowRegister(true)}
+                                >
+                                    Create one!
+                                </button>
+                            </span>
+                        </div>
                     </CardContent>
                 </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Register</CardTitle>
-                        <CardDescription>Create a new account to get started</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+            </div>
+            {/* Register Modal */}
+            {showRegister && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full relative">
+                        <button className="absolute top-2 right-2 text-gray-400" onClick={() => setShowRegister(false)}>✕</button>
+                        <h2 className="text-xl font-bold mb-4">Register</h2>
                         <form onSubmit={handleRegister} className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="registerUsername">Username</Label>
@@ -131,11 +143,16 @@ const Login = () => {
                                     required
                                 />
                             </div>
-                            <Button type="submit" className="w-full">Register</Button>
+                            <div className="flex justify-end gap-2">
+                                <Button type="button" variant="outline" onClick={() => setShowRegister(false)}>
+                                    Cancel
+                                </Button>
+                                <Button type="submit">Register</Button>
+                            </div>
                         </form>
-                    </CardContent>
-                </Card>
-            </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
