@@ -1,15 +1,14 @@
 import Link from "next/link"
-import { MapPin } from "lucide-react"
+import Logo from "./Logo"
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-[#377c68] text-white">
+    <footer className="w-full bg-[#f3a034] text-white">
       <div className="w-full px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <MapPin className="h-6 w-6" />
-              <span className="font-bold text-xl">Waymark</span>
+              <Logo />
             </div>
             <p className="text-sm text-white/80">
               Plan your journey with ease. Create, organize, and share your travel itineraries.
