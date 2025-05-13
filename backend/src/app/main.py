@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import auth, itineraries, trips
+from .routers import auth, itineraries, trips, destinations
 
 from .database import Base, engine
 
@@ -20,6 +20,11 @@ app.add_middleware(
 def health_check():
     return 'Health check complete'
 
-app.include_router(auth.router)
-app.include_router(itineraries.router)
-app.include_router(trips.router)
+# Mount all routers under the /api prefix
+from fastapi import APIRouter
+api_router = APIRouter()
+api_router.include_router(auth.router)
+api_router.include_router(itineraries.router)
+api_router.include_router(trips.router)
+api_router.include_router(destinations.router)
+app.include_router(api_router, prefix="/api")

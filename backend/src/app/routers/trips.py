@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session, joinedload
 from ..models.trips import Trip
 from ..models.itineraries import Itinerary
 from ..deps import db_dependency, user_dependency
-from ..schemas.trips import TripCreate, TripUpdate
+from ..schemas.trips import TripCreate, TripUpdate, Trip as TripSchema
+from ..schemas.itineraries import Location as LocationSchema
 from ..services.trips import update_trip as _update_trip
 
 router = APIRouter(
@@ -19,12 +20,27 @@ def get_trips(db: db_dependency, user: user_dependency):
     return db.query(Trip).options(joinedload(Trip.itineraries)).filter(Trip.user_id == user.get('id')).all()
 
 
-@router.get("/{trip_id}")
+@router.get("/{trip_id}", response_model=TripSchema)
 def get_trip(trip_id: int, db: db_dependency, user: user_dependency):
     trip = db.query(Trip).options(joinedload(Trip.itineraries)).filter(Trip.id == trip_id, Trip.user_id == user.get('id')).first()
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")
-    return trip
+    # Aggregate all locations from all itineraries
+    destinations = []
+    for itin in trip.itineraries:
+        for loc in itin.locations:
+            destinations.append(loc)
+    # Build response dict
+    return {
+        "id": trip.id,
+        "user_id": trip.user_id,
+        "name": trip.name,
+        "description": trip.description,
+        "start_date": trip.start_date,
+        "end_date": trip.end_date,
+        "itineraries": [itin.id for itin in trip.itineraries],
+        "destinations": [LocationSchema.from_orm(loc) for loc in destinations],
+    }
 
 
 @router.post("/")

@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
+from .itineraries import Location  # Import Location schema
 
 
 class TripBase(BaseModel):
@@ -18,6 +19,18 @@ class TripUpdate(BaseModel):
     start_date: datetime
     end_date: datetime
     itineraries: List[int]
+
+    class Config:
+        orm_mode = True
+
+# Add Trip response schema with destinations
+class Trip(TripBase):
+    id: int
+    user_id: int
+    start_date: datetime
+    end_date: datetime
+    itineraries: List[int]
+    destinations: List[Location]  # This will be populated in the router
 
     class Config:
         orm_mode = True
