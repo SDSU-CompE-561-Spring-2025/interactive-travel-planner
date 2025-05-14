@@ -175,7 +175,6 @@ canvas,
 svg {
   display: block;
   max-width: 100%;
-  height: auto;
 }
 
 a {
@@ -207,4 +206,12 @@ body {
   justify-content: flex-start;
   background-color: #fff8f0;
   min-height: 100vh;
+}
+
+  /* Add specific styles for team member images */
+.team-member-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
