@@ -31,6 +31,8 @@ def create_trip(db: db_dependency, user: user_dependency, trip: TripCreate):
     db_trip = Trip(
         name=trip.name,
         description=trip.description,
+        location=trip.location,
+        budget=trip.budget,
         user_id=user.get('id'),
         start_date=trip.start_date,
         end_date=trip.end_date
