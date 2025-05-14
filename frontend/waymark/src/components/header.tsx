@@ -20,42 +20,44 @@ export default function Header() {
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        <Link href="/" className="flex items-center space-x-2">
-          <MapPin className="h-6 w-6 text-primary" />
-          <span className="font-bold text-xl text-accent">Waymark</span>
-        </Link>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
-          <Link
-            href="/"
-            className={`text-sm font-medium transition-colors hover:text-primary ${
-              isActive("/") ? "text-primary" : "text-foreground"
-            }`}
-          >
-            Home
+        <div className="flex items-center space-x-6">
+          <Link href="/" className="flex items-center space-x-2">
+            <MapPin className="h-6 w-6 text-primary" />
+            <span className="font-bold text-xl text-accent">Waymark</span>
           </Link>
-          {isAuthenticated && (
-            <>
-              <Link
-                href="/dashboard"
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive("/dashboard") ? "text-primary" : "text-foreground"
-                }`}
-              >
-                My Trips
-              </Link>
-              <Link
-                href="/new-trip"
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive("/new-trip") ? "text-primary" : "text-foreground"
-                }`}
-              >
-                Create Trip
-              </Link>
-            </>
-          )}
-        </nav>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link
+              href="/"
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                isActive("/") ? "text-primary" : "text-foreground"
+              }`}
+            >
+              Home
+            </Link>
+            {isAuthenticated && (
+              <>
+                <Link
+                  href="/dashboard"
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive("/dashboard") ? "text-primary" : "text-foreground"
+                  }`}
+                >
+                  My Trips
+                </Link>
+                <Link
+                  href="/new-trip"
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive("/new-trip") ? "text-primary" : "text-foreground"
+                  }`}
+                >
+                  Create Trip
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
 
         <div className="hidden md:flex items-center space-x-4">
           {isAuthenticated ? (

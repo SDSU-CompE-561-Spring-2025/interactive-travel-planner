@@ -2,6 +2,7 @@
 
 import { useContext, useState, FormEvent } from "react";
 import AuthContext from "../context/AuthContext";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,10 +13,11 @@ import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-const Login = () => {
+const SignUp = () => {
     const { login } = useContext(AuthContext);
     const router = useRouter();
     const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -25,12 +27,26 @@ const Login = () => {
         setError(null);
         setIsLoading(true);
         try {
-            await login(username, password);
-            toast.success('Successfully logged in!');
-            router.push('/');
-        } catch (error: any) {
-            setError(error?.response?.data?.detail || 'Login failed. Please try again.');
-            toast.error('Login failed. Please try again.');
+            const response = await axios.post('http://localhost:8000/auth', {
+                username,
+                password,
+                email
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (response.status === 201) {
+                toast.success('Registration successful!');
+                // Automatically log in after successful registration
+                await login(username, password);
+                router.push('/');
+            }
+        } catch(error: any) {
+            setError(error?.response?.data?.detail || 'Registration failed. Please try again.');
+            toast.error('Registration failed. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -47,9 +63,9 @@ const Login = () => {
 
             <Card>
                 <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
+                    <CardTitle className="text-2xl text-center">Create an account</CardTitle>
                     <CardDescription className="text-center">
-                        Enter your credentials to access your account
+                        Enter your information to create your account
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -63,7 +79,19 @@ const Login = () => {
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
                                 disabled={isLoading}
-                                placeholder="Enter your username"
+                                placeholder="Choose a username"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                disabled={isLoading}
+                                placeholder="Enter your email"
                             />
                         </div>
                         <div className="space-y-2">
@@ -75,19 +103,19 @@ const Login = () => {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 disabled={isLoading}
-                                placeholder="Enter your password"
+                                placeholder="Choose a password"
                             />
                         </div>
                         <Button type="submit" className="w-full" disabled={isLoading}>
-                            {isLoading ? 'Signing in...' : 'Sign In'}
+                            {isLoading ? 'Creating account...' : 'Create Account'}
                         </Button>
                     </form>
                 </CardContent>
                 <CardFooter className="flex flex-col space-y-4">
                     <div className="text-sm text-center text-muted-foreground">
-                        Don't have an account?{' '}
-                        <Link href="/signup" className="text-primary hover:underline">
-                            Sign up
+                        Already have an account?{' '}
+                        <Link href="/login" className="text-primary hover:underline">
+                            Sign in
                         </Link>
                     </div>
                 </CardFooter>
@@ -96,4 +124,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default SignUp; 
