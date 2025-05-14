@@ -19,6 +19,9 @@ const Login = () => {
     const [registerEmail, setRegisterEmail] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [showRegister, setShowRegister] = useState(false);
+    const [registerUsernameError, setRegisterUsernameError] = useState<string | null>(null);
+    const [registerEmailError, setRegisterEmailError] = useState<string | null>(null);
+    const [registerPasswordError, setRegisterPasswordError] = useState<string | null>(null);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -26,7 +29,15 @@ const Login = () => {
         try {
             await login(username, password);
         } catch (error: any) {
-            setError(error?.response?.data?.detail || 'Login failed. Please try again.');
+            let errorMsg = 'Login failed. Please try again.';
+            if (error?.response?.data?.detail) {
+                errorMsg = error.response.data.detail;
+            } else if (Array.isArray(error?.response?.data)) {
+                errorMsg = error.response.data.map((e: any) => e.msg).join(', ');
+            } else if (typeof error?.response?.data === 'object' && error?.response?.data?.msg) {
+                errorMsg = error.response.data.msg;
+            }
+            setError(errorMsg);
         }
     };
 
@@ -49,9 +60,51 @@ const Login = () => {
                 await login(registerUsername, registerPassword);
             }
         } catch(error: any) {
-            setError(error?.response?.data?.detail || 'Registration failed. Please try again.');
+            let errorMsg = 'Registration failed. Please try again.';
+            if (error?.response?.data?.detail) {
+                errorMsg = error.response.data.detail;
+            } else if (Array.isArray(error?.response?.data)) {
+                errorMsg = error.response.data.map((e: any) => e.msg).join(', ');
+            } else if (typeof error?.response?.data === 'object' && error?.response?.data?.msg) {
+                errorMsg = error.response.data.msg;
+            }
+            setError(errorMsg);
         }
     }
+
+    // Validation functions
+    const validateUsername = (value: string) => {
+        if (!/^[a-zA-Z0-9_]{3,50}$/.test(value)) {
+            return "Username must be 3-50 characters, letters, numbers, or underscores only.";
+        }
+        return null;
+    };
+    const validateEmail = (value: string) => {
+        if (!/^\S+@\S+\.\S+$/.test(value)) {
+            return "Invalid email address.";
+        }
+        return null;
+    };
+    const validatePassword = (value: string) => {
+        if (value.length < 8 || value.length > 64) {
+            return "Password must be 8-64 characters.";
+        }
+        return null;
+    };
+
+    // Handlers for real-time validation
+    const handleRegisterUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setRegisterUsername(e.target.value);
+        setRegisterUsernameError(validateUsername(e.target.value));
+    };
+    const handleRegisterEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setRegisterEmail(e.target.value);
+        setRegisterEmailError(validateEmail(e.target.value));
+    };
+    const handleRegisterPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setRegisterPassword(e.target.value);
+        setRegisterPasswordError(validatePassword(e.target.value));
+    };
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center">
@@ -119,9 +172,10 @@ const Login = () => {
                                     id="registerUsername"
                                     type="text"
                                     value={registerUsername}
-                                    onChange={(e) => setRegisterUsername(e.target.value)}
+                                    onChange={handleRegisterUsernameChange}
                                     required
                                 />
+                                {registerUsernameError && <div className="text-red-500 text-xs mt-1">{registerUsernameError}</div>}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="registerEmail">Email</Label>
@@ -129,9 +183,10 @@ const Login = () => {
                                     id="registerEmail"
                                     type="email"
                                     value={registerEmail}
-                                    onChange={(e) => setRegisterEmail(e.target.value)}
+                                    onChange={handleRegisterEmailChange}
                                     required
                                 />
+                                {registerEmailError && <div className="text-red-500 text-xs mt-1">{registerEmailError}</div>}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="registerPassword">Password</Label>
@@ -139,15 +194,18 @@ const Login = () => {
                                     id="registerPassword"
                                     type="password"
                                     value={registerPassword}
-                                    onChange={(e) => setRegisterPassword(e.target.value)}
+                                    onChange={handleRegisterPasswordChange}
                                     required
                                 />
+                                {registerPasswordError && <div className="text-red-500 text-xs mt-1">{registerPasswordError}</div>}
                             </div>
                             <div className="flex justify-end gap-2">
                                 <Button type="button" variant="outline" onClick={() => setShowRegister(false)}>
                                     Cancel
                                 </Button>
-                                <Button type="submit">Register</Button>
+                                <Button type="submit" disabled={!!registerUsernameError || !!registerEmailError || !!registerPasswordError || !registerUsername || !registerEmail || !registerPassword}>
+                                    Register
+                                </Button>
                             </div>
                         </form>
                     </div>
