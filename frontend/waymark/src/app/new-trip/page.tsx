@@ -120,9 +120,12 @@ export default function NewTrip() {
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                placeholder="Enter city or country (e.g., Paris, France)"
+                placeholder="Enter location (e.g., Tokyo, Japan)"
+                pattern="^[A-Za-z\s]+,\s*[A-Za-z\s]+$"
+                title="Please enter location in 'City, Country' format (e.g., Paris, France)"
                 required
               />
+              <p className="text-sm text-gray-500">Format: City, Country (e.g., Paris, France)</p>
             </div>
 
             <div className="space-y-2">

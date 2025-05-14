@@ -226,7 +226,22 @@ export default function LocationStep() {
             setError('Please select a destination');
             return;
         }
-        updateTripData('location', location.trim());
+        
+        // Validate location format (City, Country)
+        if (!location.includes(',')) {
+            setError('Please select a location in "City, Country" format');
+            return;
+        }
+
+        const [city, country] = location.split(',').map(part => part.trim());
+        if (!city || !country) {
+            setError('Please select a location in "City, Country" format');
+            return;
+        }
+
+        // Format the location properly
+        const formattedLocation = `${city}, ${country}`;
+        updateTripData('location', formattedLocation);
         router.push('/planner/activities');
     };
 

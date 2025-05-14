@@ -60,7 +60,13 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                     throw new Error('No trip data received');
                 }
 
-                console.log('Fetched trip details:', response.data);
+                console.log('Trip details:', {
+                    id: response.data.id,
+                    name: response.data.name,
+                    location: response.data.location,
+                    description: response.data.description,
+                    budget: response.data.budget
+                });
                 setTrip(response.data);
             } catch (error) {
                 console.error('Failed to fetch trip details:', error);
@@ -113,12 +119,16 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                 <div className="h-80 bg-[#377c68]/10 relative flex flex-col items-center justify-center">
                     <h1 className="text-5xl font-bold text-[#377c68] mb-4">{trip.name}</h1>
                     <div className="flex items-center gap-2 text-[#377c68] text-lg">
-                        <MapPin className="h-5 w-5" />
-                        <span>{trip.location}</span>
+                        <MapPin className="h-5 w-5" strokeWidth={2.5} />
+                        <span className="font-medium">
+                            {trip.location}
+                        </span>
                     </div>
                     {trip.description && (
                         <p className="mt-4 text-[#377c68]/80 text-center max-w-2xl px-4">
-                            {trip.description}
+                            {trip.description.replace(trip.location, `**${trip.location}**`).split('**').map((part, i) => (
+                                i % 2 === 1 ? <span key={i} className="font-extrabold text-[#377c68]">{part}</span> : part
+                            ))}
                         </p>
                     )}
                 </div>
@@ -147,12 +157,6 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                                         <div className="inline-flex items-center gap-2 text-gray-600 px-4 py-2 bg-[#fff8f0] rounded-full">
                                             <DollarSign className="h-5 w-5 text-[#377c68]" />
                                             <span>Budget: ${trip.budget.toLocaleString()}</span>
-                                        </div>
-                                    )}
-                                    {trip.location && (
-                                        <div className="inline-flex items-center gap-2 text-gray-600 px-4 py-2 bg-[#fff8f0] rounded-full">
-                                            <MapPin className="h-5 w-5 text-[#377c68]" />
-                                            <span>{trip.location}</span>
                                         </div>
                                     )}
                                 </div>

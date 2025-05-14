@@ -6,8 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import axios from '@/lib/axios';
+import { toast } from 'react-hot-toast';
 
-const API_BASE = 'http://127.0.0.1:8000';
+interface AuthResponse {
+    access_token: string;
+    token_type: string;
+}
 
 export default function SignInForm() {
     const router = useRouter();
@@ -29,28 +34,26 @@ export default function SignInForm() {
             params.append('username', formData.username);
             params.append('password', formData.password);
 
-            const response = await fetch(`${API_BASE}/auth/token`, {
-                method: 'POST',
+            const response = await axios.post<AuthResponse>('/auth/token', params, {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: params,
             });
 
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.detail || 'Authentication failed');
-            }
-
-            const data = await response.json();
-            
             // Store the token in localStorage
-            localStorage.setItem('auth_token', data.access_token);
+            localStorage.setItem('token', response.data.access_token);
             
-            // Redirect to the home page
-            router.push('/');
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Authentication failed');
+            // Set the token in axios defaults
+            axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
+            
+            toast.success('Successfully signed in!');
+            // Redirect to the dashboard
+            router.push('/dashboard');
+        } catch (err: any) {
+            console.error('Login error:', err.response?.data || err.message);
+            const errorMessage = err.response?.data?.detail || 'Failed to sign in. Please try again.';
+            setError(errorMessage);
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }

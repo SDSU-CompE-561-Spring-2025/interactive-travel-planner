@@ -34,6 +34,12 @@ const Navbar = () => {
 								<Link href="/" className="text-gray-600 hover:text-gray-900">
 									Home
 								</Link>
+								<Link href="/my-trips" className="text-[#377c68] hover:text-[#4ba46c]">
+									My Trips
+								</Link>
+								<Link href="/settings/profile" className="text-[#377c68] hover:text-[#4ba46c]">
+									Profile Settings
+								</Link>
 								<Button
 									onClick={logout}
 									variant="ghost"

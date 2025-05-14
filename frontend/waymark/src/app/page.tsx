@@ -23,22 +23,22 @@ export default function LandingPage() {
               memorable adventures.
             </p>
             {!isAuthenticated && (
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Link href="/signup">
-                  <Button size="lg" className="bg-primary text-white hover:bg-primary/90 w-full sm:w-auto">
-                    Get Started
-                  </Button>
-                </Link>
-                <Link href="/login">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-primary text-primary hover:bg-primary hover:text-white w-full sm:w-auto"
-                  >
-                    Log In
-                  </Button>
-                </Link>
-              </div>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link href="/signup">
+                <Button size="lg" className="bg-primary text-white hover:bg-primary/90 w-full sm:w-auto">
+                  Get Started
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary hover:text-white w-full sm:w-auto"
+                >
+                  Log In
+                </Button>
+              </Link>
+            </div>
             )}
           </div>
         </div>
@@ -139,11 +139,11 @@ export default function LandingPage() {
               </Button>
             </Link>
           ) : (
-            <Link href="/signup">
-              <Button size="lg" className="bg-primary text-white hover:bg-primary/90">
-                Create Your First Trip
-              </Button>
-            </Link>
+          <Link href="/signup">
+            <Button size="lg" className="bg-primary text-white hover:bg-primary/90">
+              Create Your First Trip
+            </Button>
+          </Link>
           )}
         </div>
       </section>

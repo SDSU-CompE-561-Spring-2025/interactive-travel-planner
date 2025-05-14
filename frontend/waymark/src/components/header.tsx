@@ -24,37 +24,37 @@ export default function Header() {
         <div className="flex items-center space-x-6">
           <Logo />
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link
-              href="/"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive("/") ? "text-primary" : "text-foreground"
-              }`}
-            >
-              Home
-            </Link>
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center space-x-6">
+          <Link
+            href="/"
+            className={`text-sm font-medium transition-colors hover:text-primary ${
+              isActive("/") ? "text-primary" : "text-foreground"
+            }`}
+          >
+            Home
+          </Link>
             {isAuthenticated && (
               <>
-                <Link
-                  href="/dashboard"
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    isActive("/dashboard") ? "text-primary" : "text-foreground"
-                  }`}
-                >
-                  My Trips
-                </Link>
-                <Link
+          <Link
+            href="/dashboard"
+            className={`text-sm font-medium transition-colors hover:text-primary ${
+              isActive("/dashboard") ? "text-primary" : "text-foreground"
+            }`}
+          >
+            My Trips
+          </Link>
+          <Link
                   href="/planner/start"
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
+            className={`text-sm font-medium transition-colors hover:text-primary ${
                     isActive("/planner/start") ? "text-primary" : "text-foreground"
-                  }`}
-                >
-                  Create Trip
-                </Link>
+            }`}
+          >
+            Create Trip
+          </Link>
               </>
             )}
-          </nav>
+        </nav>
         </div>
 
         <div className="hidden md:flex items-center space-x-4">
@@ -64,14 +64,14 @@ export default function Header() {
             </div>
           ) : (
             <>
-              <Link href="/login">
-                <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
-                  Log In
-                </Button>
-              </Link>
-              <Link href="/signup">
-                <Button className="bg-primary text-white hover:bg-primary/90">Sign Up</Button>
-              </Link>
+          <Link href="/login">
+            <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
+              Log In
+            </Button>
+          </Link>
+          <Link href="/signup">
+            <Button className="bg-primary text-white hover:bg-primary/90">Sign Up</Button>
+          </Link>
             </>
           )}
         </div>
@@ -97,24 +97,24 @@ export default function Header() {
             </Link>
             {isAuthenticated ? (
               <>
-                <Link
-                  href="/dashboard"
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    isActive("/dashboard") ? "text-primary" : "text-foreground"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  My Trips
-                </Link>
-                <Link
+            <Link
+              href="/dashboard"
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                isActive("/dashboard") ? "text-primary" : "text-foreground"
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              My Trips
+            </Link>
+            <Link
                   href="/planner/start"
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
+              className={`text-sm font-medium transition-colors hover:text-primary ${
                     isActive("/planner/start") ? "text-primary" : "text-foreground"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Create Trip
-                </Link>
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Create Trip
+            </Link>
                 <div className="flex flex-col space-y-2 pt-2 border-t border-border">
                   <Button
                     variant="outline"
@@ -130,19 +130,19 @@ export default function Header() {
                 </div>
               </>
             ) : (
-              <div className="flex flex-col space-y-2 pt-2 border-t border-border">
-                <Link href="/login" onClick={() => setIsMenuOpen(false)}>
-                  <Button
-                    variant="outline"
-                    className="w-full border-primary text-primary hover:bg-primary hover:text-white"
-                  >
-                    Log In
-                  </Button>
-                </Link>
-                <Link href="/signup" onClick={() => setIsMenuOpen(false)}>
-                  <Button className="w-full bg-primary text-white hover:bg-primary/90">Sign Up</Button>
-                </Link>
-              </div>
+            <div className="flex flex-col space-y-2 pt-2 border-t border-border">
+              <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+                <Button
+                  variant="outline"
+                  className="w-full border-primary text-primary hover:bg-primary hover:text-white"
+                >
+                  Log In
+                </Button>
+              </Link>
+              <Link href="/signup" onClick={() => setIsMenuOpen(false)}>
+                <Button className="w-full bg-primary text-white hover:bg-primary/90">Sign Up</Button>
+              </Link>
+            </div>
             )}
           </div>
         </div>

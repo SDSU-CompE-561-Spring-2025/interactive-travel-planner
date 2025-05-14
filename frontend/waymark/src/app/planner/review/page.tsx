@@ -21,6 +21,17 @@ const ACTIVITY_OPTIONS = [
     { id: 'cultural', label: 'Cultural Activities', icon: '🎭' },
 ];
 
+interface TripResponse {
+    id: number;
+    name: string;
+    description: string;
+    location: string;
+    budget: number | null;
+    start_date: string;
+    end_date: string;
+    itineraries: number[];
+}
+
 export default function ReviewStep() {
     const router = useRouter();
     const { tripData, resetTripData } = useTripPlanner();
@@ -57,16 +68,21 @@ export default function ReviewStep() {
                 throw new Error('No authentication token found');
             }
 
-            const response = await axios.post(
+            const tripPayload = {
+                name: tripData.name,
+                description: `A ${formatBudget(tripData.budget)} trip to ${tripData.location} with activities: ${getActivityLabels().join(', ')}`,
+                location: tripData.location,
+                budget: tripData.budget,
+                start_date: tripData.startDate,
+                end_date: tripData.endDate,
+                itineraries: [],
+            };
+
+            console.log('Creating trip with data:', tripPayload);
+
+            const response = await axios.post<TripResponse>(
                 'http://localhost:8000/trips/',
-                {
-                    name: tripData.name,
-                    description: `A ${formatBudget(tripData.budget)} trip to ${tripData.location} with activities: ${getActivityLabels().join(', ')}`,
-                    location: tripData.location,
-                    start_date: tripData.startDate,
-                    end_date: tripData.endDate,
-                    itineraries: [],
-                },
+                tripPayload,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -75,6 +91,7 @@ export default function ReviewStep() {
                 }
             );
 
+            console.log('Trip created successfully:', response.data);
             toast.success('Trip created successfully!');
             resetTripData();
             router.push(`/trips/${response.data.id}`);
