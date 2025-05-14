@@ -96,7 +96,7 @@ export default function Footer() {
             <Link href="#" className="hover:text-white">
               Twitter
             </Link>
-            <Link href="#" className="hover:text-white">
+            <Link href="https://www.instagram.com/waymarkplanner/" className="hover:text-white">
               Instagram
             </Link>
             <Link href="#" className="hover:text-white">

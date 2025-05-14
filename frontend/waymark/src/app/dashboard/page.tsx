@@ -74,9 +74,29 @@ export default function DashboardPage() {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-[#fff8f0]">
+            {/* Fixed dashboard header bar */}
+            <div className="fixed top-0 left-0 w-full z-[999] bg-background border-b border-border flex items-center px-8 py-3" style={{ minHeight: '60px' }}>
+                <span className="font-bold text-2xl text-[#377C68] mr-8">My Trips</span>
+                <div className="flex gap-6">
+                    <Button
+                        variant="ghost"
+                        className="text-[#f3a034] font-semibold flex items-center gap-2 px-4 py-2"
+                        onClick={() => router.push('/dashboard')}
+                    >
+                        My Trips
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        className="text-gray-600 font-semibold flex items-center gap-2 px-4 py-2"
+                        onClick={() => router.push('/planner/startFmyF')}
+                    >
+                        Create Trip
+                    </Button>
+                </div>
+            </div>
+            <div className="min-h-screen bg-[#fff8f0] pt-[72px]"> {/* Add top padding to offset fixed bar */}
                 {/* Navigation Tabs */}
-                <div className="flex justify-center gap-4 py-4 bg-white shadow-sm mb-8">
+                <div className="flex justify-center gap-4 py-4 bg-white mb-8">
                     <Button
                         variant="ghost"
                         className="text-[#f3a034] font-semibold flex items-center gap-2 px-6 py-2 border-b-2 border-[#f3a034]"

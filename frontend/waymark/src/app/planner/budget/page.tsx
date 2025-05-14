@@ -34,7 +34,7 @@ export default function BudgetStep() {
     };
 
     return (
-        <motion.div 
+        <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="min-h-screen bg-[#fff8f0] py-12"
@@ -45,7 +45,7 @@ export default function BudgetStep() {
                         <div className="w-16 h-16 bg-[#f3a034]/10 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Wallet className="h-8 w-8 text-[#f3a034]" />
                         </div>
-                        <motion.h1 
+                        <motion.h1
                             className="text-4xl font-bold mb-4 text-[#377c68]"
                             initial={{ opacity: 0, y: -20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -76,9 +76,9 @@ export default function BudgetStep() {
                                 <Slider
                                     value={[tripData.budget || 500]}
                                     onValueChange={handleBudgetChange}
-                                    min={500}
-                                    max={10000}
-                                    step={100}
+                                    min={50}
+                                    max={100000}
+                                    step={50}
                                     className="w-full"
                                 />
                             </motion.div>
@@ -111,4 +111,4 @@ export default function BudgetStep() {
             </div>
         </motion.div>
     );
-} 
+}
