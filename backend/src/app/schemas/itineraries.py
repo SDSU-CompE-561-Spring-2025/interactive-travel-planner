@@ -1,24 +1,47 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 from typing import Optional, List, Tuple
 from datetime import datetime
 
 
 class LocationBase(BaseModel):
     name: str
-    coordinates: Tuple[float, float]
     description: Optional[str] = None
 
 
-class LocationCreate(LocationBase):
-    pass
+class LocationCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    coordinates: Tuple[float, float]
 
 
-class LocationResponse(LocationBase):
+class LocationResponse(BaseModel):
     id: int
     itinerary_id: int
+    name: str
+    description: Optional[str] = None
+    latitude: float
+    longitude: float
 
-    class Config:
-        orm_mode = True
+    @computed_field
+    @property
+    def coordinates(self) -> Tuple[float, float]:
+        return (self.latitude, self.longitude)
+
+    model_config = {
+        "from_attributes": True,
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "itinerary_id": 1,
+                    "name": "Example Location",
+                    "description": "A description",
+                    "latitude": 40.7128,
+                    "longitude": -74.0060
+                }
+            ]
+        }
+    }
 
 
 class ItineraryBase(BaseModel):
@@ -41,8 +64,9 @@ class ItineraryUpdate(BaseModel):
     trips: Optional[List[int]]
     locations: Optional[List[LocationCreate]]
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }
 
 
 class ItineraryResponse(ItineraryBase):
@@ -50,5 +74,6 @@ class ItineraryResponse(ItineraryBase):
     user_id: int
     locations: List[LocationResponse]
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }

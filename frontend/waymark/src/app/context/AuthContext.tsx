@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useState, ReactNode } from "react";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
@@ -34,17 +34,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const formData = new URLSearchParams();
             formData.append('username', username);
             formData.append('password', password);
-            const response = await axios.post<AuthResponse>('http://localhost:8000/auth/token', formData, {
+            const response = await axiosInstance.post<AuthResponse>('/auth/token', formData, {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'Accept': 'application/json'
                 }
             });
             const token = response.data.access_token;
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             localStorage.setItem('token', token);
             setUser({ username, token });
-            router.push('/');
             toast.success('Successfully logged in!');
         } catch (error: any) {
             console.error('Login Failed:', {
@@ -58,7 +56,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const logout = () => {
         setUser(null);
-        delete axios.defaults.headers.common['Authorization'];
         localStorage.removeItem('token');
         router.push('/login');
         toast.success('Successfully logged out!');

@@ -2,12 +2,44 @@
 
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
-import { Calendar, MapPin, ArrowLeft, DollarSign } from 'lucide-react';
+import axiosInstance from '@/lib/axios';
+import { Calendar, MapPin, ArrowLeft, DollarSign, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import type { Location } from '@/components/ItineraryMap';
+
+// Dynamically import the map component to avoid SSR issues
+const ItineraryMap = dynamic(() => import('@/components/ItineraryMap'), {
+    ssr: false,
+    loading: () => (
+        <div className="w-full h-[400px] flex items-center justify-center bg-gray-50 rounded-xl">
+            <div className="text-gray-500 flex flex-col items-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400 mb-2"></div>
+                <span>Loading map...</span>
+            </div>
+        </div>
+    ),
+});
+
+interface ItineraryLocation {
+    id: number;
+    name: string;
+    description: string | null;
+    latitude: number;
+    longitude: number;
+}
+
+interface Itinerary {
+    id: number;
+    name: string;
+    description: string;
+    start_date: string;
+    end_date: string;
+    locations: ItineraryLocation[];
+}
 
 interface Trip {
     id: number;
@@ -20,18 +52,13 @@ interface Trip {
     itineraries: Itinerary[];
 }
 
-interface Itinerary {
-    id: number;
-    name: string;
-    description: string;
-    start_date: string;
-    end_date: string;
-}
-
 export default function TripDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = use(params);
     const [trip, setTrip] = useState<Trip | null>(null);
     const [loading, setLoading] = useState(true);
+    const [mapCenter, setMapCenter] = useState<[number, number]>([0, 0]);
+    const [mapZoom, setMapZoom] = useState(2);
+    const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
     const router = useRouter();
 
     const formatDate = (dateString: string) => {
@@ -42,55 +69,64 @@ export default function TripDetailsPage({ params }: { params: Promise<{ id: stri
         });
     };
 
-    useEffect(() => {
-        const fetchTripDetails = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    router.push('/login');
-                    return;
-                }
+    const handleDeleteItinerary = async (itineraryId: number, e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            await axiosInstance.delete(`/itineraries/${itineraryId}`);
+            toast.success('Itinerary deleted successfully');
+            // Refresh trip data
+            fetchTripDetails();
+        } catch (error) {
+            console.error('Failed to delete itinerary:', error);
+            toast.error('Failed to delete itinerary');
+        }
+    };
 
-                const response = await axios.get<Trip>(`http://localhost:8000/trips/${resolvedParams.id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-
-                if (!response.data) {
-                    throw new Error('No trip data received');
-                }
-
-                console.log('Trip details:', {
-                    id: response.data.id,
-                    name: response.data.name,
-                    location: response.data.location,
-                    description: response.data.description,
-                    budget: response.data.budget
-                });
-                setTrip(response.data);
-            } catch (error) {
-                console.error('Failed to fetch trip details:', error);
-                if (error && typeof error === 'object' && 'response' in error) {
-                    const axiosError = error as { response?: { status?: number; data?: any; headers?: any } };
-                    console.error('Error details:', {
-                        status: axiosError.response?.status,
-                        data: axiosError.response?.data,
-                        headers: axiosError.response?.headers
-                    });
-                    toast.error(`Failed to fetch trip details: ${axiosError.response?.data?.detail || 'Unknown error'}`);
-                } else {
-                    toast.error('Failed to fetch trip details');
-                }
-            } finally {
-                setLoading(false);
+    const fetchTripDetails = async () => {
+        try {
+            const response = await axiosInstance.get<Trip>(`/trips/${resolvedParams.id}`);
+            if (!response.data) {
+                throw new Error('No trip data received');
             }
-        };
 
+            setTrip(response.data);
+
+            // Set map center to the first location of the first itinerary with locations
+            const firstItineraryWithLocations = response.data.itineraries.find(itin => itin.locations?.length > 0);
+            if (firstItineraryWithLocations?.locations[0]) {
+                const firstLoc = firstItineraryWithLocations.locations[0];
+                setMapCenter([firstLoc.latitude, firstLoc.longitude]);
+                setMapZoom(12);
+            }
+        } catch (error) {
+            console.error('Failed to fetch trip details:', error);
+            if (error && typeof error === 'object' && 'response' in error) {
+                const axiosError = error as { response?: { status?: number; data?: any; headers?: any } };
+                console.error('Error details:', {
+                    status: axiosError.response?.status,
+                    data: axiosError.response?.data,
+                    headers: axiosError.response?.headers
+                });
+                toast.error(`Failed to fetch trip details: ${axiosError.response?.data?.detail || 'Unknown error'}`);
+            } else {
+                toast.error('Failed to fetch trip details');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         if (resolvedParams.id) {
             fetchTripDetails();
         }
     }, [resolvedParams.id, router]);
+
+    const handleSelectLocation = (location: Location) => {
+        setSelectedLocation(location);
+        setMapCenter(location.coordinates);
+        setMapZoom(12);
+    };
 
     if (loading) {
         return (
@@ -112,6 +148,16 @@ export default function TripDetailsPage({ params }: { params: Promise<{ id: stri
             </div>
         );
     }
+
+    // Combine all locations from all itineraries
+    const allLocations: Location[] = trip.itineraries.flatMap(itinerary =>
+        (itinerary.locations || []).map(loc => ({
+            id: `${itinerary.id}-${loc.id}`,
+            name: `${loc.name} (${itinerary.name})`,
+            coordinates: [loc.latitude, loc.longitude],
+            description: loc.description || ''
+        }))
+    );
 
     return (
         <ProtectedRoute>
@@ -135,7 +181,7 @@ export default function TripDetailsPage({ params }: { params: Promise<{ id: stri
                 </div>
 
                 {/* Main Content */}
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 mt-8">
+                <div className="max-w-7xl mx-auto px-4 py-8">
                     <div className="bg-white rounded-lg shadow-sm p-6">
                         {/* Navigation and Trip Info */}
                         <div className="flex justify-between items-start mb-8">
@@ -170,6 +216,25 @@ export default function TripDetailsPage({ params }: { params: Promise<{ id: stri
                             </Button>
                         </div>
 
+                        {/* Map Section */}
+                        {allLocations.length > 0 && (
+                            <div className="mb-8">
+                                <h2 className="text-2xl font-bold text-[#377c68] mb-4">Trip Map</h2>
+                                <div className="h-[400px] rounded-lg overflow-hidden border border-gray-200">
+                                    <ItineraryMap
+                                        locations={allLocations}
+                                        center={mapCenter}
+                                        zoom={mapZoom}
+                                        onSelectLocation={handleSelectLocation}
+                                        onMapMove={(center, zoom) => {
+                                            setMapCenter(center);
+                                            setMapZoom(zoom);
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         {/* Activities Section */}
                         {trip.description && trip.description.includes('activities:') && (
                             <div className="mb-8">
@@ -197,8 +262,16 @@ export default function TripDetailsPage({ params }: { params: Promise<{ id: stri
                                 {trip?.itineraries.map((itinerary) => (
                                     <div
                                         key={itinerary.id}
-                                        className="bg-[#fff8f0] rounded-lg p-6 hover:shadow-md transition-shadow"
+                                        className="bg-[#fff8f0] rounded-lg p-6 hover:shadow-md transition-shadow relative group"
                                     >
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onClick={(e) => handleDeleteItinerary(itinerary.id, e)}
+                                        >
+                                            <Trash2 className="h-5 w-5" />
+                                        </Button>
                                         <h3 className="text-xl font-semibold text-[#377c68] mb-2">{itinerary.name}</h3>
                                         {itinerary.description && (
                                             <p className="text-gray-600 text-sm mb-4 line-clamp-2">

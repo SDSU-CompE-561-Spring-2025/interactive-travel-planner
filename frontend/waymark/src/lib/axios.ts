@@ -2,6 +2,11 @@ import axios from 'axios';
 
 const instance = axios.create({
     baseURL: 'http://localhost:8000',
+    withCredentials: true,
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
 });
 
 // Add a request interceptor
@@ -14,6 +19,7 @@ instance.interceptors.request.use(
         return config;
     },
     (error) => {
+        console.error('Request error:', error);
         return Promise.reject(error);
     }
 );
@@ -22,6 +28,12 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
     (response) => response,
     (error) => {
+        console.error('Response error:', {
+            message: error?.message,
+            status: error?.response?.status,
+            data: error?.response?.data
+        });
+
         if (error.response?.status === 401) {
             // Clear token and redirect to login
             localStorage.removeItem('token');
