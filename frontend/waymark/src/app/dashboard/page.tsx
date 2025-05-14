@@ -86,6 +86,7 @@ export default function DashboardPage() {
                     <Button
                         variant="ghost"
                         className="text-gray-600 font-semibold flex items-center gap-2 px-6 py-2"
+                        onClick={() => router.push('/dashboard/map')}
                     >
                         <Globe className="h-5 w-5" />
                         Travel Map

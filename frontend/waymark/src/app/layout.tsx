@@ -7,6 +7,7 @@ import Header from "@/components/header"
 import Footer from "@/components/Footer"
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext'
+import "leaflet/dist/leaflet.css"
 
 const inter = Inter({ subsets: ["latin"] })
 
