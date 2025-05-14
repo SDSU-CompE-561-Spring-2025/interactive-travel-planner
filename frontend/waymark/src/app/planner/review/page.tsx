@@ -75,6 +75,7 @@ export default function ReviewStep() {
                 budget: tripData.budget,
                 start_date: tripData.startDate,
                 end_date: tripData.endDate,
+                activities: tripData.activities || [],
                 itineraries: [],
             };
 

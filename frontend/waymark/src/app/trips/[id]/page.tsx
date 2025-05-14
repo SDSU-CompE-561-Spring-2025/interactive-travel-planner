@@ -2,12 +2,31 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
-import { Calendar, MapPin, ArrowLeft, DollarSign } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, DollarSign, Trash2, Check } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import axios from '@/lib/axios';
+
+interface ActivityOption {
+    id: string;
+    label: string;
+    icon: string;
+}
+
+const ACTIVITY_OPTIONS: ActivityOption[] = [
+    { id: 'sightseeing', label: 'Sightseeing', icon: '🏛️' },
+    { id: 'beach', label: 'Beach Activities', icon: '🏖️' },
+    { id: 'hiking', label: 'Hiking', icon: '🥾' },
+    { id: 'food', label: 'Food & Dining', icon: '🍽️' },
+    { id: 'shopping', label: 'Shopping', icon: '🛍️' },
+    { id: 'museums', label: 'Museums', icon: '🏛️' },
+    { id: 'nightlife', label: 'Nightlife', icon: '🌃' },
+    { id: 'adventure', label: 'Adventure Sports', icon: '🏄‍♂️' },
+    { id: 'relaxation', label: 'Relaxation', icon: '🧘‍♀️' },
+    { id: 'cultural', label: 'Cultural Activities', icon: '🎭' },
+];
 
 interface Trip {
     id: number;
@@ -17,6 +36,7 @@ interface Trip {
     budget: number | null;
     start_date: string;
     end_date: string;
+    activities: string[];
     itineraries: Itinerary[];
 }
 
@@ -26,6 +46,7 @@ interface Itinerary {
     description: string;
     start_date: string;
     end_date: string;
+    activities: string[];
 }
 
 export default function TripDetailsPage({ params }: { params: { id: string } }) {
@@ -52,6 +73,26 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
         });
     };
 
+    const handleDeleteItinerary = async (itineraryId: number) => {
+        if (!confirm('Are you sure you want to delete this itinerary?')) {
+            return;
+        }
+
+        try {
+            await axios.delete(`/itineraries/${itineraryId}`);
+            if (trip) {
+                setTrip({
+                    ...trip,
+                    itineraries: trip.itineraries.filter(it => it.id !== itineraryId)
+                });
+            }
+            toast.success('Itinerary deleted successfully');
+        } catch (error) {
+            console.error('Error deleting itinerary:', error);
+            toast.error('Failed to delete itinerary');
+        }
+    };
+
     useEffect(() => {
         const fetchTripDetails = async () => {
             try {
@@ -61,37 +102,16 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                     return;
                 }
 
-                const response = await axios.get<Trip>(`http://localhost:8000/trips/${params.id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
+                const response = await axios.get<Trip>(`/trips/${params.id}`);
 
                 if (!response.data) {
                     throw new Error('No trip data received');
                 }
 
-                console.log('Trip details:', {
-                    id: response.data.id,
-                    name: response.data.name,
-                    location: response.data.location,
-                    description: response.data.description,
-                    budget: response.data.budget
-                });
                 setTrip(response.data);
             } catch (error) {
                 console.error('Failed to fetch trip details:', error);
-                if (error && typeof error === 'object' && 'response' in error) {
-                    const axiosError = error as { response?: { status?: number; data?: any; headers?: any } };
-                    console.error('Error details:', {
-                        status: axiosError.response?.status,
-                        data: axiosError.response?.data,
-                        headers: axiosError.response?.headers
-                    });
-                    toast.error(`Failed to fetch trip details: ${axiosError.response?.data?.detail || 'Unknown error'}`);
-                } else {
-                    toast.error('Failed to fetch trip details');
-                }
+                toast.error('Failed to fetch trip details');
             } finally {
                 setLoading(false);
             }
@@ -137,9 +157,7 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                     </div>
                     {trip.description && (
                         <p className="mt-4 text-[#377c68]/80 text-center max-w-2xl px-4">
-                            {trip.description.replace(trip.location, `**${trip.location}**`).split('**').map((part, i) => (
-                                i % 2 === 1 ? <span key={i} className="font-extrabold text-[#377c68]">{part}</span> : part
-                            ))}
+                            {trip.description}
                         </p>
                     )}
                 </div>
@@ -181,36 +199,72 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                         </div>
 
                         {/* Activities Section */}
-                        {trip.description && trip.description.includes('activities:') && (
-                            <div className="mb-8">
-                                <h2 className="text-2xl font-bold text-[#377c68] mb-4">Activities</h2>
-                                <div className="flex flex-wrap gap-2">
-                                    {trip.description
-                                        .split('activities:')[1]
-                                        .split(',')
-                                        .map((activity, index) => (
-                                            <span
-                                                key={index}
-                                                className="px-4 py-2 bg-[#fff8f0] rounded-full text-[#377c68]"
+                        {trip.activities && trip.activities.length > 0 && (
+                            <div className="mb-8 p-6 bg-[#fff8f0] rounded-lg">
+                                <h2 className="text-xl font-semibold text-[#377c68] mb-4">Trip Activities</h2>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                    {trip.activities.map((activityId) => {
+                                        const activityOption = ACTIVITY_OPTIONS.find(opt => opt.id === activityId);
+                                        if (!activityOption) return null;
+
+                                        const isPlanned = trip.itineraries.some(
+                                            itinerary => itinerary.activities?.includes(activityId)
+                                        );
+
+                                        return (
+                                            <div
+                                                key={activityId}
+                                                className={`
+                                                    flex items-center p-3 rounded-lg border transition-all duration-200
+                                                    ${isPlanned
+                                                        ? 'border-[#f3a034] bg-[#f3a034]/10 text-[#377c68]'
+                                                        : 'border-gray-200 bg-white text-gray-500'}
+                                                `}
                                             >
-                                                {activity.trim()}
-                                            </span>
-                                        ))}
+                                                <span className="text-xl mr-2">{activityOption.icon}</span>
+                                                <span className="text-sm font-medium">{activityOption.label}</span>
+                                                {isPlanned && (
+                                                    <Check className="h-4 w-4 text-[#f3a034] ml-auto" />
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
 
                         {/* Itineraries Section */}
                         <div>
-                            <h2 className="text-2xl font-bold text-[#377c68] mb-6">Itineraries</h2>
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-bold text-[#377c68]">Itineraries</h2>
+                                <Button
+                                    className="bg-[#f3a034] text-white hover:bg-[#f3a034]/90"
+                                    onClick={() => router.push(`/trips/${params.id}/create-itinerary`)}
+                                >
+                                    Add Itinerary
+                                </Button>
+                            </div>
+                            
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {trip?.itineraries.map((itinerary) => (
+                                {trip.itineraries.map((itinerary) => (
                                     <div
                                         key={itinerary.id}
                                         className="bg-[#fff8f0] rounded-lg p-6 hover:shadow-md transition-shadow"
                                     >
-                                        <h3 className="text-xl font-semibold text-[#377c68] mb-2">{itinerary.name}</h3>
+                                        <div className="flex justify-between items-start mb-4">
+                                            <h3 className="text-xl font-semibold text-[#377c68]">{itinerary.name}</h3>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-gray-400 hover:text-red-500 hover:bg-red-50"
+                                                onClick={() => handleDeleteItinerary(itinerary.id)}
+                                            >
+                                                <Trash2 className="h-5 w-5" />
+                                            </Button>
+                                        </div>
+                                        
                                         <p className="text-gray-600 mb-4">{itinerary.description}</p>
+                                        
                                         <div className="flex flex-col gap-2">
                                             <div className="text-sm text-gray-500">
                                                 <span className="font-medium">Start:</span> {formatDateTime(itinerary.start_date)}
@@ -218,9 +272,34 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                                             <div className="text-sm text-gray-500">
                                                 <span className="font-medium">End:</span> {formatDateTime(itinerary.end_date)}
                                             </div>
+                                            {itinerary.activities && itinerary.activities.length > 0 && (
+                                                <div className="mt-4">
+                                                    <h4 className="text-sm font-medium text-gray-700 mb-2">Activities:</h4>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {itinerary.activities.map((activity, index) => {
+                                                            const activityOption = ACTIVITY_OPTIONS.find(opt => opt.id === activity);
+                                                            return activityOption ? (
+                                                                <div
+                                                                    key={index}
+                                                                    className="inline-flex items-center gap-1 px-2 py-1 bg-[#377c68]/10 text-[#377c68] rounded-full text-sm"
+                                                                >
+                                                                    <span>{activityOption.icon}</span>
+                                                                    <span>{activityOption.label}</span>
+                                                                </div>
+                                                            ) : null;
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
+                                
+                                {trip.itineraries.length === 0 && (
+                                    <div className="col-span-2 text-center py-8 text-gray-500">
+                                        No itineraries yet. Click "Add Itinerary" to create one.
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
