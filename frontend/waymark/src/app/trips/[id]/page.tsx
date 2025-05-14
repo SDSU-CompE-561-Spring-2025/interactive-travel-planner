@@ -9,6 +9,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { Calendar, Clock, MapPin } from "lucide-react";
 import Link from "next/link";
 import { HexColorPicker } from "react-colorful";
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
 interface Trip {
   id: number;
@@ -25,6 +28,8 @@ interface Trip {
   }>;
   image_url?: string | null;
   color?: string | null;
+  latitude?: number;
+  longitude?: number;
 }
 
 interface Collaborator {
@@ -222,23 +227,35 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
   return (
     <div className="container max-w-7xl py-10">
       {/* Trip image/color block at the top */}
-      <div className="mb-8">
+      <div className="mb-8 relative w-full h-64 rounded-lg shadow overflow-hidden">
         {trip.image_url ? (
           <img
             src={`http://localhost:8000${trip.image_url}`}
             alt="Trip"
-            className="w-full h-64 object-cover rounded-lg shadow"
+            className="w-full h-full object-cover"
           />
         ) : (
           <div
-            className="w-full h-64 rounded-lg shadow"
+            className="w-full h-full"
             style={{ background: trip.color || "#aabbcc" }}
           />
+        )}
+        {/* Trip name in bottom left */}
+        <div className="absolute bottom-4 left-4 bg-black/60 text-white text-2xl font-bold px-4 py-2 rounded-lg shadow z-20">
+          {trip.name}
+        </div>
+        {/* Trip destination map overlay in bottom right */}
+        {typeof window !== 'undefined' && trip.latitude && trip.longitude && (
+          <div className="absolute bottom-4 right-4 w-[500px] h-56 rounded-lg overflow-hidden border-2 border-white z-20 shadow-lg">
+            <MapContainer center={[trip.latitude, trip.longitude]} zoom={10} style={{ height: '100%', width: '100%' }}>
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <Marker position={[trip.latitude, trip.longitude]} icon={L.Icon.Default ? new L.Icon.Default() : undefined} />
+            </MapContainer>
+          </div>
         )}
       </div>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold">{trip.name}</h1>
           <p className="text-gray-500 mt-2">{trip.description}</p>
         </div>
         <div className="flex gap-4">

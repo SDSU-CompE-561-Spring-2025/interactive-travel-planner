@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 import { HexColorPicker } from "react-colorful";
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
 interface TripResponse {
   id: number;
@@ -34,6 +37,109 @@ function renderErrorDetail(detail: any) {
   return String(detail);
 }
 
+function LocationPicker({ value, onChange }: { value: [number, number] | null; onChange: (val: [number, number]) => void }) {
+  const [search, setSearch] = useState("");
+  const [searchError, setSearchError] = useState("");
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fix for default marker icons in Leaflet with Next.js
+  if (typeof window !== 'undefined' && L && L.Icon && L.Icon.Default) {
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    });
+  }
+
+  function LocationMarker() {
+    useMapEvents({
+      click(e) {
+        onChange([e.latlng.lat, e.latlng.lng]);
+      },
+    });
+    return value ? <Marker position={value} icon={L.Icon.Default ? new L.Icon.Default() : undefined} /> : null;
+  }
+
+  function SearchFlyTo({ coords }: { coords: [number, number] | null }) {
+    const map = useMap();
+    if (coords) {
+      map.flyTo(coords, 10);
+    }
+    return null;
+  }
+
+  const fetchSuggestions = async (query: string) => {
+    setLoading(true);
+    setSearchError("");
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
+      );
+      const data = await res.json();
+      setSuggestions(data);
+    } catch {
+      setSearchError("Error searching location.");
+      setSuggestions([]);
+    }
+    setLoading(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearch(val);
+    setSuggestions([]);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (val.trim().length < 2) return;
+    debounceRef.current = setTimeout(() => fetchSuggestions(val), 400);
+  };
+
+  const handleSuggestionClick = (s: any) => {
+    const lat = parseFloat(s.lat);
+    const lon = parseFloat(s.lon);
+    setSearch(s.display_name);
+    setSuggestions([]);
+    onChange([lat, lon]);
+  };
+
+  if (typeof window === 'undefined') return null;
+
+  return (
+    <div>
+      <MapContainer center={value || [20, 0]} zoom={value ? 10 : 2} style={{ height: 300, width: "100%" }}>
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <LocationMarker />
+        <SearchFlyTo coords={value} />
+      </MapContainer>
+      <div className="mt-2 relative">
+        <input
+          type="text"
+          className="border rounded px-2 py-1 w-full"
+          placeholder="Search for a location"
+          value={search}
+          onChange={handleInputChange}
+        />
+        {loading && <div className="absolute right-2 top-2 text-xs">Loading...</div>}
+        {suggestions.length > 0 && (
+          <ul className="absolute z-10 left-0 w-full mt-1 bg-white border rounded shadow max-h-48 overflow-auto">
+            {suggestions.map((s, i) => (
+              <li
+                key={s.place_id}
+                className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                onClick={() => handleSuggestionClick(s)}
+              >
+                {s.display_name}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      {searchError && <div className="text-red-500 text-xs mt-1">{searchError}</div>}
+    </div>
+  );
+}
+
 export default function NewTrip() {
   const router = useRouter();
   const { toast } = useToast();
@@ -49,6 +155,7 @@ export default function NewTrip() {
   const [color, setColor] = useState("#aabbcc");
   const [showColorError, setShowColorError] = useState(false);
   const [showImageError, setShowImageError] = useState("");
+  const [location, setLocation] = useState<[number, number] | null>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -75,6 +182,10 @@ export default function NewTrip() {
         form.append("image", image);
       } else if (color) {
         form.append("color", color);
+      }
+      if (location) {
+        form.append("latitude", String(location[0]));
+        form.append("longitude", String(location[1]));
       }
       // Debug: log all FormData
       console.log("FormData being sent:");
@@ -220,6 +331,16 @@ export default function NewTrip() {
                 )}
               </div>
             )}
+
+            <div className="space-y-2">
+              <Label>Pick Destination on Map</Label>
+              <LocationPicker value={location} onChange={setLocation} />
+              {location && (
+                <div className="text-xs text-muted-foreground mt-2">
+                  Selected: {location[0].toFixed(4)}, {location[1].toFixed(4)}
+                </div>
+              )}
+            </div>
 
             <div className="flex justify-end space-x-4">
               <Button
