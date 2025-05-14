@@ -15,6 +15,7 @@ interface TripResponse {
   name: string;
   description: string;
   location: string;
+  budget: number | null;
   start_date: string;
   end_date: string;
   itineraries: number[];
@@ -28,6 +29,7 @@ export default function NewTrip() {
     name: "",
     description: "",
     location: "",
+    budget: "",
     start_date: "",
     end_date: "",
     itineraries: [] as number[]
@@ -43,9 +45,10 @@ export default function NewTrip() {
         throw new Error("No authentication token found");
       }
 
-      // Convert dates to ISO format
+      // Convert dates to ISO format and budget to number
       const tripData = {
         ...formData,
+        budget: formData.budget ? parseFloat(formData.budget) : null,
         start_date: new Date(formData.start_date).toISOString(),
         end_date: new Date(formData.end_date).toISOString(),
       };
@@ -119,6 +122,19 @@ export default function NewTrip() {
                 onChange={handleChange}
                 placeholder="Enter city or country (e.g., Paris, France)"
                 required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="budget">Budget</Label>
+              <Input
+                id="budget"
+                name="budget"
+                type="number"
+                step="0.01"
+                value={formData.budget}
+                onChange={handleChange}
+                placeholder="Enter your budget"
               />
             </div>
 

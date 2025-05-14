@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
 from datetime import UTC, datetime
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -18,6 +18,8 @@ class Trip(Base): # routines --> trips
     user_id = Column(Integer, ForeignKey('users.id'))
     name = Column(String, index=True)
     description = Column(String, index=True)
+    location = Column(String, index=True)
+    budget = Column(Float, nullable=True)
     start_date = Column(DateTime, default=datetime.now(UTC))
     end_date = Column(DateTime, default=datetime.now(UTC))
 
