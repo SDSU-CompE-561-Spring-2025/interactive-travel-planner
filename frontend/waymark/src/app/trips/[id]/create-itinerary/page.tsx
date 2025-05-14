@@ -31,7 +31,7 @@ export default function CreateItineraryPage({ params }: { params: { id: string }
         if (isSubmitting) return;
 
         setIsSubmitting(true);
-        
+
         try {
             const payload = {
                 ...formData,
@@ -52,7 +52,7 @@ export default function CreateItineraryPage({ params }: { params: { id: string }
         <div className="min-h-screen bg-[#fff8f0]">
             <div className="max-w-2xl mx-auto px-4 py-8">
                 <div className="mb-8">
-                    <Link 
+                    <Link
                         href={`/trips/${params.id}`}
                         className="text-[#377c68] hover:text-[#377c68]/80 flex items-center gap-2"
                     >
@@ -62,19 +62,19 @@ export default function CreateItineraryPage({ params }: { params: { id: string }
                 </div>
 
                 <div className="bg-white rounded-lg shadow-sm p-8">
-                    <h1 className="text-3xl font-bold text-[#377c68] mb-6">Create New Itinerary</h1>
-                    
+                    <h1 className="text-3xl font-bold text-[#377c68] mb-6">Add A New Activity</h1>
+
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                                Itinerary Name
+                                Activity Name
                             </label>
                             <Input
                                 id="name"
                                 type="text"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                placeholder="Enter itinerary name"
+                                placeholder="Enter activity name"
                                 className="w-full"
                                 required
                             />
@@ -88,7 +88,7 @@ export default function CreateItineraryPage({ params }: { params: { id: string }
                                 id="description"
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                placeholder="Describe your itinerary plans..."
+                                placeholder="Describe your activity plans..."
                                 className="w-full min-h-[100px] resize-y"
                             />
                         </div>
@@ -129,7 +129,7 @@ export default function CreateItineraryPage({ params }: { params: { id: string }
                                 className="bg-[#f3a034] text-white hover:bg-[#f3a034]/90"
                                 disabled={isSubmitting}
                             >
-                                {isSubmitting ? 'Creating...' : 'Create Itinerary'}
+                                {isSubmitting ? 'Creating...' : 'Add Activity'}
                             </Button>
                         </div>
                     </form>
@@ -137,4 +137,4 @@ export default function CreateItineraryPage({ params }: { params: { id: string }
             </div>
         </div>
     );
-} 
+}
