@@ -89,15 +89,9 @@ export default function Header() {
             </Link>
             {isAuthenticated ? (
               <>
-            <Link
-              href="/dashboard"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive("/dashboard") ? "text-primary" : "text-foreground"
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              My Trips
-            </Link>
+
+              <Logo />
+
             <Link
                   href="/planner/start"
               className={`text-sm font-medium transition-colors hover:text-primary ${

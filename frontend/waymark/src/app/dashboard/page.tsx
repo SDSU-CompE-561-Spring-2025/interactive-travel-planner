@@ -8,6 +8,7 @@ import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
+import Logo from '@/components/Logo';
 
 interface Collaborator {
     id: number;
@@ -76,8 +77,8 @@ export default function DashboardPage() {
         <ProtectedRoute>
             {/* Fixed dashboard header bar */}
             <div className="fixed top-0 left-0 w-full z-[999] bg-background border-b border-border flex items-center px-8 py-3" style={{ minHeight: '60px' }}>
-                <span className="font-bold text-2xl text-[#377C68] mr-8">My Trips</span>
-                <div className="flex gap-6">
+                <Logo />
+                <div className="flex gap-6 ml-8">
                     <Button
                         variant="ghost"
                         className="text-[#f3a034] font-semibold flex items-center gap-2 px-4 py-2"

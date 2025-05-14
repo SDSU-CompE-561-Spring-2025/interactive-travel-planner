@@ -11,6 +11,7 @@ import Map, { Map as NamedMap } from "@/components/Map";
 import { DayView } from "@/components/DayView";
 import { Button } from "@/components/ui/button";
 import { Calendar, Globe } from "lucide-react";
+import Logo from "@/components/Logo";
 
 interface Trip {
   id: number;
@@ -86,8 +87,8 @@ export default function DashboardMapPage() {
     <ProtectedRoute>
       {/* Fixed dashboard header bar (copied from trips dashboard) */}
       <div className="fixed top-0 left-0 w-full z-[999] bg-background border-b border-border flex items-center px-8 py-3" style={{ minHeight: '60px' }}>
-        <span className="font-bold text-2xl text-[#377C68] mr-8">My Trips</span>
-        <div className="flex gap-6">
+        <Logo />
+        <div className="flex gap-6 ml-8">
           <Button
             variant="ghost"
             className="text-[#f3a034] font-semibold flex items-center gap-2 px-4 py-2"
