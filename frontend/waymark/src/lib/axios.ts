@@ -1,32 +1,39 @@
 import axios from 'axios';
+import type { InternalAxiosRequestConfig } from 'axios';
 
 const instance = axios.create({
     baseURL: 'http://localhost:8000',
-});
-
-// Add a request interceptor
-instance.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('token');
-        if (token && config.headers) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
+    headers: {
+        'Content-Type': 'application/json',
     },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
+});
 
 // Add a response interceptor
 instance.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
-            // Clear token and redirect to login
-            localStorage.removeItem('token');
-            window.location.href = '/login';
+        // Any status codes outside the range of 2xx cause this function to trigger
+        console.error('API Error:', {
+            status: error.response?.status,
+            data: error.response?.data,
+            config: error.config
+        });
+        return Promise.reject(error);
+    }
+);
+
+// Add a request interceptor to add the token
+instance.interceptors.request.use(
+    (config: InternalAxiosRequestConfig) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            // Ensure headers object exists
+            config.headers = config.headers || {};
+            config.headers['Authorization'] = `Bearer ${token}`;
         }
+        return config;
+    },
+    (error) => {
         return Promise.reject(error);
     }
 );

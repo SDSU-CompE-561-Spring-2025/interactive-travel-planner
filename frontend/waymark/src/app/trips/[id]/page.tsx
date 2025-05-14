@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { Calendar, MapPin, ArrowLeft, DollarSign, Trash2 } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, DollarSign } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
@@ -52,101 +52,55 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
         });
     };
 
-    const fetchTripDetails = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                router.push('/login');
-                return;
-            }
-
-            const response = await axios.get<Trip>(`http://localhost:8000/trips/${params.id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-
-            if (!response.data) {
-                throw new Error('No trip data received');
-            }
-
-            console.log('Trip details:', {
-                id: response.data.id,
-                name: response.data.name,
-                location: response.data.location,
-                description: response.data.description,
-                budget: response.data.budget
-            });
-            setTrip(response.data);
-        } catch (error) {
-            console.error('Failed to fetch trip details:', error);
-            if (error && typeof error === 'object' && 'response' in error) {
-                const axiosError = error as { response?: { status?: number; data?: any; headers?: any } };
-                console.error('Error details:', {
-                    status: axiosError.response?.status,
-                    data: axiosError.response?.data,
-                    headers: axiosError.response?.headers
-                });
-                toast.error(`Failed to fetch trip details: ${axiosError.response?.data?.detail || 'Unknown error'}`);
-            } else {
-                toast.error('Failed to fetch trip details');
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleDeleteItinerary = async (itineraryId: number) => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                router.push('/login');
-                return;
-            }
-
-            // Confirm before deleting
-            if (!confirm('Are you sure you want to delete this itinerary?')) {
-                return;
-            }
-
-            await axios.delete(`http://localhost:8000/itineraries/${itineraryId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            // Immediately update the UI
-            if (trip) {
-                setTrip({
-                    ...trip,
-                    itineraries: trip.itineraries.filter(i => i.id !== itineraryId)
-                });
-            }
-
-            toast.success('Itinerary deleted successfully');
-        } catch (error: any) {
-            console.error('Failed to delete itinerary:', error);
-            if (error.response?.status === 404) {
-                // If we get a 404, the itinerary was probably already deleted
-                if (trip) {
-                    setTrip({
-                        ...trip,
-                        itineraries: trip.itineraries.filter(i => i.id !== itineraryId)
-                    });
-                }
-                toast.success('Itinerary deleted successfully');
-            } else {
-                toast.error('Failed to delete itinerary');
-            }
-        }
-    };
-
     useEffect(() => {
+        const fetchTripDetails = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    router.push('/login');
+                    return;
+                }
+
+                const response = await axios.get<Trip>(`http://localhost:8000/trips/${params.id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                if (!response.data) {
+                    throw new Error('No trip data received');
+                }
+
+                console.log('Trip details:', {
+                    id: response.data.id,
+                    name: response.data.name,
+                    location: response.data.location,
+                    description: response.data.description,
+                    budget: response.data.budget
+                });
+                setTrip(response.data);
+            } catch (error) {
+                console.error('Failed to fetch trip details:', error);
+                if (error && typeof error === 'object' && 'response' in error) {
+                    const axiosError = error as { response?: { status?: number; data?: any; headers?: any } };
+                    console.error('Error details:', {
+                        status: axiosError.response?.status,
+                        data: axiosError.response?.data,
+                        headers: axiosError.response?.headers
+                    });
+                    toast.error(`Failed to fetch trip details: ${axiosError.response?.data?.detail || 'Unknown error'}`);
+                } else {
+                    toast.error('Failed to fetch trip details');
+                }
+            } finally {
+                setLoading(false);
+            }
+        };
+
         if (params.id) {
             fetchTripDetails();
         }
-    }, [params.id]);
+    }, [params.id, router]);
 
     if (loading) {
         return (
@@ -253,19 +207,9 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                                 {trip?.itineraries.map((itinerary) => (
                                     <div
                                         key={itinerary.id}
-                                        className="bg-[#fff8f0] rounded-lg p-6 hover:shadow-md transition-shadow relative"
+                                        className="bg-[#fff8f0] rounded-lg p-6 hover:shadow-md transition-shadow"
                                     >
-                                        <div className="flex justify-between items-start mb-4">
-                                            <h3 className="text-xl font-semibold text-[#377c68]">{itinerary.name}</h3>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                                onClick={() => handleDeleteItinerary(itinerary.id)}
-                                            >
-                                                <Trash2 className="h-5 w-5" />
-                                            </Button>
-                                        </div>
+                                        <h3 className="text-xl font-semibold text-[#377c68] mb-2">{itinerary.name}</h3>
                                         <p className="text-gray-600 mb-4">{itinerary.description}</p>
                                         <div className="flex flex-col gap-2">
                                             <div className="text-sm text-gray-500">
