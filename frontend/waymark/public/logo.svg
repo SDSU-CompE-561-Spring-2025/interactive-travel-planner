@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="500" height="500" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Calendar base -->
+  <rect x="100" y="100" width="300" height="300" rx="30" fill="#377C68"/>
+  
+  <!-- White airplane -->
+  <path d="M200 250 L350 250 M270 200 L350 250 L270 300" fill="none" stroke="white" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Orange location pin -->
+  <path d="M250 100 A50 50 0 1 1 250 200 L250 100" fill="#F3A034"/>
+</svg> 

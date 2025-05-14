@@ -7,6 +7,7 @@ import { Menu, X, MapPin, LogOut } from "lucide-react"
 import { usePathname } from "next/navigation"
 import AuthContext from "@/app/context/AuthContext"
 import { UserMenu } from "./user-menu"
+import Logo from "./Logo"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -21,10 +22,7 @@ export default function Header() {
     <header className="bg-background border-b border-border sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center space-x-6">
-          <Link href="/" className="flex items-center space-x-2">
-            <MapPin className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl text-accent">Waymark</span>
-          </Link>
+          <Logo />
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">

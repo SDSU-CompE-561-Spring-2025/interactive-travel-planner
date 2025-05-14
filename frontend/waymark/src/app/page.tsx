@@ -1,8 +1,14 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { MapPin, Calendar, Users, Compass, PlaneTakeoff, Briefcase } from "lucide-react"
+import { useContext } from "react"
+import AuthContext from "./context/AuthContext"
 
 export default function LandingPage() {
+  const { isAuthenticated } = useContext(AuthContext)
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -16,22 +22,24 @@ export default function LandingPage() {
               Create, organize, and share your travel itineraries with ease. Your all-in-one travel companion for
               memorable adventures.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link href="/signup">
-                <Button size="lg" className="bg-primary text-white hover:bg-primary/90 w-full sm:w-auto">
-                  Get Started
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-primary text-primary hover:bg-primary hover:text-white w-full sm:w-auto"
-                >
-                  Log In
-                </Button>
-              </Link>
-            </div>
+            {!isAuthenticated && (
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <Link href="/signup">
+                  <Button size="lg" className="bg-primary text-white hover:bg-primary/90 w-full sm:w-auto">
+                    Get Started
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-primary text-primary hover:bg-primary hover:text-white w-full sm:w-auto"
+                  >
+                    Log In
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -119,13 +127,24 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to Start Your Journey?</h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join thousands of travelers who use Waymark to create unforgettable experiences.
+            {isAuthenticated 
+              ? "Create your next adventure and start planning your dream trip."
+              : "Join thousands of travelers who use Waymark to create unforgettable experiences."
+            }
           </p>
-          <Link href="/signup">
-            <Button size="lg" className="bg-primary text-white hover:bg-primary/90">
-              Create Your First Trip
-            </Button>
-          </Link>
+          {isAuthenticated ? (
+            <Link href="/new-trip">
+              <Button size="lg" className="bg-primary text-white hover:bg-primary/90">
+                Create New Trip
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/signup">
+              <Button size="lg" className="bg-primary text-white hover:bg-primary/90">
+                Create Your First Trip
+              </Button>
+            </Link>
+          )}
         </div>
       </section>
     </div>

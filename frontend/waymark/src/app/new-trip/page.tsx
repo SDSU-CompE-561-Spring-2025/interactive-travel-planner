@@ -14,6 +14,7 @@ interface TripResponse {
   id: number;
   name: string;
   description: string;
+  location: string;
   start_date: string;
   end_date: string;
   itineraries: number[];
@@ -26,6 +27,7 @@ export default function NewTrip() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    location: "",
     start_date: "",
     end_date: "",
     itineraries: [] as number[]
@@ -104,6 +106,18 @@ export default function NewTrip() {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Enter trip name"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="Enter city or country (e.g., Paris, France)"
                 required
               />
             </div>
