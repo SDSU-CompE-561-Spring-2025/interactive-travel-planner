@@ -116,6 +116,11 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                         <MapPin className="h-5 w-5" />
                         <span>{trip.location}</span>
                     </div>
+                    {trip.description && (
+                        <p className="mt-4 text-[#377c68]/80 text-center max-w-2xl px-4">
+                            {trip.description}
+                        </p>
+                    )}
                 </div>
 
                 {/* Main Content */}
@@ -144,6 +149,12 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                                             <span>Budget: ${trip.budget.toLocaleString()}</span>
                                         </div>
                                     )}
+                                    {trip.location && (
+                                        <div className="inline-flex items-center gap-2 text-gray-600 px-4 py-2 bg-[#fff8f0] rounded-full">
+                                            <MapPin className="h-5 w-5 text-[#377c68]" />
+                                            <span>{trip.location}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <Button
@@ -153,6 +164,26 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                                 Create Itinerary
                             </Button>
                         </div>
+
+                        {/* Activities Section */}
+                        {trip.description && trip.description.includes('activities:') && (
+                            <div className="mb-8">
+                                <h2 className="text-2xl font-bold text-[#377c68] mb-4">Activities</h2>
+                                <div className="flex flex-wrap gap-2">
+                                    {trip.description
+                                        .split('activities:')[1]
+                                        .split(',')
+                                        .map((activity, index) => (
+                                            <span
+                                                key={index}
+                                                className="px-4 py-2 bg-[#fff8f0] rounded-full text-[#377c68]"
+                                            >
+                                                {activity.trim()}
+                                            </span>
+                                        ))}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Itineraries Section */}
                         <div>
