@@ -130,7 +130,7 @@ export default function TripDetailsPage({ params }: { params: { id: string } } |
         }
 
         try {
-            await axios.delete(`/itineraries/${itineraryId}`);
+            await axios.delete(`/itineraries/`, { params: { itinerary_id: itineraryId } });
             if (trip) {
                 setTrip({
                     ...trip,
