@@ -30,6 +30,8 @@ def get_trips(db: db_dependency, user: user_dependency):
             "id": trip.id,
             "name": trip.name,
             "description": trip.description,
+            "location": trip.location,
+            "budget": trip.budget,
             "start_date": trip.start_date.isoformat() if trip.start_date else None,
             "end_date": trip.end_date.isoformat() if trip.end_date else None,
             "itineraries": [
