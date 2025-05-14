@@ -23,6 +23,7 @@ interface Trip {
     location: string;
     budget: number | null;
     collaborators?: Collaborator[];
+    owner_name?: string;
 }
 
 export default function DashboardPage() {
@@ -142,6 +143,12 @@ export default function DashboardPage() {
                                             <MapPin className="h-4 w-4" />
                                             <span>{trip.location || 'No location set'}</span>
                                         </div>
+                                        {trip.owner_name && (
+                                            <div className="flex items-center gap-2 text-gray-600 mb-2">
+                                                <span className="font-medium">Owner:</span>
+                                                <span>{trip.owner_name}</span>
+                                            </div>
+                                        )}
                                         <div className="flex items-center gap-2 text-gray-600 mb-2">
                                             <Calendar className="h-4 w-4" />
                                             <span>{new Date(trip.start_date).toLocaleDateString()} - {new Date(trip.end_date).toLocaleDateString()}</span>
