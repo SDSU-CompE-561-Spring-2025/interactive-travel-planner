@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import axios from "axios";
+import axios from "@/lib/axios";
 import { useToast } from "@/components/ui/use-toast";
 
 interface TripResponse {
@@ -18,7 +18,11 @@ interface TripResponse {
   budget: number | null;
   start_date: string;
   end_date: string;
-  itineraries: number[];
+  itineraries: any[];
+  activities: string[];
+  is_owner: boolean;
+  user_id: number;
+  collaborators: any[];
 }
 
 export default function NewTrip() {
@@ -53,23 +57,31 @@ export default function NewTrip() {
         end_date: new Date(formData.end_date).toISOString(),
       };
 
+      console.log("Submitting trip data:", tripData);
+
       const response = await axios.post<TripResponse>(
-        "http://localhost:8000/trips/",
+        "/trips/",
         tripData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
       );
+
+      console.log("Trip creation response:", response.data);
+      console.log("Trip ID:", response.data.id);
 
       toast({
         title: "Success!",
         description: "Your trip has been created successfully.",
       });
 
+      // Add a small delay to ensure the server has processed everything
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       // Redirect to the trip details page
+      console.log("Navigating to:", `/trips/${response.data.id}`);
       router.push(`/trips/${response.data.id}`);
     } catch (error) {
       console.error("Failed to create trip:", error);

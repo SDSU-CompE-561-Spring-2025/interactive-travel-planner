@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useTripPlanner } from '@/contexts/TripPlannerContext';
 import { Calendar, MapPin, Activity, DollarSign, Users, ClipboardCheck } from 'lucide-react';
-import axios from 'axios';
+import axios from '@/lib/axios';
 import { toast } from 'react-hot-toast';
 
 const ACTIVITY_OPTIONS = [
@@ -29,7 +29,11 @@ interface TripResponse {
     budget: number | null;
     start_date: string;
     end_date: string;
-    itineraries: number[];
+    itineraries: any[];
+    activities: string[];
+    is_owner: boolean;
+    user_id: number;
+    collaborators: any[];
 }
 
 export default function ReviewStep() {
@@ -82,7 +86,7 @@ export default function ReviewStep() {
             console.log('Creating trip with data:', tripPayload);
 
             const response = await axios.post<TripResponse>(
-                'http://localhost:8000/trips/',
+                '/trips/',
                 tripPayload,
                 {
                     headers: {
@@ -93,8 +97,14 @@ export default function ReviewStep() {
             );
 
             console.log('Trip created successfully:', response.data);
+            console.log('Trip ID from response:', response.data.id);
             toast.success('Trip created successfully!');
             resetTripData();
+
+            // Add a small delay before navigation
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            console.log('Navigating to /trips/' + response.data.id);
             router.push(`/trips/${response.data.id}`);
         } catch (error) {
             console.error('Failed to create trip:', error);
@@ -105,7 +115,7 @@ export default function ReviewStep() {
     };
 
     return (
-        <motion.div 
+        <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="min-h-screen bg-[#fff8f0] py-12"
@@ -116,7 +126,7 @@ export default function ReviewStep() {
                         <div className="w-16 h-16 bg-[#f3a034]/10 rounded-full flex items-center justify-center mx-auto mb-6">
                             <ClipboardCheck className="h-8 w-8 text-[#f3a034]" />
                         </div>
-                        <motion.h1 
+                        <motion.h1
                             className="text-4xl font-bold mb-4 text-[#377c68]"
                             initial={{ opacity: 0, y: -20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -236,4 +246,4 @@ export default function ReviewStep() {
             </div>
         </motion.div>
     );
-} 
+}

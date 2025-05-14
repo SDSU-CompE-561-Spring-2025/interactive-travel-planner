@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, use as usePromise } from 'react';
+import { useEffect, useState, useRef, use as usePromise, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, MapPin, ArrowLeft, DollarSign, Trash2, UserPlus, Check } from 'lucide-react';
 import Link from 'next/link';
@@ -44,6 +44,10 @@ interface Trip {
     activities: string[];
     itineraries: Itinerary[];
     collaborators?: Collaborator[];
+    is_owner?: boolean;
+    owner_name?: string;
+    owner_email?: string;
+    user_id?: number;
 }
 
 interface Itinerary {
@@ -55,6 +59,12 @@ interface Itinerary {
     activities: string[];
 }
 
+interface User {
+    id: number;
+    username: string;
+    email: string;
+}
+
 function isPromise<T>(value: T | Promise<T>): value is Promise<T> {
     return typeof (value as any)?.then === 'function';
 }
@@ -64,12 +74,36 @@ export default function TripDetailsPage({ params }: { params: { id: string } } |
     const unwrappedParams = isPromise(params) ? usePromise(params) : params;
     const [trip, setTrip] = useState<Trip | null>(null);
     const [loading, setLoading] = useState(true);
+    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
     const router = useRouter();
     const [inviteOpen, setInviteOpen] = useState(false);
     const [search, setSearch] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [searchLoading, setSearchLoading] = useState(false);
     const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+
+    // Function to check if current user is the trip owner
+    const isTripOwner = useCallback(() => {
+        if (!trip || currentUserId === null) return false;
+
+        // Check using both methods for robustness
+        // 1. Check if the current user ID matches the trip user ID
+        const userIdMatch = trip.user_id === currentUserId;
+
+        // 2. Check the is_owner flag provided by the API
+        const isOwnerFlag = trip.is_owner === true;
+
+        console.log('Ownership check:', {
+            currentUserId,
+            tripUserId: trip.user_id,
+            isOwnerFlagFromAPI: trip.is_owner,
+            userIdMatch,
+            finalResult: userIdMatch || isOwnerFlag
+        });
+
+        // If either method indicates ownership, consider the user the owner
+        return userIdMatch || isOwnerFlag;
+    }, [trip, currentUserId]);
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -110,11 +144,50 @@ export default function TripDetailsPage({ params }: { params: { id: string } } |
         }
     };
 
+    const handleLeaveTrip = async () => {
+        if (!confirm('Are you sure you want to leave this trip? You will no longer have access to it.')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`/trips/${unwrappedParams.id}/collaborators/leave`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success('You have left the trip');
+            router.push('/dashboard');
+        } catch (error: any) {
+            console.error('Error leaving trip:', error);
+            toast.error(error?.response?.data?.detail || 'Failed to leave trip');
+        }
+    };
+
+    const handleRemoveCollaborator = async (collaboratorId: number, username: string) => {
+        if (!confirm(`Are you sure you want to remove ${username} from this trip?`)) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`/trips/${unwrappedParams.id}/collaborators/${collaboratorId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success(`${username} removed from trip`);
+
+            // Update trip data
+            const response = await axios.get<Trip>(`/trips/${unwrappedParams.id}`);
+            setTrip(response.data);
+        } catch (error: any) {
+            console.error('Error removing collaborator:', error);
+            toast.error(error?.response?.data?.detail || 'Failed to remove collaborator');
+        }
+    };
+
     // Search for users by username
     const handleSearch = (value: string) => {
         setSearch(value);
         if (searchTimeout.current) clearTimeout(searchTimeout.current);
-        if (!value.trim()) {
+        if (!value.trim() || value.length < 2) {
             setSearchResults([]);
             return;
         }
@@ -125,8 +198,16 @@ export default function TripDetailsPage({ params }: { params: { id: string } } |
                 const res = await axios.get(`/users/search?query=${encodeURIComponent(value)}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                setSearchResults(Array.isArray(res.data) ? res.data : []);
+
+                // Filter out users who are already collaborators
+                const existingCollaboratorIds = trip?.collaborators?.map(c => c.id) || [];
+                const filteredResults = Array.isArray(res.data)
+                    ? res.data.filter((user: any) => !existingCollaboratorIds.includes(user.id))
+                    : [];
+
+                setSearchResults(filteredResults);
             } catch (e) {
+                console.error('Error searching users:', e);
                 setSearchResults([]);
             } finally {
                 setSearchLoading(false);
@@ -155,22 +236,44 @@ export default function TripDetailsPage({ params }: { params: { id: string } } |
     useEffect(() => {
         const fetchTripDetails = async () => {
             try {
+                console.log("Fetching trip details for ID:", unwrappedParams.id);
                 const token = localStorage.getItem('token');
                 if (!token) {
+                    console.error("No authentication token found");
                     router.push('/login');
                     return;
                 }
 
-                const response = await axios.get<Trip>(`/trips/${unwrappedParams.id}`);
+                // Get current user info first
+                const userResponse = await axios.get<User>('/auth/me', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (userResponse.data && userResponse.data.id) {
+                    console.log("Current user ID:", userResponse.data.id);
+                    setCurrentUserId(userResponse.data.id);
+                }
+
+                // Fetch trip details
+                console.log("Sending request to:", `/trips/${unwrappedParams.id}`);
+                const response = await axios.get<Trip>(`/trips/${unwrappedParams.id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                });
 
                 if (!response.data) {
+                    console.error("No trip data received in response");
                     throw new Error('No trip data received');
                 }
 
+                console.log('Trip data received:', response.data);
+                console.log('Is owner from API:', response.data.is_owner);
                 setTrip(response.data);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to fetch trip details:', error);
-                toast.error('Failed to fetch trip details');
+                console.error('Error response:', error.response?.data);
+                console.error('Error status:', error.response?.status);
+                toast.error(error.response?.data?.detail || 'Failed to fetch trip details');
             } finally {
                 setLoading(false);
             }
@@ -247,6 +350,12 @@ export default function TripDetailsPage({ params }: { params: { id: string } } |
                                             <span>Budget: ${trip.budget.toLocaleString()}</span>
                                         </div>
                                     )}
+                                    {!trip.is_owner && trip.owner_name && (
+                                        <div className="inline-flex items-center gap-2 text-gray-600 px-4 py-2 bg-[#fff8f0] rounded-full">
+                                            <span className="font-medium">Trip Owner:</span>
+                                            <span>{trip.owner_name}</span>
+                                        </div>
+                                    )}
                                     {trip.collaborators && Array.isArray(trip.collaborators) && trip.collaborators.length > 0 && (
                                         <div className="inline-flex items-center gap-2 text-gray-600 px-4 py-2 bg-[#fff8f0] rounded-full">
                                             <span className="font-medium">Collaborators:</span>
@@ -262,13 +371,22 @@ export default function TripDetailsPage({ params }: { params: { id: string } } |
                                 >
                                     Add Activity
                                 </button>
-                                <button
-                                    className="bg-[#4ba46c] text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 hover:bg-[#377c68]/90 transition-colors"
-                                    onClick={() => setInviteOpen(true)}
-                                >
-                                    <UserPlus className="h-5 w-5" />
-                                    Invite Collaborators
-                                </button>
+                                {isTripOwner() ? (
+                                    <button
+                                        className="bg-[#4ba46c] text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 hover:bg-[#377c68]/90 transition-colors"
+                                        onClick={() => setInviteOpen(true)}
+                                    >
+                                        <UserPlus className="h-5 w-5" />
+                                        Invite Collaborators
+                                    </button>
+                                ) : (
+                                    <button
+                                        className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition-colors"
+                                        onClick={handleLeaveTrip}
+                                    >
+                                        Leave Trip
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -283,31 +401,71 @@ export default function TripDetailsPage({ params }: { params: { id: string } } |
                                         ×
                                     </button>
                                     <h2 className="text-xl font-bold mb-4 text-[#377c68]">Invite Collaborators</h2>
-                                    <label className="block mb-2 text-gray-700">Search by username</label>
-                                    <input
-                                        type="text"
-                                        value={search}
-                                        onChange={e => handleSearch(e.target.value)}
-                                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4ba46c] mb-2"
-                                        placeholder="Type a username..."
-                                        autoFocus
-                                    />
-                                    {searchLoading && <div className="text-sm text-gray-400 mb-2">Searching...</div>}
-                                    {search && searchResults.length > 0 && (
-                                        <ul className="border rounded-lg bg-white shadow max-h-40 overflow-y-auto mb-2">
-                                            {searchResults.map((user: any) => (
-                                                <li
-                                                    key={user.id}
-                                                    className="px-4 py-2 hover:bg-[#f3a034]/10 cursor-pointer"
-                                                    onClick={() => handleInviteCollaborator(user.id)}
-                                                >
-                                                    {user.username}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                    {search && !searchLoading && searchResults.length === 0 && (
-                                        <div className="text-sm text-gray-400 mb-2">No users found.</div>
+                                    <div className="relative mb-4">
+                                        <label className="block mb-2 text-gray-700">Search by username or email</label>
+                                        <input
+                                            type="text"
+                                            value={search}
+                                            onChange={e => handleSearch(e.target.value)}
+                                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4ba46c] mb-2"
+                                            placeholder="Type a username or email..."
+                                            autoFocus
+                                        />
+                                        {searchLoading && (
+                                            <div className="flex items-center justify-center text-sm text-gray-400 my-2">
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#f3a034] mr-2"></div>
+                                                <span>Searching...</span>
+                                            </div>
+                                        )}
+                                        {search && searchResults.length > 0 && (
+                                            <ul className="absolute z-10 w-full border rounded-lg bg-white shadow-lg max-h-40 overflow-y-auto">
+                                                {searchResults.map((user: any) => (
+                                                    <li
+                                                        key={user.id}
+                                                        className="px-4 py-3 hover:bg-[#f3a034]/10 cursor-pointer border-b last:border-0 transition-colors"
+                                                        onClick={() => handleInviteCollaborator(user.id)}
+                                                    >
+                                                        <div className="flex items-center">
+                                                            <div className="h-8 w-8 rounded-full bg-[#377c68] text-white flex items-center justify-center text-sm font-medium">
+                                                                {user.username.substring(0, 1).toUpperCase()}
+                                                            </div>
+                                                            <div className="ml-3">
+                                                                <div className="font-medium text-[#377c68]">{user.username}</div>
+                                                                <div className="text-xs text-gray-500">{user.email}</div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                        {search && !searchLoading && searchResults.length === 0 && search.length >= 2 && (
+                                            <div className="text-sm text-gray-500 my-2">No users found matching "{search}"</div>
+                                        )}
+                                    </div>
+                                    {trip.collaborators && trip.collaborators.length > 0 && (
+                                        <div className="mt-6">
+                                            <h3 className="text-sm font-medium text-gray-700 mb-2">Current Collaborators:</h3>
+                                            <ul className="space-y-2">
+                                                {trip.collaborators.map((collaborator) => (
+                                                    <li key={collaborator.id} className="flex items-center justify-between p-2 bg-[#377c68]/5 rounded-lg">
+                                                        <div className="flex items-center">
+                                                            <div className="h-6 w-6 rounded-full bg-[#377c68] text-white flex items-center justify-center text-xs font-medium">
+                                                                {collaborator.username.substring(0, 1).toUpperCase()}
+                                                            </div>
+                                                            <span className="ml-2 text-sm">{collaborator.username}</span>
+                                                        </div>
+                                                        {trip.is_owner && (
+                                                            <button
+                                                                onClick={() => handleRemoveCollaborator(collaborator.id, collaborator.username)}
+                                                                className="text-red-500 hover:text-red-700 text-xs font-medium"
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                        )}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
                                     )}
                                 </div>
                             </div>
