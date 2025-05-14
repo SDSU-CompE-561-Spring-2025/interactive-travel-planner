@@ -54,7 +54,7 @@ const Login = () => {
     }
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <div className="min-h-screen flex flex-col items-center justify-center">
             {error && (
                 <Alert variant="destructive" className="mb-6">
                     <AlertCircle className="h-4 w-4" />
