@@ -9,29 +9,40 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 const Login = () => {
     const { login } = useContext(AuthContext);
+    const router = useRouter();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [registerUsername, setRegisterUsername] = useState('');
     const [registerPassword, setRegisterPassword] = useState('');
     const [registerEmail, setRegisterEmail] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError(null);
+        setIsLoading(true);
         try {
             await login(username, password);
+            toast.success('Successfully logged in!');
+            router.push('/');
         } catch (error: any) {
             setError(error?.response?.data?.detail || 'Login failed. Please try again.');
+            toast.error('Login failed. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleRegister = async (e: FormEvent) => {
         e.preventDefault();
         setError(null);
+        setIsLoading(true);
         try {
             const response = await axios.post('http://localhost:8000/auth', {
                 username: registerUsername,
@@ -45,10 +56,16 @@ const Login = () => {
             });
 
             if (response.status === 201) {
+                toast.success('Registration successful!');
+                // Automatically log in after successful registration
                 await login(registerUsername, registerPassword);
+                router.push('/');
             }
         } catch(error: any) {
             setError(error?.response?.data?.detail || 'Registration failed. Please try again.');
+            toast.error('Registration failed. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -77,6 +94,7 @@ const Login = () => {
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                     required
+                                    disabled={isLoading}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -87,9 +105,12 @@ const Login = () => {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
+                                    disabled={isLoading}
                                 />
                             </div>
-                            <Button type="submit" className="w-full">Login</Button>
+                            <Button type="submit" className="w-full" disabled={isLoading}>
+                                {isLoading ? 'Loading...' : 'Login'}
+                            </Button>
                         </form>
                     </CardContent>
                 </Card>
@@ -109,6 +130,7 @@ const Login = () => {
                                     value={registerUsername}
                                     onChange={(e) => setRegisterUsername(e.target.value)}
                                     required
+                                    disabled={isLoading}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -119,6 +141,7 @@ const Login = () => {
                                     value={registerEmail}
                                     onChange={(e) => setRegisterEmail(e.target.value)}
                                     required
+                                    disabled={isLoading}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -129,9 +152,12 @@ const Login = () => {
                                     value={registerPassword}
                                     onChange={(e) => setRegisterPassword(e.target.value)}
                                     required
+                                    disabled={isLoading}
                                 />
                             </div>
-                            <Button type="submit" className="w-full">Register</Button>
+                            <Button type="submit" className="w-full" disabled={isLoading}>
+                                {isLoading ? 'Loading...' : 'Register'}
+                            </Button>
                         </form>
                     </CardContent>
                 </Card>

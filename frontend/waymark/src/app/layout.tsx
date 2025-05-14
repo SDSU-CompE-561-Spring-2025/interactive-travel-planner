@@ -5,6 +5,8 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
+import { Toaster } from 'react-hot-toast'
+import { AuthProvider } from './context/AuthContext'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -21,11 +23,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-background min-h-screen flex flex-col`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <Header />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+            <Header />
+            <main className="flex-grow">{children}</main>
+            <Footer />
+            <Toaster position="top-right" />
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   )

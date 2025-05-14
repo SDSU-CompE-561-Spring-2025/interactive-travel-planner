@@ -3,11 +3,13 @@
 import { createContext, useState, ReactNode } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 interface AuthContextType {
     user: any;
     login: (username: string, password: string) => Promise<void>;
     logout: () => void;
+    isAuthenticated: boolean;
 }
 
 interface AuthResponse {
@@ -17,7 +19,8 @@ interface AuthResponse {
 const defaultContext: AuthContextType = {
     user: null,
     login: async () => {},
-    logout: () => {}
+    logout: () => {},
+    isAuthenticated: false
 };
 
 const AuthContext = createContext<AuthContextType>(defaultContext);
@@ -42,24 +45,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             localStorage.setItem('token', token);
             setUser({ username, token });
             router.push('/');
+            toast.success('Successfully logged in!');
         } catch (error: any) {
             console.error('Login Failed:', {
                 message: error?.message,
                 status: error?.response?.status,
                 data: error?.response?.data
             });
-            throw error; // Re-throw to handle in the component
+            throw error;
         }
     };
 
     const logout = () => {
         setUser(null);
         delete axios.defaults.headers.common['Authorization'];
-        router.push('/login')
+        localStorage.removeItem('token');
+        router.push('/login');
+        toast.success('Successfully logged out!');
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout}}>
+        <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
             {children}
         </AuthContext.Provider>
     );

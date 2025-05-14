@@ -1,14 +1,17 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useContext } from "react"
 import { Button } from "@/components/ui/button"
-import { Menu, X, MapPin } from "lucide-react"
+import { Menu, X, MapPin, LogOut } from "lucide-react"
 import { usePathname } from "next/navigation"
+import AuthContext from "@/app/context/AuthContext"
+import { UserMenu } from "./user-menu"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
+  const { isAuthenticated, logout } = useContext(AuthContext)
 
   const isActive = (path: string) => {
     return pathname === path
@@ -32,33 +35,45 @@ export default function Header() {
           >
             Home
           </Link>
-          <Link
-            href="/dashboard"
-            className={`text-sm font-medium transition-colors hover:text-primary ${
-              isActive("/dashboard") ? "text-primary" : "text-foreground"
-            }`}
-          >
-            My Trips
-          </Link>
-          <Link
-            href="/new-trip"
-            className={`text-sm font-medium transition-colors hover:text-primary ${
-              isActive("/new-trip") ? "text-primary" : "text-foreground"
-            }`}
-          >
-            Create Trip
-          </Link>
+          {isAuthenticated && (
+            <>
+              <Link
+                href="/dashboard"
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive("/dashboard") ? "text-primary" : "text-foreground"
+                }`}
+              >
+                My Trips
+              </Link>
+              <Link
+                href="/new-trip"
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive("/new-trip") ? "text-primary" : "text-foreground"
+                }`}
+              >
+                Create Trip
+              </Link>
+            </>
+          )}
         </nav>
 
         <div className="hidden md:flex items-center space-x-4">
-          <Link href="/login">
-            <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
-              Log In
-            </Button>
-          </Link>
-          <Link href="/signup">
-            <Button className="bg-primary text-white hover:bg-primary/90">Sign Up</Button>
-          </Link>
+          {isAuthenticated ? (
+            <div className="flex items-center space-x-4">
+              <UserMenu />
+            </div>
+          ) : (
+            <>
+              <Link href="/login">
+                <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
+                  Log In
+                </Button>
+              </Link>
+              <Link href="/signup">
+                <Button className="bg-primary text-white hover:bg-primary/90">Sign Up</Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -80,37 +95,55 @@ export default function Header() {
             >
               Home
             </Link>
-            <Link
-              href="/dashboard"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive("/dashboard") ? "text-primary" : "text-foreground"
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              My Trips
-            </Link>
-            <Link
-              href="/new-trip"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive("/new-trip") ? "text-primary" : "text-foreground"
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Create Trip
-            </Link>
-            <div className="flex flex-col space-y-2 pt-2 border-t border-border">
-              <Link href="/login" onClick={() => setIsMenuOpen(false)}>
-                <Button
-                  variant="outline"
-                  className="w-full border-primary text-primary hover:bg-primary hover:text-white"
+            {isAuthenticated ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive("/dashboard") ? "text-primary" : "text-foreground"
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
                 >
-                  Log In
-                </Button>
-              </Link>
-              <Link href="/signup" onClick={() => setIsMenuOpen(false)}>
-                <Button className="w-full bg-primary text-white hover:bg-primary/90">Sign Up</Button>
-              </Link>
-            </div>
+                  My Trips
+                </Link>
+                <Link
+                  href="/new-trip"
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive("/new-trip") ? "text-primary" : "text-foreground"
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Create Trip
+                </Link>
+                <div className="flex flex-col space-y-2 pt-2 border-t border-border">
+                  <Button
+                    variant="outline"
+                    className="w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                    onClick={() => {
+                      logout();
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col space-y-2 pt-2 border-t border-border">
+                <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+                  <Button
+                    variant="outline"
+                    className="w-full border-primary text-primary hover:bg-primary hover:text-white"
+                  >
+                    Log In
+                  </Button>
+                </Link>
+                <Link href="/signup" onClick={() => setIsMenuOpen(false)}>
+                  <Button className="w-full bg-primary text-white hover:bg-primary/90">Sign Up</Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}
