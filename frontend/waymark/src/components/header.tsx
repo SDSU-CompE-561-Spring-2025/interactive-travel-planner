@@ -45,9 +45,9 @@ export default function Header() {
                   My Trips
                 </Link>
                 <Link
-                  href="/new-trip"
+                  href="/planner/start"
                   className={`text-sm font-medium transition-colors hover:text-primary ${
-                    isActive("/new-trip") ? "text-primary" : "text-foreground"
+                    isActive("/planner/start") ? "text-primary" : "text-foreground"
                   }`}
                 >
                   Create Trip
@@ -107,9 +107,9 @@ export default function Header() {
                   My Trips
                 </Link>
                 <Link
-                  href="/new-trip"
+                  href="/planner/start"
                   className={`text-sm font-medium transition-colors hover:text-primary ${
-                    isActive("/new-trip") ? "text-primary" : "text-foreground"
+                    isActive("/planner/start") ? "text-primary" : "text-foreground"
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >

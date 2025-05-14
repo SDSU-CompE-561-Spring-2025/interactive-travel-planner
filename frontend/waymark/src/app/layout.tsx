@@ -24,12 +24,12 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} bg-background min-h-screen flex flex-col`}>
         <AuthProvider>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-            <Header />
-            <main className="flex-grow">{children}</main>
-            <Footer />
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+          <Header />
+          <main className="flex-grow">{children}</main>
+          <Footer />
             <Toaster position="top-right" />
-          </ThemeProvider>
+        </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

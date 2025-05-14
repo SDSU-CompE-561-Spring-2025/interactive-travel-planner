@@ -45,53 +45,53 @@ const Login = () => {
                 </Alert>
             )}
 
-            <Card>
+                <Card>
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
                     <CardDescription className="text-center">
                         Enter your credentials to access your account
                     </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="username">Username</Label>
-                            <Input
-                                id="username"
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                required
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="username">Username</Label>
+                                <Input
+                                    id="username"
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
                                 disabled={isLoading}
                                 placeholder="Enter your username"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="password">Password</Label>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
                                 disabled={isLoading}
                                 placeholder="Enter your password"
-                            />
-                        </div>
+                                />
+                            </div>
                         <Button type="submit" className="w-full" disabled={isLoading}>
                             {isLoading ? 'Signing in...' : 'Sign In'}
                         </Button>
-                    </form>
-                </CardContent>
+                        </form>
+                    </CardContent>
                 <CardFooter className="flex flex-col space-y-4">
                     <div className="text-sm text-center text-muted-foreground">
                         Don't have an account?{' '}
                         <Link href="/signup" className="text-primary hover:underline">
                             Sign up
                         </Link>
-                    </div>
+                            </div>
                 </CardFooter>
-            </Card>
+                </Card>
         </div>
     );
 };

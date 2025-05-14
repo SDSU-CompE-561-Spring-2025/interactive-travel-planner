@@ -54,9 +54,9 @@ export function HeroSection() {
                             transition={{ duration: 0.8, delay: 0.6 }}
                             className="flex flex-col sm:flex-row gap-4"
                         >
-                            <Link href="/new-trip" className="btn-primary group flex items-center gap-2">
+                            <Link href="/planner/start" className="btn-primary group flex items-center gap-2">
                                 <PlusCircle className="h-5 w-5" />
-                                Create New Itinerary
+                                Create New Trip
                                 <ArrowRight className="h-4 w-4 transform transition-transform group-hover:translate-x-1" />
                             </Link>
                         </motion.div>

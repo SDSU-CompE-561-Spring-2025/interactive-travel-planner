@@ -82,7 +82,7 @@ export default function DashboardPage() {
                     <div className="flex justify-between items-center mb-8">
                         <h1 className="text-3xl font-bold text-[#377c68]">My Trips</h1>
                         <Link 
-                            href="/new-trip"
+                            href="/planner/start"
                             className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
                         >
                             <PlusCircle className="h-5 w-5 mr-2" />
@@ -99,7 +99,7 @@ export default function DashboardPage() {
                             <h3 className="text-lg font-medium text-gray-900 mb-2">No trips yet</h3>
                             <p className="text-gray-500 mb-4">Start planning your next adventure!</p>
                             <Link 
-                                href="/new-trip"
+                                href="/planner/start"
                                 className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
                             >
                                 <PlusCircle className="h-5 w-5 mr-2" />

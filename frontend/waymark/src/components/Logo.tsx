@@ -12,7 +12,7 @@ function Logo() {
 				className="object-contain"
 				priority
 			/>
-			<span className="font-bold text-xl text-[#377C68]">
+			<span className="font-bold text-2xl text-[#377C68]">
 				Waymark
 			</span>
 		</Link>

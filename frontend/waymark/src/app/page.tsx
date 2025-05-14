@@ -133,7 +133,7 @@ export default function LandingPage() {
             }
           </p>
           {isAuthenticated ? (
-            <Link href="/new-trip">
+            <Link href="/planner/start">
               <Button size="lg" className="bg-primary text-white hover:bg-primary/90">
                 Create New Trip
               </Button>
