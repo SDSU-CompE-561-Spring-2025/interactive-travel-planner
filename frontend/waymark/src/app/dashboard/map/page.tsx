@@ -21,15 +21,17 @@ interface Trip {
   color?: string;
 }
 
-// Dummy geocoding function (replace with real geocoding if needed)
+// Replacing dummy geocoding with a call to Nominatim (worldwide geocoding)
 async function geocodeLocation(location: string): Promise<[number, number] | null> {
-  // For demo, just return a random lat/lng
-  // In production, use a geocoding API
   if (!location) return null;
-  const hash = location.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  const lat = 40 + (hash % 10);
-  const lng = -74 + (hash % 10);
-  return [lat, lng];
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`);
+    const data = await res.json();
+    if (data && data.length > 0) {
+      return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+    }
+  } catch (e) { console.error("Geocoding error:", e); }
+  return null;
 }
 
 export default function DashboardMapPage() {
