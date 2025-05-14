@@ -36,12 +36,22 @@ export default function CreateItineraryPage({ params }: { params: { id: string }
                 return;
             }
 
+            // Create the request payload with the trip ID
+            const payload = {
+                ...formData,
+                trips: [parseInt(params.id)], // Include the trip ID in the payload
+                // Ensure dates are in ISO format
+                start_date: new Date(formData.start_date).toISOString(),
+                end_date: new Date(formData.end_date).toISOString(),
+            };
+
             await axios.post(
-                `http://localhost:8000/trips/${params.id}/itineraries`,
-                formData,
+                'http://localhost:8000/itineraries/',
+                payload,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
                 }
             );
@@ -50,7 +60,7 @@ export default function CreateItineraryPage({ params }: { params: { id: string }
             router.push(`/trips/${params.id}`);
         } catch (error) {
             console.error('Failed to create itinerary:', error);
-            toast.error('Failed to create itinerary');
+            toast.error('Failed to create itinerary. Please check your input and try again.');
         }
     };
 
@@ -103,11 +113,11 @@ export default function CreateItineraryPage({ params }: { params: { id: string }
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label htmlFor="start_date" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Start Date
+                                        Start Date & Time
                                     </label>
                                     <Input
                                         id="start_date"
-                                        type="date"
+                                        type="datetime-local"
                                         value={formData.start_date}
                                         onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
                                         className="w-full"
@@ -117,11 +127,11 @@ export default function CreateItineraryPage({ params }: { params: { id: string }
 
                                 <div>
                                     <label htmlFor="end_date" className="block text-sm font-medium text-gray-700 mb-2">
-                                        End Date
+                                        End Date & Time
                                     </label>
                                     <Input
                                         id="end_date"
-                                        type="date"
+                                        type="datetime-local"
                                         value={formData.end_date}
                                         onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                                         className="w-full"
