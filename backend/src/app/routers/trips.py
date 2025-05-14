@@ -129,6 +129,7 @@ def create_trip(trip: TripCreate, db: db_dependency, user: user_dependency):
         user_id=current_user_id,
         start_date=trip.start_date if isinstance(trip.start_date, datetime) else datetime.fromisoformat(trip.start_date),
         end_date=trip.end_date if isinstance(trip.end_date, datetime) else datetime.fromisoformat(trip.end_date),
+        color=trip.color
     )
     for itinerary_id in trip.itineraries:
         itinerary = db.query(Itinerary).filter(Itinerary.id == itinerary_id).first()
@@ -151,7 +152,8 @@ def create_trip(trip: TripCreate, db: db_dependency, user: user_dependency):
         "is_owner": True,
         "user_id": current_user_id,
         "collaborators": [],
-        "activities": getattr(db_trip, 'activities', [])
+        "activities": getattr(db_trip, 'activities', []),
+        "color": db_trip.color
     }
 
     return result

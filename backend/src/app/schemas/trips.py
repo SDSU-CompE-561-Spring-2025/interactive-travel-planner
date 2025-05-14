@@ -12,12 +12,14 @@ class TripBase(BaseModel):
     description: Optional[str] = None
     location: Optional[str] = None
     budget: Optional[float] = None
+    color: Optional[str] = None
 
 class TripCreate(TripBase):
     itineraries: List[int] = []
     start_date: datetime
     end_date: datetime
     location: str
+    color: Optional[str] = None
 
 class TripUpdate(BaseModel):
     name: str
