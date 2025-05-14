@@ -214,6 +214,7 @@ export default function TripDetailsPage({ params }: { params: Promise<{ id: stri
                                         <Button
                                             variant="ghost"
                                             className="w-full mt-4 text-[#f3a034] hover:text-[#f3a034]/90"
+                                            onClick={() => router.push(`/itineraries/${itinerary.id}`)}
                                         >
                                             View Itinerary
                                         </Button>

@@ -18,6 +18,7 @@ class Itinerary(Base): #workout --> itinerary
     end_date = Column(DateTime, default=datetime.now(UTC))
 
     trips = relationship('Trip', secondary=itinerary_trip_association, back_populates='itineraries')
+    locations = relationship('Location', back_populates='itinerary', cascade='all, delete-orphan')
 
     @classmethod
     def update_itinerary(cls, db, itinerary_id: int, data: dict):
@@ -33,6 +34,21 @@ class Itinerary(Base): #workout --> itinerary
                     .filter(Trip.id.in_(trip_ids))
                     .all()
             )
+
+        if "locations" in data:
+            from app.models.locations import Location
+            # Delete existing locations
+            db.query(Location).filter(Location.itinerary_id == itinerary_id).delete()
+            # Add new locations
+            for loc_data in data.pop("locations", []):
+                location = Location(
+                    itinerary_id=itinerary_id,
+                    name=loc_data["name"],
+                    description=loc_data.get("description"),
+                    latitude=loc_data["coordinates"][0],
+                    longitude=loc_data["coordinates"][1]
+                )
+                db.add(location)
 
         # 2) handle real columns
         mapper = inspect(cls)
