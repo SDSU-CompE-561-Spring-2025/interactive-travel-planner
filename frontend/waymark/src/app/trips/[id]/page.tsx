@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { Calendar, MapPin, ArrowLeft } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, DollarSign } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
@@ -14,8 +14,10 @@ interface Trip {
     name: string;
     description: string;
     location: string;
+    budget: number | null;
     start_date: string;
     end_date: string;
+    itineraries: Itinerary[];
 }
 
 interface Itinerary {
@@ -28,7 +30,6 @@ interface Itinerary {
 
 export default function TripDetailsPage({ params }: { params: { id: string } }) {
     const [trip, setTrip] = useState<Trip | null>(null);
-    const [itineraries, setItineraries] = useState<Itinerary[]>([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
@@ -54,27 +55,34 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                         Authorization: `Bearer ${token}`
                     }
                 });
-                setTrip(response.data);
 
-                // Fetch itineraries
-                const itinerariesResponse = await axios.get<Itinerary[]>(
-                    `http://localhost:8000/trips/${params.id}/itineraries`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    }
-                );
-                setItineraries(itinerariesResponse.data);
+                if (!response.data) {
+                    throw new Error('No trip data received');
+                }
+
+                console.log('Fetched trip details:', response.data);
+                setTrip(response.data);
             } catch (error) {
                 console.error('Failed to fetch trip details:', error);
-                toast.error('Failed to fetch trip details');
+                if (error && typeof error === 'object' && 'response' in error) {
+                    const axiosError = error as { response?: { status?: number; data?: any; headers?: any } };
+                    console.error('Error details:', {
+                        status: axiosError.response?.status,
+                        data: axiosError.response?.data,
+                        headers: axiosError.response?.headers
+                    });
+                    toast.error(`Failed to fetch trip details: ${axiosError.response?.data?.detail || 'Unknown error'}`);
+                } else {
+                    toast.error('Failed to fetch trip details');
+                }
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchTripDetails();
+        if (params.id) {
+            fetchTripDetails();
+        }
     }, [params.id, router]);
 
     if (loading) {
@@ -123,11 +131,19 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                                     <ArrowLeft className="h-5 w-5" />
                                     Back
                                 </Link>
-                                <div className="inline-flex items-center gap-2 text-gray-600 px-4 py-2 bg-[#fff8f0] rounded-full">
-                                    <Calendar className="h-5 w-5 text-[#377c68]" />
-                                    <span className="whitespace-nowrap">
-                                        {formatDate(trip.start_date)} - {formatDate(trip.end_date)}
-                                    </span>
+                                <div className="flex flex-col gap-2">
+                                    <div className="inline-flex items-center gap-2 text-gray-600 px-4 py-2 bg-[#fff8f0] rounded-full">
+                                        <Calendar className="h-5 w-5 text-[#377c68]" />
+                                        <span className="whitespace-nowrap">
+                                            {formatDate(trip.start_date)} - {formatDate(trip.end_date)}
+                                        </span>
+                                    </div>
+                                    {trip.budget && (
+                                        <div className="inline-flex items-center gap-2 text-gray-600 px-4 py-2 bg-[#fff8f0] rounded-full">
+                                            <DollarSign className="h-5 w-5 text-[#377c68]" />
+                                            <span>Budget: ${trip.budget.toLocaleString()}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <Button
@@ -142,7 +158,7 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                         <div>
                             <h2 className="text-2xl font-bold text-[#377c68] mb-6">Itineraries</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {itineraries.map((itinerary) => (
+                                {trip?.itineraries.map((itinerary) => (
                                     <div
                                         key={itinerary.id}
                                         className="bg-[#fff8f0] rounded-lg p-6 hover:shadow-md transition-shadow"
