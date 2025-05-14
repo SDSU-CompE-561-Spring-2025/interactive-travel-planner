@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { PlusCircle, MapPin, Calendar, Trash2 } from 'lucide-react';
+import { MapPin, Calendar, Trash2, Users, Globe } from 'lucide-react';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { Button } from '@/components/ui/button';
@@ -15,11 +15,20 @@ interface Trip {
     description: string;
     start_date: string;
     end_date: string;
+    location: string;
+    collaborators?: number;
+}
+
+interface UserStats {
+    trips: number;
+    countries: number;
+    friends: number;
 }
 
 export default function DashboardPage() {
     const [trips, setTrips] = useState<Trip[]>([]);
     const [loading, setLoading] = useState(true);
+    const [userStats, setUserStats] = useState<UserStats>({ trips: 0, countries: 0, friends: 0 });
     const router = useRouter();
 
     const fetchTrips = async () => {
@@ -77,63 +86,156 @@ export default function DashboardPage() {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-[#fff8f0] py-12">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center mb-8">
-                        <h1 className="text-3xl font-bold text-[#377c68]">My Trips</h1>
-                        <Link 
-                            href="/planner/start"
-                            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-                        >
-                            <PlusCircle className="h-5 w-5 mr-2" />
-                            Create New Trip
-                        </Link>
-                    </div>
+            <div className="min-h-screen bg-[#fff8f0]">
+                {/* Navigation Tabs */}
+                <div className="flex justify-center gap-4 py-4 bg-white shadow-sm mb-8">
+                    <Button
+                        variant="ghost"
+                        className="text-[#f3a034] font-semibold flex items-center gap-2 px-6 py-2 border-b-2 border-[#f3a034]"
+                    >
+                        <Calendar className="h-5 w-5" />
+                        My Trips
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        className="text-gray-600 font-semibold flex items-center gap-2 px-6 py-2"
+                    >
+                        <Users className="h-5 w-5" />
+                        Friends
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        className="text-gray-600 font-semibold flex items-center gap-2 px-6 py-2"
+                    >
+                        <Globe className="h-5 w-5" />
+                        Travel Map
+                    </Button>
+                </div>
 
-                    {loading ? (
-                        <div className="text-center py-12">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#f3a034] mx-auto"></div>
-                        </div>
-                    ) : trips.length === 0 ? (
-                        <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">No trips yet</h3>
-                            <p className="text-gray-500 mb-4">Start planning your next adventure!</p>
-                            <Link 
-                                href="/planner/start"
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-                            >
-                                <PlusCircle className="h-5 w-5 mr-2" />
-                                Create Your First Trip
-                            </Link>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {trips.map((trip) => (
-                                <Link 
-                                    key={trip.id}
-                                    href={`/trips/${trip.id}`}
-                                    className="group bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-200 relative"
-                                >
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        onClick={(e) => handleDelete(trip.id, e)}
-                                    >
-                                        <Trash2 className="h-5 w-5" />
-                                    </Button>
-                                    <h3 className="text-xl font-semibold text-[#377c68] mb-2">{trip.name}</h3>
-                                    <div className="flex items-center gap-2 text-[#f3a034]">
-                                        <Calendar className="h-4 w-4" />
-                                        <span>{new Date(trip.start_date).toLocaleDateString()} - {new Date(trip.end_date).toLocaleDateString()}</span>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex gap-8">
+                        {/* Profile Section */}
+                        <div className="w-64 flex-shrink-0">
+                            <div className="bg-white rounded-lg p-6 shadow-sm">
+                                <div className="flex flex-col items-center">
+                                    <div className="w-24 h-24 bg-[#377c68]/10 rounded-full mb-4 flex items-center justify-center">
+                                        <Users className="h-12 w-12 text-[#377c68]" />
                                     </div>
-                                    {trip.description && (
-                                        <p className="mt-2 text-gray-600 line-clamp-2">{trip.description}</p>
-                                    )}
-                                </Link>
-                            ))}
+                                    <h2 className="text-xl font-semibold mb-1">User Name</h2>
+                                    <div className="flex items-center text-gray-600 mb-4">
+                                        <MapPin className="h-4 w-4 mr-1" />
+                                        <span>No location set</span>
+                                    </div>
+                                    <p className="text-gray-600 text-sm text-center mb-4">
+                                        No bio yet
+                                    </p>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full"
+                                    >
+                                        Edit Profile
+                                    </Button>
+                                </div>
+
+                                <div className="mt-6">
+                                    <h3 className="font-semibold mb-4">Stats</h3>
+                                    <div className="grid grid-cols-3 gap-4 text-center">
+                                        <div>
+                                            <div className="text-2xl font-bold text-[#377c68]">{userStats.trips}</div>
+                                            <div className="text-sm text-gray-600">Trips</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-2xl font-bold text-[#377c68]">{userStats.countries}</div>
+                                            <div className="text-sm text-gray-600">Countries</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-2xl font-bold text-[#377c68]">{userStats.friends}</div>
+                                            <div className="text-sm text-gray-600">Friends</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6">
+                                    <h3 className="font-semibold mb-4">Social</h3>
+                                    <p className="text-gray-600 text-sm">No social links added</p>
+                                </div>
+                            </div>
                         </div>
-                    )}
+
+                        {/* Main Content */}
+                        <div className="flex-1">
+                            <div className="flex justify-between items-center mb-6">
+                                <h1 className="text-2xl font-bold text-[#377c68]">My Trips</h1>
+                                <Link 
+                                    href="/planner/start"
+                                    className="bg-[#f3a034] text-white px-4 py-2 rounded-md hover:bg-[#f3a034]/90 transition-colors flex items-center gap-2"
+                                >
+                                    Create New Trip
+                                </Link>
+                            </div>
+
+                            {loading ? (
+                                <div className="text-center py-12">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#f3a034] mx-auto"></div>
+                                </div>
+                            ) : trips.length === 0 ? (
+                                <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                                    <h3 className="text-lg font-medium text-gray-900 mb-2">No trips yet</h3>
+                                    <p className="text-gray-500 mb-4">Start planning your next adventure!</p>
+                                    <Link 
+                                        href="/planner/start"
+                                        className="bg-[#f3a034] text-white px-4 py-2 rounded-md hover:bg-[#f3a034]/90 transition-colors inline-flex items-center gap-2"
+                                    >
+                                        Create Your First Trip
+                                    </Link>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    {trips.map((trip) => (
+                                        <Link 
+                                            key={trip.id}
+                                            href={`/trips/${trip.id}`}
+                                            className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
+                                        >
+                                            <div className="h-40 bg-[#377c68]/10 relative flex items-center justify-center">
+                                                <Globe className="h-16 w-16 text-[#377c68]/30" />
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="absolute top-2 right-2 text-red-500 bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    onClick={(e) => handleDelete(trip.id, e)}
+                                                >
+                                                    <Trash2 className="h-5 w-5" />
+                                                </Button>
+                                            </div>
+                                            <div className="p-4">
+                                                <h3 className="text-xl font-semibold text-[#377c68] mb-2">{trip.name}</h3>
+                                                <div className="flex items-center gap-2 text-gray-600 mb-2">
+                                                    <MapPin className="h-4 w-4" />
+                                                    <span>{trip.location || 'No location set'}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-gray-600">
+                                                    <Calendar className="h-4 w-4" />
+                                                    <span>{new Date(trip.start_date).toLocaleDateString()} - {new Date(trip.end_date).toLocaleDateString()}</span>
+                                                </div>
+                                                {trip.collaborators && (
+                                                    <div className="mt-3 text-sm text-gray-600">
+                                                        Collaborators: {trip.collaborators}
+                                                    </div>
+                                                )}
+                                                <Button
+                                                    variant="ghost"
+                                                    className="w-full mt-4 text-[#f3a034] hover:text-[#f3a034]/90"
+                                                >
+                                                    View Trip
+                                                </Button>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
         </ProtectedRoute>
