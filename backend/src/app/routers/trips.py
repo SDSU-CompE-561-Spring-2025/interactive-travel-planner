@@ -47,6 +47,8 @@ def get_trips(db: db_dependency, user: user_dependency):
             ],
             "color": trip.color,
             "image_url": trip.image_url,
+            "latitude": trip.latitude,
+            "longitude": trip.longitude,
         }
         owner = db.query(User).filter(User.id == trip.user_id).first()
         d["owner_name"] = owner.username if owner else None
@@ -74,7 +76,9 @@ def create_trip(
     end_date: str = Form(...),
     itineraries: str = Form("[]"),
     color: str = Form(None),
-    image: UploadFile = File(None)
+    image: UploadFile = File(None),
+    latitude: float = Form(None),
+    longitude: float = Form(None)
 ):
     print("name:", name)
     print("description:", description)
@@ -112,7 +116,9 @@ def create_trip(
         start_date=datetime.fromisoformat(start_date),
         end_date=datetime.fromisoformat(end_date),
         image_url=image_url,
-        color=color
+        color=color,
+        latitude=latitude,
+        longitude=longitude
     )
     for itinerary_id in itineraries_list:
         itinerary = db.query(Itinerary).filter(Itinerary.id == itinerary_id).first()

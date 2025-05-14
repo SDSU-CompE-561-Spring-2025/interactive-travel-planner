@@ -8,6 +8,8 @@ class TripBase(BaseModel):
     description: Optional[str] = None
     image_url: Optional[str] = None
     color: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 class TripCreate(TripBase):
     itineraries: List[int] = []
@@ -22,6 +24,8 @@ class TripUpdate(BaseModel):
     itineraries: List[int]
     image_url: Optional[str] = None
     color: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
     class Config:
         orm_mode = True

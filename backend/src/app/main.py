@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import auth, itineraries, trips
+from .routers import auth, itineraries, trips, users
 from fastapi.staticfiles import StaticFiles
 
 from .database import Base, engine
@@ -26,3 +26,4 @@ def health_check():
 app.include_router(auth.router)
 app.include_router(itineraries.router)
 app.include_router(trips.router)
+app.include_router(users.router)

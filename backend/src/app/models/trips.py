@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
 from datetime import UTC, datetime
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -22,6 +22,8 @@ class Trip(Base): # routines --> trips
     end_date = Column(DateTime, default=datetime.now(UTC))
     image_url = Column(String, nullable=True)
     color = Column(String, nullable=True)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
 
     itineraries = relationship('Itinerary', secondary=itinerary_trip_association, back_populates='trips')
     collaborators = relationship(
