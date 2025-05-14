@@ -21,6 +21,15 @@ class UserProfileUpdate(BaseModel):
     location: Optional[str] = None
     social: Optional[List[SocialLink]] = None
 
+@router.get("/search")
+def search_users(query: str, db: db_dependency = None, user: user_dependency = None):
+    if not query or len(query) < 2:
+        return []
+    users = db.query(User).filter(
+        (User.username.ilike(f"%{query}%")) | (User.email.ilike(f"%{query}%"))
+    ).all()
+    return [{"id": u.id, "username": u.username, "email": u.email} for u in users]
+
 @router.get("/me/friends")
 def get_friends(db: db_dependency, user: user_dependency):
     current_user = db.query(User).filter(User.id == user.get('id')).first()

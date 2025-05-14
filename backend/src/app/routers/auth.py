@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from dotenv import load_dotenv
 import os
 from app.models.user import User
-from app.deps import db_dependency, bcrypt_context
+from app.deps import db_dependency, bcrypt_context, user_dependency
 from app.schemas.user import UserCreateRequest, Token
 from app.services.user import create_access_token, authenticate_user
 
@@ -38,3 +38,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     token = create_access_token(user.username, user.id, timedelta(minutes=20))
 
     return {'access_token': token, 'token_type': 'bearer'}
+
+@router.get("/me")
+def get_me(user: user_dependency):
+    return user

@@ -42,6 +42,7 @@ def get_trips(db: db_dependency, user: user_dependency):
                 } for it in trip.itineraries
             ],
             "is_owner": is_owner,
+            "user_id": trip.user_id,
             "collaborators": [
                 {"id": u.id, "username": u.username, "email": u.email} for u in trip.collaborators
             ],
@@ -60,21 +61,70 @@ def get_trips(db: db_dependency, user: user_dependency):
 
 @router.get("/{trip_id}")
 def get_trip(trip_id: int, db: db_dependency, user: user_dependency):
-    trip = db.query(Trip).options(joinedload(Trip.itineraries)).filter(Trip.id == trip_id, Trip.user_id == user.get('id')).first()
+    user_id = user.get('id')
+    # Query trip with collaborators and itineraries
+    trip = db.query(Trip).options(
+        joinedload(Trip.itineraries),
+        joinedload(Trip.collaborators)
+    ).filter(Trip.id == trip_id).first()
+
+    # Check if trip exists
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")
-    return trip
+
+    # Check if user is owner or collaborator
+    if user_id != trip.user_id and not any(c.id == user_id for c in trip.collaborators):
+        raise HTTPException(status_code=403, detail="Not authorized to view this trip")
+
+    # Return trip in a standardized format like we do in get_trips
+    is_owner = trip.user_id == user_id
+    result = {
+        "id": trip.id,
+        "name": trip.name,
+        "description": trip.description,
+        "location": trip.location,
+        "budget": trip.budget,
+        "start_date": trip.start_date.isoformat() if trip.start_date else None,
+        "end_date": trip.end_date.isoformat() if trip.end_date else None,
+        "itineraries": [
+            {
+                "id": it.id,
+                "name": it.name,
+                "description": it.description,
+                "start_date": it.start_date.isoformat() if it.start_date else None,
+                "end_date": it.end_date.isoformat() if it.end_date else None,
+                "activities": getattr(it, 'activities', [])
+            } for it in trip.itineraries
+        ],
+        "is_owner": is_owner,
+        "user_id": trip.user_id,
+        "collaborators": [
+            {"id": u.id, "username": u.username, "email": u.email} for u in trip.collaborators
+        ],
+        "color": trip.color,
+        "image_url": trip.image_url,
+        "latitude": trip.latitude,
+        "longitude": trip.longitude
+    }
+
+    # Add owner details
+    owner = db.query(User).filter(User.id == trip.user_id).first()
+    result["owner_name"] = owner.username if owner else None
+    result["owner_email"] = owner.email if owner else None
+
+    return result
 
 
 @router.post("/")
 def create_trip(trip: TripCreate, db: db_dependency, user: user_dependency):
     from datetime import datetime
+    current_user_id = user.get('id')
     db_trip = Trip(
         name=trip.name,
         description=trip.description,
         location=trip.location,
         budget=trip.budget,
-        user_id=user.get('id'),
+        user_id=current_user_id,
         start_date=trip.start_date if isinstance(trip.start_date, datetime) else datetime.fromisoformat(trip.start_date),
         end_date=trip.end_date if isinstance(trip.end_date, datetime) else datetime.fromisoformat(trip.end_date),
     )
@@ -85,7 +135,24 @@ def create_trip(trip: TripCreate, db: db_dependency, user: user_dependency):
     db.add(db_trip)
     db.commit()
     db.refresh(db_trip)
-    return db_trip
+
+    # Return in a consistent format with is_owner flag
+    result = {
+        "id": db_trip.id,
+        "name": db_trip.name,
+        "description": db_trip.description,
+        "location": db_trip.location,
+        "budget": db_trip.budget,
+        "start_date": db_trip.start_date.isoformat() if db_trip.start_date else None,
+        "end_date": db_trip.end_date.isoformat() if db_trip.end_date else None,
+        "itineraries": [],
+        "is_owner": True,
+        "user_id": current_user_id,
+        "collaborators": [],
+        "activities": getattr(db_trip, 'activities', [])
+    }
+
+    return result
 
 @router.put("/")
 def update_trip(
@@ -150,7 +217,7 @@ def add_collaborator(trip_id: int, db: db_dependency, user: user_dependency, bod
     trip = db.query(Trip).filter(Trip.id == trip_id, Trip.user_id == user.get('id')).first()
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found or not owned by you")
-    collaborator = db.query(Itinerary.__table__.metadata.tables['users']).filter_by(id=user_id).first()
+    collaborator = db.query(User).filter(User.id == user_id).first()
     if not collaborator:
         raise HTTPException(status_code=404, detail="User not found")
     if any(u.id == user_id for u in trip.collaborators):
@@ -193,3 +260,26 @@ def search_users(query: str, db: db_dependency = None, user: user_dependency = N
         (User.username.ilike(f"%{query}%")) | (User.email.ilike(f"%{query}%"))
     ).all()
     return [{"id": u.id, "username": u.username, "email": u.email} for u in users]
+
+@router.delete("/{trip_id}/collaborators/leave")
+def leave_trip(trip_id: int, db: db_dependency, user: user_dependency):
+    trip = db.query(Trip).filter(Trip.id == trip_id).first()
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+
+    # Check if user is a collaborator (not the owner)
+    current_user_id = user.get('id')
+    if current_user_id == trip.user_id:
+        raise HTTPException(status_code=400, detail="Trip owner cannot leave their own trip")
+
+    # Find the current user in the collaborators
+    current_user = db.query(User).filter(User.id == current_user_id).first()
+    if not current_user or current_user not in trip.collaborators:
+        raise HTTPException(status_code=404, detail="You are not a collaborator on this trip")
+
+    # Remove user from collaborators
+    trip.collaborators.remove(current_user)
+    db.commit()
+    db.refresh(trip)
+
+    return {"detail": "You have left the trip successfully"}
