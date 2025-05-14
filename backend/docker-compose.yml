@@ -13,7 +13,7 @@ services:
       - app_network
 
   db:
-    image: postgres:latest
+    image: postgres:15
     container_name: postgres_db_1
     volumes:
       - postgres_data:/var/lib/postgresql/data

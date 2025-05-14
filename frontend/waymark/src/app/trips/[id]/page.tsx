@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { Calendar, MapPin, ArrowLeft, DollarSign } from 'lucide-react';
@@ -28,7 +28,8 @@ interface Itinerary {
     end_date: string;
 }
 
-export default function TripDetailsPage({ params }: { params: { id: string } }) {
+export default function TripDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+    const resolvedParams = use(params);
     const [trip, setTrip] = useState<Trip | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
@@ -50,7 +51,7 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                     return;
                 }
 
-                const response = await axios.get<Trip>(`http://localhost:8000/trips/${params.id}`, {
+                const response = await axios.get<Trip>(`http://localhost:8000/trips/${resolvedParams.id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -86,10 +87,10 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
             }
         };
 
-        if (params.id) {
+        if (resolvedParams.id) {
             fetchTripDetails();
         }
-    }, [params.id, router]);
+    }, [resolvedParams.id, router]);
 
     if (loading) {
         return (
@@ -163,7 +164,7 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                             </div>
                             <Button
                                 className="bg-[#f3a034] text-white hover:bg-[#f3a034]/90"
-                                onClick={() => router.push(`/trips/${params.id}/create-itinerary`)}
+                                onClick={() => router.push(`/trips/${resolvedParams.id}/create-itinerary`)}
                             >
                                 Create Itinerary
                             </Button>

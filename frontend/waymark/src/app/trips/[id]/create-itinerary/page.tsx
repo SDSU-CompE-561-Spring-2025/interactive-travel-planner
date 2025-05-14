@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { Calendar, ArrowLeft } from 'lucide-react';
@@ -18,7 +18,8 @@ interface CreateItineraryForm {
     end_date: string;
 }
 
-export default function CreateItineraryPage({ params }: { params: { id: string } }) {
+export default function CreateItineraryPage({ params }: { params: Promise<{ id: string }> }) {
+    const resolvedParams = use(params);
     const router = useRouter();
     const [formData, setFormData] = useState<CreateItineraryForm>({
         name: '',
@@ -36,9 +37,17 @@ export default function CreateItineraryPage({ params }: { params: { id: string }
                 return;
             }
 
+            // Convert dates to ISO format and include trip ID in the payload
+            const payload = {
+                ...formData,
+                start_date: new Date(formData.start_date).toISOString(),
+                end_date: new Date(formData.end_date).toISOString(),
+                trips: [parseInt(resolvedParams.id)] // Include the trip ID in the trips array
+            };
+
             await axios.post(
-                `http://localhost:8000/trips/${params.id}/itineraries`,
-                formData,
+                'http://localhost:8000/itineraries/',
+                payload,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -47,10 +56,15 @@ export default function CreateItineraryPage({ params }: { params: { id: string }
             );
 
             toast.success('Itinerary created successfully!');
-            router.push(`/trips/${params.id}`);
+            router.push(`/trips/${resolvedParams.id}`);
         } catch (error) {
             console.error('Failed to create itinerary:', error);
-            toast.error('Failed to create itinerary');
+            if (error && typeof error === 'object' && 'response' in error) {
+                const axiosError = error as { response?: { data?: { detail?: string } } };
+                toast.error(`Failed to create itinerary: ${axiosError.response?.data?.detail || 'Unknown error'}`);
+            } else {
+                toast.error('Failed to create itinerary');
+            }
         }
     };
 
@@ -60,7 +74,7 @@ export default function CreateItineraryPage({ params }: { params: { id: string }
                 <div className="max-w-2xl mx-auto px-4 py-8">
                     <div className="mb-8">
                         <Link 
-                            href={`/trips/${params.id}`}
+                            href={`/trips/${resolvedParams.id}`}
                             className="text-[#377c68] hover:text-[#377c68]/80 flex items-center gap-2"
                         >
                             <ArrowLeft className="h-5 w-5" />

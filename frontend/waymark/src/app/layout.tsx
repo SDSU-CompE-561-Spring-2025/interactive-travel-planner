@@ -21,15 +21,21 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} bg-background min-h-screen flex flex-col`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} bg-background min-h-screen flex flex-col`} suppressHydrationWarning>
         <AuthProvider>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <Header />
-          <main className="flex-grow">{children}</main>
-          <Footer />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+            storageKey="waymark-theme"
+          >
+            <Header />
+            <main className="flex-grow">{children}</main>
+            <Footer />
             <Toaster position="top-right" />
-        </ThemeProvider>
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>
