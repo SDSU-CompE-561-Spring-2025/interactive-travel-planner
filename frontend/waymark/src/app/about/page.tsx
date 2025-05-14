@@ -7,43 +7,43 @@ const team = [
     name: "Ethan Quach",
     role: "Tweak",
     desc: "GYM GYM GYM",
-    img: "/etan.png",
+    img: "https://i.postimg.cc/rpvRtMgD/image.png",
   },
   {
     name: "Kohki Kita",
     role: "UX Designer",
     desc: "I love databases",
-    img: "/kookie.png",
+    img: "https://i.postimg.cc/kGy2Z8CS/image.png",
   },
   {
     name: "Micah Davis",
     role: "Backend Engineer",
     desc: "please get me out of here",
-    img: "/mog.jpg",
+    img: "https://i.postimg.cc/Sx1MkWM7/image.png",
   },
   {
     name: "Riley McGregor",
     role: "Product Manager",
     desc: "Oh by the way, I'm a pilot",
-    img: "/ryry.png",
+    img: "https://i.postimg.cc/gJJkg5Jv/Screenshot-2025-05-14-122241.png",
   },
   {
     name: "Rojin Osman",
     role: "Frontend Engineer",
     desc: "Miss Leader",
-    img: "/brickjin.png",
+    img: "https://i.postimg.cc/fLmtcpgB/image.png",
   },
   {
     name: "Tri & Ugur",
     role: "Community & Support",
     desc: "Answers faster than your group chat",
-    img: "/placeholder-user.jpg",
+    img: "https://i.postimg.cc/j5bg40Sj/image.png",
   },
 ]
 
 export default function AboutUsPage() {
   return (
-    <div className="flex flex-col items-center w-full bg-white pt-8">
+    <div className="flex flex-col items-center w-full min-h-screen bg-[#f3eee5] pt-8">
       <div className="w-full max-w-5xl px-4">
         {/* Header */}
         <div className="text-center" style={{ marginBottom: '5rem' }}>
@@ -66,16 +66,14 @@ export default function AboutUsPage() {
 
                   {/* Image */}
                   <div className="absolute inset-0 rounded-full overflow-hidden">
-                    <Image
+                    <img
                       src={member.img}
                       alt={`Photo of ${member.name}`}
                       width={128}
                       height={128}
                       className="team-member-image rounded-full"
-                      priority
                       onError={(e) => {
-                        const target = e.target as HTMLElement;
-                        target.parentElement?.classList.add('hidden');
+                        e.currentTarget.style.display = 'none';
                       }}
                     />
                   </div>

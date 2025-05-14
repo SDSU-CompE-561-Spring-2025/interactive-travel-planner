@@ -10,6 +10,7 @@ interface TripPlannerData {
     activities: string[];
     budget: number;
     collaborators: string[];
+    color: string;
 }
 
 interface TripPlannerContextType {
@@ -26,6 +27,7 @@ const defaultTripData: TripPlannerData = {
     activities: [],
     budget: 0,
     collaborators: [],
+    color: '#e9f1ef',
 };
 
 const TripPlannerContext = createContext<TripPlannerContextType | undefined>(undefined);
@@ -57,4 +59,4 @@ export function useTripPlanner() {
         throw new Error('useTripPlanner must be used within a TripPlannerProvider');
     }
     return context;
-} 
+}

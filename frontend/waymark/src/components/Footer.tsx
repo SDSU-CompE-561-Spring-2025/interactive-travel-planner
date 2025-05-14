@@ -46,7 +46,7 @@ export default function Footer() {
             <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-2 text-sm text-white/80">
               <li>
-                <Link href="#" className="hover:text-white">
+                <Link href="/about" className="hover:text-white">
                   About Us
                 </Link>
               </li>
@@ -61,7 +61,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-white">
+                <Link href="/contact" className="hover:text-white">
                   Contact
                 </Link>
               </li>

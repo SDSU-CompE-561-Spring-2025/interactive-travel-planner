@@ -18,6 +18,7 @@ interface Trip {
   location: string;
   start_date: string;
   end_date: string;
+  color?: string;
 }
 
 // Dummy geocoding function (replace with real geocoding if needed)
@@ -59,7 +60,7 @@ export default function DashboardMapPage() {
                   startDate: trip.start_date ? new Date(trip.start_date) : undefined,
                   endDate: trip.end_date ? new Date(trip.end_date) : undefined,
                   comments: trip.location,
-                  color: "#f3a034",
+                  color: trip.color || "#f3a034",
                 }
               : null;
           })

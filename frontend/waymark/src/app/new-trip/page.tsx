@@ -36,7 +36,8 @@ export default function NewTrip() {
     budget: "",
     start_date: "",
     end_date: "",
-    itineraries: [] as number[]
+    itineraries: [] as number[],
+    color: "#e9f1ef" // default color
   });
 
   const handleSubmit = async (e: FormEvent) => {
@@ -163,6 +164,20 @@ export default function NewTrip() {
                 placeholder="Describe your trip"
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="color">Trip Color Theme</Label>
+              <input
+                id="color"
+                name="color"
+                type="color"
+                value={formData.color}
+                onChange={handleChange}
+                className="w-16 h-10 p-0 border-none bg-transparent cursor-pointer"
+                style={{ background: 'none' }}
+              />
+              <p className="text-sm text-gray-500">Pick a color for your trip's theme.</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

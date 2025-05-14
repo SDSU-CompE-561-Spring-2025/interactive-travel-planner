@@ -12,6 +12,7 @@ export default function NameStep() {
     const tripId = useId();
     const { tripData, updateTripData } = useTripPlanner();
     const [name, setName] = useState(tripData.name || '');
+    const [color, setColor] = useState(tripData.color || '#e9f1ef');
     const [error, setError] = useState('');
 
     const handleNext = () => {
@@ -20,11 +21,12 @@ export default function NameStep() {
             return;
         }
         updateTripData('name', name.trim());
+        updateTripData('color', color);
         router.push('/planner/dates');
     };
 
     return (
-        <motion.div 
+        <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="min-h-screen bg-[#fff8f0] py-12"
@@ -51,28 +53,38 @@ export default function NameStep() {
                     </div>
 
                     <div className="space-y-6">
-                        <div className="space-y-2">
-                            <label 
+                        <div className="flex items-center gap-2 mb-2">
+                            <label
                                 htmlFor={tripId}
                                 className="block text-sm font-medium text-[#377c68]"
                             >
                                 Trip Name
                             </label>
-                            <input 
-                                id={tripId}
-                                type="text"
-                                value={name}
-                                onChange={(e) => {
-                                    setName(e.target.value);
-                                    setError('');
-                                }}
-                                placeholder="e.g., Summer in Paris 2024"
-                                className={`w-full px-4 py-3 rounded-lg border ${error ? 'border-red-500' : 'border-[#4ba46c]/30'} focus:outline-none focus:ring-2 focus:ring-[#f3a034] bg-white text-[#377c68]`}
+                            <input
+                                type="color"
+                                id="color"
+                                name="color"
+                                value={color}
+                                onChange={e => setColor(e.target.value)}
+                                className="w-6 h-6 p-0 cursor-pointer bg-transparent appearance-none outline-none border-0 shadow-none align-middle"
+                                style={{ minWidth: '1.5rem' }}
+                                aria-label="Pick trip color"
                             />
-                            {error && (
-                                <p className="text-sm text-red-500 mt-1">{error}</p>
-                            )}
                         </div>
+                        <input
+                            id={tripId}
+                            type="text"
+                            value={name}
+                            onChange={(e) => {
+                                setName(e.target.value);
+                                setError('');
+                            }}
+                            placeholder="e.g., Summer in Paris 2024"
+                            className={`w-full px-4 py-3 rounded-lg border ${error ? 'border-red-500' : 'border-[#4ba46c]/30'} focus:outline-none focus:ring-2 focus:ring-[#f3a034] bg-white text-[#377c68]`}
+                        />
+                        {error && (
+                            <p className="text-sm text-red-500 mt-1">{error}</p>
+                        )}
 
                         <div className="flex justify-between gap-4 pt-4">
                             <motion.button
@@ -97,4 +109,4 @@ export default function NameStep() {
             </div>
         </motion.div>
     );
-} 
+}

@@ -81,6 +81,7 @@ export default function ReviewStep() {
                 end_date: tripData.endDate,
                 activities: tripData.activities || [],
                 itineraries: [],
+                color: tripData.color,
             };
 
             console.log('Creating trip with data:', tripPayload);

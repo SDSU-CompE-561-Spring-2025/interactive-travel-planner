@@ -24,6 +24,7 @@ interface Trip {
     budget: number | null;
     collaborators?: Collaborator[];
     owner_name?: string;
+    color?: string;
 }
 
 export default function DashboardPage() {
@@ -121,59 +122,72 @@ export default function DashboardPage() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {trips.map((trip) => (
-                                <Link
-                                    key={trip.id}
-                                    href={`/trips/${trip.id}`}
-                                    className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
-                                >
-                                    <div className="h-40 bg-[#377c68]/10 relative flex items-center justify-center">
-                                        <Globe className="h-16 w-16 text-[#377c68]/30" />
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="absolute top-2 right-2 text-red-500 bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            onClick={(e) => handleDelete(trip.id, e)}
+                            {trips.map((trip) => {
+                                // Convert hex color to rgba with 0.2 alpha for background
+                                function hexToRgba(hex: string, alpha: number) {
+                                    let c = hex.replace('#', '');
+                                    if (c.length === 3) c = c.split('').map(x => x + x).join('');
+                                    const num = parseInt(c, 16);
+                                    return `rgba(${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}, ${alpha})`;
+                                }
+                                const bgColor = trip.color ? hexToRgba(trip.color, 0.2) : 'rgba(55,124,104,0.1)';
+                                return (
+                                    <Link
+                                        key={trip.id}
+                                        href={`/trips/${trip.id}`}
+                                        className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
+                                    >
+                                        <div
+                                            className="h-40 relative flex items-center justify-center"
+                                            style={{ backgroundColor: trip.color || '#377c68' }}
                                         >
-                                            <Trash2 className="h-5 w-5" />
-                                        </Button>
-                                    </div>
-                                    <div className="p-4">
-                                        <h3 className="text-xl font-semibold text-[#377c68] mb-2">{trip.name}</h3>
-                                        <div className="flex items-center gap-2 text-gray-600 mb-2">
-                                            <MapPin className="h-4 w-4" />
-                                            <span>{trip.location || 'No location set'}</span>
+                                            <Globe className="h-16 w-16 text-[#377c68]/30" />
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="absolute top-2 right-2 text-red-500 bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={(e) => handleDelete(trip.id, e)}
+                                            >
+                                                <Trash2 className="h-5 w-5" />
+                                            </Button>
                                         </div>
-                                        {trip.owner_name && (
+                                        <div className="p-4">
+                                            <h3 className="text-xl font-semibold text-[#377c68] mb-2">{trip.name}</h3>
                                             <div className="flex items-center gap-2 text-gray-600 mb-2">
-                                                <span className="font-medium">Owner:</span>
-                                                <span>{trip.owner_name}</span>
+                                                <MapPin className="h-4 w-4" />
+                                                <span>{trip.location || 'No location set'}</span>
                                             </div>
-                                        )}
-                                        <div className="flex items-center gap-2 text-gray-600 mb-2">
-                                            <Calendar className="h-4 w-4" />
-                                            <span>{new Date(trip.start_date).toLocaleDateString()} - {new Date(trip.end_date).toLocaleDateString()}</span>
+                                            {trip.owner_name && (
+                                                <div className="flex items-center gap-2 text-gray-600 mb-2">
+                                                    <span className="font-medium">Owner:</span>
+                                                    <span>{trip.owner_name}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex items-center gap-2 text-gray-600 mb-2">
+                                                <Calendar className="h-4 w-4" />
+                                                <span>{new Date(trip.start_date).toLocaleDateString()} - {new Date(trip.end_date).toLocaleDateString()}</span>
+                                            </div>
+                                            {trip.budget && (
+                                                <div className="flex items-center gap-2 text-gray-600 mb-2">
+                                                    <DollarSign className="h-4 w-4" />
+                                                    <span>Budget: ${trip.budget.toLocaleString()}</span>
+                                                </div>
+                                            )}
+                                            {trip.collaborators && trip.collaborators.length > 0 && (
+                                                <div className="mt-3 text-sm text-gray-600">
+                                                    Collaborators: {trip.collaborators.map(c => c.username).join(', ')}
+                                                </div>
+                                            )}
+                                            <Button
+                                                variant="ghost"
+                                                className="w-full mt-4 text-[#f3a034] hover:text-[#f3a034]/90"
+                                            >
+                                                View Trip
+                                            </Button>
                                         </div>
-                                        {trip.budget && (
-                                            <div className="flex items-center gap-2 text-gray-600 mb-2">
-                                                <DollarSign className="h-4 w-4" />
-                                                <span>Budget: ${trip.budget.toLocaleString()}</span>
-                                            </div>
-                                        )}
-                                        {trip.collaborators && trip.collaborators.length > 0 && (
-                                            <div className="mt-3 text-sm text-gray-600">
-                                                Collaborators: {trip.collaborators.map(c => c.username).join(', ')}
-                                            </div>
-                                        )}
-                                        <Button
-                                            variant="ghost"
-                                            className="w-full mt-4 text-[#f3a034] hover:text-[#f3a034]/90"
-                                        >
-                                            View Trip
-                                        </Button>
-                                    </div>
-                                </Link>
-                            ))}
+                                    </Link>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
