@@ -507,67 +507,65 @@ export default function TripDetailsPage({ params }: { params: { id: string } } |
                         )}
 
                         {/* Itineraries Section */}
-                        <div>
-                            <div className="flex justify-between items-center mb-6">
+                        <div className="mt-10 mb-4">
+                            <h2 className="text-2xl font-bold text-[#377c68]">Itinerary</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {trip.itineraries.map((itinerary) => (
+                                <div
+                                    key={itinerary.id}
+                                    className="bg-[#fff8f0] rounded-lg p-6 hover:shadow-md transition-shadow"
+                                >
+                                    <div className="flex justify-between items-start mb-4">
+                                        <h3 className="text-xl font-semibold text-[#377c68]">{itinerary.name}</h3>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-gray-400 hover:text-red-500 hover:bg-red-50"
+                                            onClick={() => handleDeleteItinerary(itinerary.id)}
+                                        >
+                                            <Trash2 className="h-5 w-5" />
+                                        </Button>
+                                    </div>
 
-                            </div>
+                                    <p className="text-gray-600 mb-4">{itinerary.description}</p>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {trip.itineraries.map((itinerary) => (
-                                    <div
-                                        key={itinerary.id}
-                                        className="bg-[#fff8f0] rounded-lg p-6 hover:shadow-md transition-shadow"
-                                    >
-                                        <div className="flex justify-between items-start mb-4">
-                                            <h3 className="text-xl font-semibold text-[#377c68]">{itinerary.name}</h3>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-gray-400 hover:text-red-500 hover:bg-red-50"
-                                                onClick={() => handleDeleteItinerary(itinerary.id)}
-                                            >
-                                                <Trash2 className="h-5 w-5" />
-                                            </Button>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm text-gray-500">
+                                            <span className="font-medium">Start:</span> {formatDateTime(itinerary.start_date)}
                                         </div>
-
-                                        <p className="text-gray-600 mb-4">{itinerary.description}</p>
-
-                                        <div className="flex flex-col gap-2">
-                                            <div className="text-sm text-gray-500">
-                                                <span className="font-medium">Start:</span> {formatDateTime(itinerary.start_date)}
-                                            </div>
-                                            <div className="text-sm text-gray-500">
-                                                <span className="font-medium">End:</span> {formatDateTime(itinerary.end_date)}
-                                            </div>
-                                            {itinerary.activities && itinerary.activities.length > 0 && (
-                                                <div className="mt-4">
-                                                    <h4 className="text-sm font-medium text-gray-700 mb-2">Activities:</h4>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {itinerary.activities.map((activity, index) => {
-                                                            const activityOption = ACTIVITY_OPTIONS.find(opt => opt.id === activity);
-                                                            return activityOption ? (
-                                                                <div
-                                                                    key={index}
-                                                                    className="inline-flex items-center gap-1 px-2 py-1 bg-[#377c68]/10 text-[#377c68] rounded-full text-sm"
-                                                                >
-                                                                    <span>{activityOption.icon}</span>
-                                                                    <span>{activityOption.label}</span>
-                                                                </div>
-                                                            ) : null;
-                                                        })}
-                                                    </div>
+                                        <div className="text-sm text-gray-500">
+                                            <span className="font-medium">End:</span> {formatDateTime(itinerary.end_date)}
+                                        </div>
+                                        {itinerary.activities && itinerary.activities.length > 0 && (
+                                            <div className="mt-4">
+                                                <h4 className="text-base font-semibold text-[#377c68] mb-2">Itinerary</h4>
+                                                <h4 className="text-sm font-medium text-gray-700 mb-2">Activities:</h4>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {itinerary.activities.map((activity, index) => {
+                                                        const activityOption = ACTIVITY_OPTIONS.find(opt => opt.id === activity);
+                                                        return activityOption ? (
+                                                            <div
+                                                                key={index}
+                                                                className="inline-flex items-center gap-1 px-2 py-1 bg-[#377c68]/10 text-[#377c68] rounded-full text-sm"
+                                                            >
+                                                                <span>{activityOption.icon}</span>
+                                                                <span>{activityOption.label}</span>
+                                                            </div>
+                                                        ) : null;
+                                                    })}
                                                 </div>
-                                            )}
-                                        </div>
+                                            </div>
+                                        )}
                                     </div>
-                                ))}
+                                </div>
+                            ))}
 
-                                {trip.itineraries.length === 0 && (
-                                    <div className="col-span-2 text-center py-8 text-gray-500">
-                                        No itineraries yet. Click "Add Activity" to start one.
-                                    </div>
-                                )}
-                            </div>
+                            {trip.itineraries.length === 0 && (
+                                <div className="col-span-2 text-center py-8 text-gray-500">
+                                    No itineraries yet. Click "Add Activity" to start one.
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

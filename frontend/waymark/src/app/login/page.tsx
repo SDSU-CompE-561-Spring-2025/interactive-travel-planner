@@ -27,7 +27,7 @@ const Login = () => {
         try {
             await login(username, password);
             toast.success('Successfully logged in!');
-            router.push('/');
+            router.push('/dashboard');
         } catch (error: any) {
             setError(error?.response?.data?.detail || 'Login failed. Please try again.');
             toast.error('Login failed. Please try again.');

@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             localStorage.setItem('token', token);
             setUser({ username, token });
-            router.push('/');
+            router.push('/dashboard');
             toast.success('Successfully logged in!');
         } catch (error: any) {
             console.error('Login Failed:', {

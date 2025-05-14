@@ -32,7 +32,7 @@ const Navbar = () => {
 						{user ? (
 							<>
 								<Link href="/" className="text-gray-600 hover:text-gray-900">
-									Home
+									Homeer
 								</Link>
 								<Link href="/my-trips" className="text-[#377c68] hover:text-[#4ba46c]">
 									My Trips

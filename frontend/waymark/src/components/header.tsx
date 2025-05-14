@@ -26,14 +26,6 @@ export default function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
-          <Link
-            href="/"
-            className={`text-sm font-medium transition-colors hover:text-primary ${
-              isActive("/") ? "text-primary" : "text-foreground"
-            }`}
-          >
-            Home
-          </Link>
             {isAuthenticated && (
               <>
           <Link
