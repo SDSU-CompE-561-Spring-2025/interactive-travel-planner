@@ -8,3 +8,10 @@ itinerary_trip_association = Table(
     Column('trip_id', Integer, ForeignKey('trips.id')),
     Column('itinerary_id', Integer, ForeignKey('itineraries.id'))
 )
+
+trip_collaborators = Table(
+    'trip_collaborators',
+    Base.metadata,
+    Column('trip_id', Integer, ForeignKey('trips.id'), primary_key=True),
+    Column('user_id', Integer, ForeignKey('users.id'), primary_key=True)
+)

@@ -9,6 +9,11 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
 
+interface Collaborator {
+    id: number;
+    username: string;
+}
+
 interface Trip {
     id: number;
     name: string;
@@ -17,7 +22,7 @@ interface Trip {
     end_date: string;
     location: string;
     budget: number | null;
-    collaborators?: number;
+    collaborators?: Collaborator[];
 }
 
 export default function DashboardPage() {
@@ -89,7 +94,7 @@ export default function DashboardPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-bold text-[#377c68]">My Trips</h1>
-                        <Link 
+                        <Link
                             href="/planner/start"
                             className="bg-[#f3a034] text-white px-4 py-2 rounded-md hover:bg-[#f3a034]/90 transition-colors flex items-center gap-2"
                         >
@@ -105,7 +110,7 @@ export default function DashboardPage() {
                         <div className="text-center py-12 bg-white rounded-lg shadow-sm">
                             <h3 className="text-lg font-medium text-gray-900 mb-2">No trips yet</h3>
                             <p className="text-gray-500 mb-4">Start planning your next adventure!</p>
-                            <Link 
+                            <Link
                                 href="/planner/start"
                                 className="bg-[#f3a034] text-white px-4 py-2 rounded-md hover:bg-[#f3a034]/90 transition-colors inline-flex items-center gap-2"
                             >
@@ -115,7 +120,7 @@ export default function DashboardPage() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                             {trips.map((trip) => (
-                                <Link 
+                                <Link
                                     key={trip.id}
                                     href={`/trips/${trip.id}`}
                                     className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
@@ -147,9 +152,9 @@ export default function DashboardPage() {
                                                 <span>Budget: ${trip.budget.toLocaleString()}</span>
                                             </div>
                                         )}
-                                        {trip.collaborators && (
+                                        {trip.collaborators && trip.collaborators.length > 0 && (
                                             <div className="mt-3 text-sm text-gray-600">
-                                                Collaborators: {trip.collaborators}
+                                                Collaborators: {trip.collaborators.map(c => c.username).join(', ')}
                                             </div>
                                         )}
                                         <Button
@@ -167,4 +172,4 @@ export default function DashboardPage() {
             </div>
         </ProtectedRoute>
     );
-} 
+}

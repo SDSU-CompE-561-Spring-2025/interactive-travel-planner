@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, use as usePromise } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, MapPin, ArrowLeft, DollarSign, Trash2, UserPlus, Check } from 'lucide-react';
 import Link from 'next/link';
@@ -28,6 +28,11 @@ const ACTIVITY_OPTIONS: ActivityOption[] = [
     { id: 'cultural', label: 'Cultural Activities', icon: '🎭' },
 ];
 
+interface Collaborator {
+    id: number;
+    username: string;
+}
+
 interface Trip {
     id: number;
     name: string;
@@ -38,6 +43,7 @@ interface Trip {
     end_date: string;
     activities: string[];
     itineraries: Itinerary[];
+    collaborators?: Collaborator[];
 }
 
 interface Itinerary {
@@ -49,11 +55,21 @@ interface Itinerary {
     activities: string[];
 }
 
-export default function TripDetailsPage({ params }: { params: { id: string } }) {
+function isPromise<T>(value: T | Promise<T>): value is Promise<T> {
+    return typeof (value as any)?.then === 'function';
+}
+
+export default function TripDetailsPage({ params }: { params: { id: string } } | { params: Promise<{ id: string }> }) {
+    // Unwrap params if it's a Promise (Next.js 15+)
+    const unwrappedParams = isPromise(params) ? usePromise(params) : params;
     const [trip, setTrip] = useState<Trip | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const [inviteOpen, setInviteOpen] = useState(false);
+    const [search, setSearch] = useState('');
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -94,6 +110,48 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
         }
     };
 
+    // Search for users by username
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        if (searchTimeout.current) clearTimeout(searchTimeout.current);
+        if (!value.trim()) {
+            setSearchResults([]);
+            return;
+        }
+        setSearchLoading(true);
+        searchTimeout.current = setTimeout(async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await axios.get(`/users/search?query=${encodeURIComponent(value)}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setSearchResults(Array.isArray(res.data) ? res.data : []);
+            } catch (e) {
+                setSearchResults([]);
+            } finally {
+                setSearchLoading(false);
+            }
+        }, 300);
+    };
+
+    const handleInviteCollaborator = async (userId: number) => {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post(`/trips/${unwrappedParams.id}/collaborators`, { user_id: userId }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success('Collaborator added!');
+            setInviteOpen(false);
+            setSearch('');
+            setSearchResults([]);
+            // Refresh trip details
+            const response = await axios.get<Trip>(`/trips/${unwrappedParams.id}`);
+            setTrip(response.data);
+        } catch (error: any) {
+            toast.error(error?.response?.data?.detail || 'Failed to add collaborator');
+        }
+    };
+
     useEffect(() => {
         const fetchTripDetails = async () => {
             try {
@@ -103,7 +161,7 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                     return;
                 }
 
-                const response = await axios.get<Trip>(`/trips/${params.id}`);
+                const response = await axios.get<Trip>(`/trips/${unwrappedParams.id}`);
 
                 if (!response.data) {
                     throw new Error('No trip data received');
@@ -118,10 +176,10 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
             }
         };
 
-        if (params.id) {
+        if (unwrappedParams.id) {
             fetchTripDetails();
         }
-    }, [params.id, router]);
+    }, [unwrappedParams.id, router]);
 
     if (loading) {
         return (
@@ -189,12 +247,18 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                                             <span>Budget: ${trip.budget.toLocaleString()}</span>
                                         </div>
                                     )}
+                                    {trip.collaborators && Array.isArray(trip.collaborators) && trip.collaborators.length > 0 && (
+                                        <div className="inline-flex items-center gap-2 text-gray-600 px-4 py-2 bg-[#fff8f0] rounded-full">
+                                            <span className="font-medium">Collaborators:</span>
+                                            <span>{trip.collaborators.map(c => c.username).join(', ')}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div className="flex justify-end gap-4 mb-6">
                                 <button
                                     className="bg-[#f3a034] text-white px-5 py-2 rounded-lg font-medium hover:bg-[#f3a034]/90 transition-colors"
-                                    onClick={() => router.push(`/trips/${params.id}/create-itinerary`)}
+                                    onClick={() => router.push(`/trips/${unwrappedParams.id}/create-itinerary`)}
                                 >
                                     Add Activity
                                 </button>
@@ -208,7 +272,7 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                             </div>
                         </div>
 
-                        {/* Invite Collaborators Modal (placeholder) */}
+                        {/* Invite Collaborators Modal */}
                         {inviteOpen && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
                                 <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full relative">
@@ -219,8 +283,32 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                                         ×
                                     </button>
                                     <h2 className="text-xl font-bold mb-4 text-[#377c68]">Invite Collaborators</h2>
-                                    <p className="mb-4 text-gray-600">(Collaborator invite functionality coming soon!)</p>
-                                    {/* TODO: Add invite form here */}
+                                    <label className="block mb-2 text-gray-700">Search by username</label>
+                                    <input
+                                        type="text"
+                                        value={search}
+                                        onChange={e => handleSearch(e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4ba46c] mb-2"
+                                        placeholder="Type a username..."
+                                        autoFocus
+                                    />
+                                    {searchLoading && <div className="text-sm text-gray-400 mb-2">Searching...</div>}
+                                    {search && searchResults.length > 0 && (
+                                        <ul className="border rounded-lg bg-white shadow max-h-40 overflow-y-auto mb-2">
+                                            {searchResults.map((user: any) => (
+                                                <li
+                                                    key={user.id}
+                                                    className="px-4 py-2 hover:bg-[#f3a034]/10 cursor-pointer"
+                                                    onClick={() => handleInviteCollaborator(user.id)}
+                                                >
+                                                    {user.username}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                    {search && !searchLoading && searchResults.length === 0 && (
+                                        <div className="text-sm text-gray-400 mb-2">No users found.</div>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -263,13 +351,7 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
                         {/* Itineraries Section */}
                         <div>
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-[#377c68]">Itinerary</h2>
-                                <Button
-                                    className="bg-[#f3a034] text-white hover:bg-[#f3a034]/90"
-                                    onClick={() => router.push(`/trips/${params.id}/create-itinerary`)}
-                                >
-                                    Add Activity
-                                </Button>
+
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -324,7 +406,7 @@ export default function TripDetailsPage({ params }: { params: { id: string } }) 
 
                                 {trip.itineraries.length === 0 && (
                                     <div className="col-span-2 text-center py-8 text-gray-500">
-                                        No itineraries yet. Click "Add Itinerary" to create one.
+                                        No itineraries yet. Click "Add Activity" to start one.
                                     </div>
                                 )}
                             </div>

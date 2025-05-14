@@ -3,6 +3,10 @@ from datetime import datetime
 from typing import List, Optional
 
 
+class CollaboratorInfo(BaseModel):
+    id: int
+    username: str
+
 class TripBase(BaseModel):
     name: str
     description: Optional[str] = None
@@ -24,5 +28,13 @@ class TripUpdate(BaseModel):
     end_date: datetime
     itineraries: List[int]
 
+    class Config:
+        orm_mode = True
+
+class TripOut(TripBase):
+    id: int
+    start_date: datetime
+    end_date: datetime
+    collaborators: List[CollaboratorInfo] = []
     class Config:
         orm_mode = True
